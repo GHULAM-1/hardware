@@ -1,0 +1,183 @@
+{
+  "app": {
+    "name": "ہارڈویئر شاپ سی آر ایم"
+  },
+  "nav": {
+    "dashboard": "ڈیش بورڈ",
+    "pricing": "قیمتیں",
+    "warehouse": "گودام",
+    "customers": "گاہک",
+    "orders": "آرڈرز",
+    "khata": "کھاتہ",
+    "suppliers": "سپلائرز",
+    "users": "صارفین",
+    "settings": "ترتیبات"
+  },
+  "common": {
+    "add": "شامل کریں",
+    "edit": "ترمیم",
+    "delete": "حذف کریں",
+    "save": "محفوظ کریں",
+    "cancel": "منسوخ کریں",
+    "create": "بنائیں",
+    "search": "تلاش",
+    "searchPlaceholder": "تلاش کریں…",
+    "loading": "لوڈ ہو رہا ہے…",
+    "noResults": "کوئی نتیجہ نہیں ملا",
+    "actions": "اعمال",
+    "confirm": "تصدیق کریں",
+    "yes": "ہاں",
+    "no": "نہیں",
+    "back": "واپس",
+    "addNamed": "\"{{name}}\" شامل کریں",
+    "required": "ضروری",
+    "optional": "اختیاری",
+    "all": "تمام"
+  },
+  "auth": {
+    "login": "لاگ ان",
+    "logout": "لاگ آؤٹ",
+    "email": "ای میل",
+    "password": "پاس ورڈ",
+    "signIn": "سائن ان کریں",
+    "signingIn": "سائن ان ہو رہا ہے…",
+    "welcome": "خوش آمدید",
+    "invalidCredentials": "ای میل یا پاس ورڈ غلط ہے"
+  },
+  "fields": {
+    "nameEn": "نام (انگریزی)",
+    "nameUr": "نام (اردو)",
+    "name": "نام",
+    "sku": "ایس کے یو",
+    "unit": "اکائی",
+    "category": "زمرہ",
+    "sellingPrice": "فروخت کی قیمت",
+    "buyingPrice": "خرید کی قیمت",
+    "image": "تصویر",
+    "phone": "فون",
+    "email": "ای میل",
+    "address": "پتہ",
+    "note": "نوٹ",
+    "quantity": "مقدار",
+    "supplier": "سپلائر",
+    "date": "تاریخ",
+    "reason": "وجہ",
+    "amount": "رقم",
+    "dueDate": "مقررہ تاریخ",
+    "status": "حالت",
+    "paymentType": "ادائیگی کی قسم",
+    "amountPaid": "ادا شدہ رقم",
+    "balanceDue": "بقایا رقم",
+    "customer": "گاہک",
+    "item": "آئٹم",
+    "role": "کردار"
+  },
+  "pricing": {
+    "title": "قیمتیں",
+    "subtitle": "اشیاء اور ان کی فروخت قیمتیں (روپے)",
+    "newItem": "نئی آئٹم",
+    "editItem": "آئٹم میں ترمیم",
+    "searchItems": "اشیاء تلاش کریں…"
+  },
+  "warehouse": {
+    "title": "گودام",
+    "subtitle": "اسٹاک کی مقدار اور سپلائر سورسنگ",
+    "currentStock": "موجودہ اسٹاک",
+    "stockIn": "اسٹاک اِن",
+    "stockOut": "اسٹاک آؤٹ",
+    "addStock": "اسٹاک شامل کریں",
+    "manageStock": "اسٹاک کا انتظام",
+    "history": "اسٹاک کی تاریخ"
+  },
+  "customers": {
+    "title": "گاہک",
+    "newCustomer": "نیا گاہک",
+    "editCustomer": "گاہک میں ترمیم",
+    "orderHistory": "آرڈر کی تاریخ",
+    "lastPurchase": "حالیہ خریداری: {{item}} بقیمت {{price}}",
+    "noPurchases": "کوئی پچھلی خریداری نہیں"
+  },
+  "orders": {
+    "title": "آرڈرز",
+    "newOrder": "نیا آرڈر",
+    "lineItems": "اشیاء",
+    "addLine": "آئٹم شامل کریں",
+    "sourceFrom": "سپلائرز سے حاصل کریں",
+    "lastSoldToCustomer": "اس گاہک کو آخری بار {{price}} میں فروخت",
+    "total": "کل",
+    "print": "رسید پرنٹ کریں",
+    "selectCustomer": "براہ کرم گاہک منتخب کریں",
+    "addAtLeastOneItem": "کم از کم ایک آئٹم مقدار اور قیمت کے ساتھ شامل کریں",
+    "editPayment": "ادائیگی میں ترمیم"
+  },
+  "payment": {
+    "cash": "نقد (مکمل)",
+    "partial": "جزوی",
+    "credit": "ادھار"
+  },
+  "khata": {
+    "title": "کھاتہ",
+    "newEntry": "نیا کھاتہ",
+    "markFulfilled": "ادا شدہ نشان زد کریں",
+    "pending": "زیر التواء",
+    "fulfilled": "ادا شدہ",
+    "overdue": "واجب الادا",
+    "dueToday": "آج واجب",
+    "reminders": "یاد دہانیاں"
+  },
+  "suppliers": {
+    "title": "سپلائرز",
+    "newSupplier": "نیا سپلائر",
+    "editSupplier": "سپلائر میں ترمیم"
+  },
+  "users": {
+    "title": "صارفین",
+    "newUser": "نیا صارف",
+    "active": "فعال",
+    "inactive": "غیر فعال"
+  },
+  "roles": {
+    "super_admin": "سپر ایڈمن",
+    "admin": "ایڈمن"
+  },
+  "units": {
+    "pcs": "عدد",
+    "dozen": "درجن",
+    "pair": "جوڑا",
+    "set": "سیٹ",
+    "box": "ڈبہ",
+    "pack": "پیک",
+    "bundle": "بنڈل",
+    "roll": "رول",
+    "bag": "بوری",
+    "sheet": "شیٹ",
+    "kg": "کلوگرام",
+    "g": "گرام",
+    "liter": "لیٹر",
+    "ml": "ملی لیٹر",
+    "meter": "میٹر",
+    "cm": "سینٹی میٹر",
+    "ft": "فٹ"
+  },
+  "settings": {
+    "title": "ترتیبات",
+    "reminderLeadDays": "یاد دہانی کے دن",
+    "language": "زبان",
+    "theme": "تھیم",
+    "english": "انگریزی",
+    "urdu": "اردو"
+  },
+  "dashboard": {
+    "title": "ڈیش بورڈ",
+    "totalItems": "اشیاء",
+    "customers": "گاہک",
+    "pendingKhata": "زیر التواء کھاتہ",
+    "dueSoon": "جلد واجب"
+  },
+  "toast": {
+    "saved": "محفوظ ہو گیا",
+    "deleted": "حذف ہو گیا",
+    "created": "بن گیا",
+    "error": "کچھ غلط ہو گیا"
+  }
+}

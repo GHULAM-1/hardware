@@ -1,0 +1,75 @@
+"use server";
+
+import { createActionClient } from "@/lib/supabase/server";
+import { runQuery } from "@/server/actions/_client";
+import { getReminderLeadDays } from "@/server/actions/settings";
+import { khataSchema, type KhataValues } from "@/lib/schemas";
+import { KhataStatus } from "@/lib/enums";
+import type { Khata, KhataListView } from "@/types/models";
+
+const SELECT = "id, amount, due_date, status, description, created_at, order_id, customers(name_en, name_ur)";
+
+type RawKhata = Omit<KhataListView, "customer"> & {
+  customers: { name_en: string; name_ur: string | null } | null;
+};
+
+function toView(rows: RawKhata[]): KhataListView[] {
+  return rows.map(({ customers, ...rest }) => ({ ...rest, customer: customers }));
+}
+
+export async function listKhatas(accessToken: string, status = ""): Promise<KhataListView[]> {
+  const client = createActionClient(accessToken);
+  let q = client.from("khatas").select(SELECT).order("due_date", { ascending: true });
+  if (status) q = q.eq("status", status as KhataStatus);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  return toView((data ?? []) as RawKhata[]);
+}
+
+/** Pending khatas due within the configured reminder lead time (dashboard). */
+export async function getKhataReminders(accessToken: string): Promise<KhataListView[]> {
+  const client = createActionClient(accessToken);
+  const lead = await getReminderLeadDays(accessToken);
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() + lead);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+  const { data, error } = await client
+    .from("khatas")
+    .select(SELECT)
+    .eq("status", KhataStatus.Pending)
+    .lte("due_date", cutoffStr)
+    .order("due_date", { ascending: true });
+  if (error) throw new Error(error.message);
+  return toView((data ?? []) as RawKhata[]);
+}
+
+export async function createKhata(accessToken: string, values: KhataValues): Promise<Khata> {
+  const data = khataSchema.parse(values);
+  const client = createActionClient(accessToken);
+  const { data: userData } = await client.auth.getUser();
+  const { data: row, error } = await client
+    .from("khatas")
+    .insert({ ...data, status: KhataStatus.Pending, created_by: userData.user?.id ?? null })
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return row;
+}
+
+export async function setKhataStatus(
+  accessToken: string,
+  id: string,
+  status: KhataStatus,
+): Promise<Khata> {
+  return runQuery(accessToken, (c) =>
+    c.from("khatas").update({ status }).eq("id", id).select("*").single(),
+  );
+}
+
+export async function deleteKhata(accessToken: string, id: string): Promise<null> {
+  return runQuery(accessToken, (c) =>
+    c.from("khatas").delete().eq("id", id).then((r) => ({ data: null, error: r.error })),
+  );
+}

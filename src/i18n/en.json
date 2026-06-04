@@ -1,0 +1,183 @@
+{
+  "app": {
+    "name": "Hardware Shop CRM"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "pricing": "Pricing",
+    "warehouse": "Warehouse",
+    "customers": "Customers",
+    "orders": "Orders",
+    "khata": "Khata",
+    "suppliers": "Suppliers",
+    "users": "Users",
+    "settings": "Settings"
+  },
+  "common": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "search": "Search",
+    "searchPlaceholder": "Search…",
+    "loading": "Loading…",
+    "noResults": "No results found",
+    "actions": "Actions",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "addNamed": "Add \"{{name}}\"",
+    "required": "Required",
+    "optional": "Optional",
+    "all": "All"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "welcome": "Welcome back",
+    "invalidCredentials": "Invalid email or password"
+  },
+  "fields": {
+    "nameEn": "Name (English)",
+    "nameUr": "Name (Urdu)",
+    "name": "Name",
+    "sku": "SKU",
+    "unit": "Unit",
+    "category": "Category",
+    "sellingPrice": "Selling price",
+    "buyingPrice": "Buying price",
+    "image": "Image",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "note": "Note",
+    "quantity": "Quantity",
+    "supplier": "Supplier",
+    "date": "Date",
+    "reason": "Reason",
+    "amount": "Amount",
+    "dueDate": "Due date",
+    "status": "Status",
+    "paymentType": "Payment type",
+    "amountPaid": "Amount paid",
+    "balanceDue": "Balance due",
+    "customer": "Customer",
+    "item": "Item",
+    "role": "Role"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Items and their selling prices (PKR)",
+    "newItem": "New item",
+    "editItem": "Edit item",
+    "searchItems": "Search items…"
+  },
+  "warehouse": {
+    "title": "Warehouse",
+    "subtitle": "Stock quantities and supplier sourcing",
+    "currentStock": "Current stock",
+    "stockIn": "Stock in",
+    "stockOut": "Stock out",
+    "addStock": "Add stock",
+    "manageStock": "Manage stock",
+    "history": "Stock history"
+  },
+  "customers": {
+    "title": "Customers",
+    "newCustomer": "New customer",
+    "editCustomer": "Edit customer",
+    "orderHistory": "Order history",
+    "lastPurchase": "Most recent purchase: {{item}} at {{price}}",
+    "noPurchases": "No previous purchases"
+  },
+  "orders": {
+    "title": "Orders",
+    "newOrder": "New order",
+    "lineItems": "Items",
+    "addLine": "Add item",
+    "sourceFrom": "Source from suppliers",
+    "lastSoldToCustomer": "Last sold to this customer at {{price}}",
+    "total": "Total",
+    "print": "Print receipt",
+    "selectCustomer": "Please select a customer",
+    "addAtLeastOneItem": "Add at least one item with quantity and price",
+    "editPayment": "Edit payment"
+  },
+  "payment": {
+    "cash": "Cash (full)",
+    "partial": "Partial",
+    "credit": "Credit"
+  },
+  "khata": {
+    "title": "Khata",
+    "newEntry": "New khata",
+    "markFulfilled": "Mark fulfilled",
+    "pending": "Pending",
+    "fulfilled": "Fulfilled",
+    "overdue": "Overdue",
+    "dueToday": "Due today",
+    "reminders": "Reminders"
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "newSupplier": "New supplier",
+    "editSupplier": "Edit supplier"
+  },
+  "users": {
+    "title": "Users",
+    "newUser": "New user",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "roles": {
+    "super_admin": "Super Admin",
+    "admin": "Admin"
+  },
+  "units": {
+    "pcs": "Pieces (pcs)",
+    "dozen": "Dozen",
+    "pair": "Pair",
+    "set": "Set",
+    "box": "Box",
+    "pack": "Pack",
+    "bundle": "Bundle",
+    "roll": "Roll",
+    "bag": "Bag",
+    "sheet": "Sheet",
+    "kg": "Kilogram (kg)",
+    "g": "Gram (g)",
+    "liter": "Liter (L)",
+    "ml": "Milliliter (ml)",
+    "meter": "Meter (m)",
+    "cm": "Centimeter (cm)",
+    "ft": "Foot (ft)"
+  },
+  "settings": {
+    "title": "Settings",
+    "reminderLeadDays": "Reminder lead days",
+    "language": "Language",
+    "theme": "Theme",
+    "english": "English",
+    "urdu": "Urdu"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalItems": "Items",
+    "customers": "Customers",
+    "pendingKhata": "Pending Khata",
+    "dueSoon": "Due soon"
+  },
+  "toast": {
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "created": "Created",
+    "error": "Something went wrong"
+  }
+}
