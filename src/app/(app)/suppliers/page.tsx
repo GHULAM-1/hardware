@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
+import { ImageThumb } from "@/components/common/image-thumb";
 import type { Supplier } from "@/types/models";
 
 export default function SuppliersPage() {
@@ -25,6 +26,7 @@ export default function SuppliersPage() {
   const { data: suppliers = [], isLoading } = useSuppliers(debounced);
 
   const columns: Column<Supplier>[] = [
+    { key: "img", header: "", headerClassName: "w-12", cell: (row) => <ImageThumb src={row.image_url} alt={row.name} /> },
     { key: "name", header: t("fields.name"), cell: (row) => <span className="font-medium">{row.name}</span> },
     { key: "phone", header: t("fields.phone"), cell: (row) => row.phone ?? "—" },
     { key: "note", header: t("fields.note"), cell: (row) => row.note ?? "—" },

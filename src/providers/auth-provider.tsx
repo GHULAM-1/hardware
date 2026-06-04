@@ -13,6 +13,7 @@ type AuthContextValue = {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
@@ -74,9 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
   }, []);
 
+  const refreshProfile = React.useCallback(async () => {
+    await loadProfile(session?.user.id);
+  }, [loadProfile, session]);
+
   const value = React.useMemo<AuthContextValue>(
-    () => ({ session, profile, loading, signIn, signOut }),
-    [session, profile, loading, signIn, signOut],
+    () => ({ session, profile, loading, signIn, signOut, refreshProfile }),
+    [session, profile, loading, signIn, signOut, refreshProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

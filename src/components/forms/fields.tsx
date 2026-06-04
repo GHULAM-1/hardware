@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/common/image-upload";
+import type { ImageFolder } from "@/lib/storage";
 
 /**
  * Reusable react-hook-form fields wired to shadcn FormMessage (zod errors render
@@ -121,6 +123,43 @@ export function TextareaField<T extends FieldValues>({
           <Labelled label={label} optional={optional} />
           <FormControl>
             <Textarea placeholder={placeholder} {...field} value={(field.value as string | null) ?? ""} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+/** RHF-wired image upload bound to an `image_url` field. */
+export function ImageField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  folder,
+}: {
+  control: Control<T>;
+  name: FieldPath<T>;
+  label: string;
+  folder: ImageFolder;
+}) {
+  const { t } = useTranslation();
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            {label}
+            <span className="ms-1 text-muted-foreground">({t("common.optional")})</span>
+          </FormLabel>
+          <FormControl>
+            <ImageUpload
+              value={(field.value as string | null) ?? null}
+              onChange={(url) => field.onChange(url)}
+              folder={folder}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

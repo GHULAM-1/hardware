@@ -12,6 +12,8 @@ export type Insert<T extends keyof Tables> = Tables[T]["Insert"];
 export type Update<T extends keyof Tables> = Tables[T]["Update"];
 
 export type Profile = Row<"profiles">;
+/** A profile with its auth email resolved (admin-only; emails live in auth.users). */
+export type ProfileWithEmail = Profile & { email: string | null };
 export type Supplier = Row<"suppliers">;
 export type Category = Row<"categories">;
 export type Item = Row<"items">;

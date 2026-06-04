@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { LogOut } from "lucide-react";
+import { LogOut, UserCog } from "lucide-react";
 
 import { useAuth } from "@/providers/auth-provider";
 import { UserRole } from "@/lib/enums";
@@ -11,7 +11,7 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Logo } from "@/components/layout/logo";
 import { AssistantTrigger } from "@/components/assistant/assistant-trigger";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +58,7 @@ export function Topbar() {
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 rounded-md p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Avatar className="h-9 w-9">
+              {profile?.image_url && <AvatarImage src={profile.image_url} alt={profile.full_name ?? ""} />}
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {initials(profile?.full_name)}
               </AvatarFallback>
@@ -72,6 +73,10 @@ export function Topbar() {
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel>{profile?.full_name ?? "—"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => router.push("/profile")}>
+              <UserCog className="me-2 h-4 w-4" />
+              {t("profile.title")}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={onLogout}>
               <LogOut className="me-2 h-4 w-4" />
               {t("auth.logout")}

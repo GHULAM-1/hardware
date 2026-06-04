@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
+import { ImageThumb } from "@/components/common/image-thumb";
 import type { Customer } from "@/types/models";
 
 export default function CustomersPage() {
@@ -29,6 +30,12 @@ export default function CustomersPage() {
   const { data: usedCustomerIds } = useUsedCustomerIds();
 
   const columns: Column<Customer>[] = [
+    {
+      key: "img",
+      header: "",
+      headerClassName: "w-12",
+      cell: (row) => <ImageThumb src={row.image_url} alt={row.name_en} />,
+    },
     {
       key: "name",
       header: t("fields.name"),

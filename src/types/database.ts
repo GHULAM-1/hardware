@@ -62,6 +62,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          image_url: string | null
           name_en: string
           name_ur: string | null
           phone: string | null
@@ -72,6 +73,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          image_url?: string | null
           name_en: string
           name_ur?: string | null
           phone?: string | null
@@ -82,6 +84,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          image_url?: string | null
           name_en?: string
           name_ur?: string | null
           phone?: string | null
@@ -398,6 +401,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
@@ -406,6 +410,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          image_url?: string | null
           is_active?: boolean
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
@@ -414,6 +419,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
@@ -495,6 +501,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_url: string | null
           name: string
           note: string | null
           phone: string | null
@@ -503,6 +510,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          image_url?: string | null
           name: string
           note?: string | null
           phone?: string | null
@@ -511,6 +519,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          image_url?: string | null
           name?: string
           note?: string | null
           phone?: string | null

@@ -10,6 +10,7 @@ import { UserRole } from "@/lib/enums";
 import { PageHeader } from "@/components/layout/page-header";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { StatusBadge } from "@/components/common/status-badge";
+import { ImageThumb } from "@/components/common/image-thumb";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -19,8 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import type { Profile } from "@/types/models";
+import { Pencil, Plus } from "lucide-react";
+import type { ProfileWithEmail } from "@/types/models";
 
 export default function UsersPage() {
   const { t } = useTranslation();
@@ -30,8 +31,19 @@ export default function UsersPage() {
   const setActive = useSetUserActive();
   const setRole = useSetUserRole();
 
-  const columns: Column<Profile>[] = [
+  const columns: Column<ProfileWithEmail>[] = [
+    {
+      key: "img",
+      header: "",
+      headerClassName: "w-12",
+      cell: (u) => <ImageThumb src={u.image_url} alt={u.full_name ?? ""} className="rounded-full" />,
+    },
     { key: "name", header: t("fields.name"), cell: (u) => <span className="font-medium">{u.full_name ?? "—"}</span> },
+    {
+      key: "email",
+      header: t("auth.email"),
+      cell: (u) => (u.email ? <span dir="ltr">{u.email}</span> : "—"),
+    },
     {
       key: "role",
       header: t("fields.role"),
@@ -71,6 +83,22 @@ export default function UsersPage() {
           disabled={u.id === profile?.id}
           onCheckedChange={(checked) => setActive.mutate({ id: u.id, isActive: checked })}
         />
+      ),
+    },
+    {
+      key: "edit",
+      header: "",
+      headerClassName: "w-12",
+      cell: (u) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          title={t("users.editUser")}
+          onClick={() => openDialog(DialogKey.UserEdit, { user: u })}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
       ),
     },
   ];

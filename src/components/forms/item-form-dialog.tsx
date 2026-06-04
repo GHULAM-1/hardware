@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { BilingualNameFields, NumberField } from "@/components/forms/fields";
+import { BilingualNameFields, ImageField, NumberField } from "@/components/forms/fields";
 import { UnitSelect } from "@/components/common/unit-select";
 import { itemSchema, type ItemValues } from "@/lib/schemas";
 import { useCreateItem, useUpdateItem } from "@/hooks/use-items";
@@ -81,6 +81,7 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
             />
             <NumberField control={form.control} name="selling_price" label={`${t("fields.sellingPrice")} (PKR)`} />
           </div>
+          <ImageField control={form.control} name="image_url" label={t("fields.image")} folder="product" />
           {isEdit && item && (
             <p className="text-xs text-muted-foreground">
               {t("fields.sku")}: <span className="font-mono">{item.sku}</span>

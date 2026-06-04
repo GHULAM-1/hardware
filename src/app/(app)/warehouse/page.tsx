@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
+import { ImageThumb } from "@/components/common/image-thumb";
 import { Button } from "@/components/ui/button";
 import type { ItemWithStock } from "@/types/models";
 
@@ -32,6 +33,12 @@ export default function WarehousePage() {
   const { data: usedItemIds } = useUsedItemIds();
 
   const columns: Column<ItemWithStock>[] = [
+    {
+      key: "img",
+      header: "",
+      headerClassName: "w-12",
+      cell: (row) => <ImageThumb src={row.image_url} alt={row.name_en} />,
+    },
     {
       key: "name",
       header: t("fields.name"),

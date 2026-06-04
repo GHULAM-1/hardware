@@ -27,6 +27,7 @@ export const supplierSchema = z.object({
   name: z.string().trim().min(1),
   phone: optionalText,
   note: optionalText,
+  image_url: z.string().url().nullable().optional().default(null),
 });
 export type SupplierValues = z.output<typeof supplierSchema>;
 
@@ -36,6 +37,7 @@ export const customerSchema = z.object({
   phone: optionalText,
   email: z.string().trim().email().nullable().optional().or(z.literal("").transform(() => null)),
   address: optionalText,
+  image_url: z.string().url().nullable().optional().default(null),
 });
 export type CustomerValues = z.output<typeof customerSchema>;
 
@@ -58,6 +60,23 @@ export const userSchema = z.object({
   role: z.enum([UserRole.SuperAdmin, UserRole.Admin]).default(UserRole.Admin),
 });
 export type UserValues = z.output<typeof userSchema>;
+
+// Editing an existing staff member: name + avatar, and an OPTIONAL new password
+// (blank = keep the current one). Email/role are managed elsewhere.
+export const userUpdateSchema = z.object({
+  full_name: z.string().trim().min(1),
+  image_url: z.string().url().nullable().optional().default(null),
+  password: z.string().min(6).or(z.literal("")).optional(),
+});
+export type UserUpdateValues = z.output<typeof userUpdateSchema>;
+
+// A user editing their OWN account: name + avatar (password handled separately
+// via the browser auth session). Role/active are never self-editable.
+export const ownProfileSchema = z.object({
+  full_name: z.string().trim().min(1),
+  image_url: z.string().url().nullable().optional().default(null),
+});
+export type OwnProfileValues = z.output<typeof ownProfileSchema>;
 
 export const khataSchema = z.object({
   customer_id: z.string().uuid(),

@@ -15,6 +15,7 @@ import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { Money } from "@/components/common/money";
 import { RowActions } from "@/components/common/row-actions";
+import { ImageThumb } from "@/components/common/image-thumb";
 import type { Item } from "@/types/models";
 
 export default function PricingPage() {
@@ -30,6 +31,12 @@ export default function PricingPage() {
   const { data: usedItemIds } = useUsedItemIds();
 
   const columns: Column<Item>[] = [
+    {
+      key: "img",
+      header: "",
+      headerClassName: "w-12",
+      cell: (row) => <ImageThumb src={row.image_url} alt={row.name_en} />,
+    },
     {
       key: "name",
       header: t("fields.name"),

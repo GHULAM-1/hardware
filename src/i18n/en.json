@@ -127,6 +127,21 @@
     "thinking": "Thinking…",
     "error": "Something went wrong. Please try again."
   },
+  "profile": {
+    "title": "My account",
+    "subtitle": "Update your name, photo and password",
+    "save": "Save changes"
+  },
+  "media": {
+    "upload": "Upload image",
+    "replace": "Replace",
+    "remove": "Remove",
+    "viewImage": "View image",
+    "hint": "JPG, PNG or WebP · up to 5MB",
+    "invalidType": "Only JPG, PNG or WebP images are allowed",
+    "tooLarge": "Image must be 5MB or smaller",
+    "uploadFailed": "Upload failed. Please try again."
+  },
   "payment": {
     "cash": "Cash (full)",
     "partial": "Partial",
@@ -152,6 +167,9 @@
   "users": {
     "title": "Users",
     "newUser": "New user",
+    "editUser": "Edit user",
+    "newPassword": "New password",
+    "passwordHint": "Leave blank to keep current",
     "active": "Active",
     "inactive": "Inactive"
   },

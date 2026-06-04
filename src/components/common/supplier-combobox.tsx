@@ -44,7 +44,7 @@ export function SupplierCombobox({
       onCreate={
         allowCreate
           ? async (name) => {
-              const s = await create.mutateAsync({ name, phone: null, note: null });
+              const s = await create.mutateAsync({ name, phone: null, note: null, image_url: null });
               return { value: s.id, label: s.name };
             }
           : undefined

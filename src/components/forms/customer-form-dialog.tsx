@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Form } from "@/components/ui/form";
-import { BilingualNameFields, TextField, TextareaField } from "@/components/forms/fields";
+import { BilingualNameFields, ImageField, TextField, TextareaField } from "@/components/forms/fields";
 import { customerSchema, type CustomerValues } from "@/lib/schemas";
 import { useCreateCustomer, useUpdateCustomer } from "@/hooks/use-customers";
 import type { Customer } from "@/types/models";
@@ -28,6 +28,7 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
       phone: customer?.phone ?? "",
       email: customer?.email ?? "",
       address: customer?.address ?? "",
+      image_url: customer?.image_url ?? null,
     },
   });
 
@@ -61,6 +62,7 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
             <TextField control={form.control} name="email" label={t("fields.email")} type="email" dir="ltr" optional />
           </div>
           <TextareaField control={form.control} name="address" label={t("fields.address")} optional />
+          <ImageField control={form.control} name="image_url" label={t("fields.image")} folder="customer" />
         </div>
       </FormDialog>
     </Form>

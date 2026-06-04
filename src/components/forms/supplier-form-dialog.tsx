@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Form } from "@/components/ui/form";
-import { TextField, TextareaField } from "@/components/forms/fields";
+import { ImageField, TextField, TextareaField } from "@/components/forms/fields";
 import { supplierSchema, type SupplierValues } from "@/lib/schemas";
 import { useCreateSupplier, useUpdateSupplier } from "@/hooks/use-suppliers";
 import type { Supplier } from "@/types/models";
@@ -26,6 +26,7 @@ export function SupplierFormDialog({ payload, onClose }: DialogComponentProps<Su
       name: supplier?.name ?? "",
       phone: supplier?.phone ?? "",
       note: supplier?.note ?? "",
+      image_url: supplier?.image_url ?? null,
     },
   });
 
@@ -56,6 +57,7 @@ export function SupplierFormDialog({ payload, onClose }: DialogComponentProps<Su
           <TextField control={form.control} name="name" label={t("fields.name")} />
           <TextField control={form.control} name="phone" label={t("fields.phone")} dir="ltr" optional />
           <TextareaField control={form.control} name="note" label={t("fields.note")} optional />
+          <ImageField control={form.control} name="image_url" label={t("fields.image")} folder="supplier" />
         </div>
       </FormDialog>
     </Form>

@@ -15,6 +15,7 @@ export const DialogKey = {
   KhataForm: "khata-form",
   ReminderForm: "reminder-form",
   UserForm: "user-form",
+  UserEdit: "user-edit",
   ConfirmDelete: "confirm-delete",
 } as const;
 
