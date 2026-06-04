@@ -132,8 +132,8 @@ export function StockEntryForm({
             <TextField
               control={form.control}
               name="note"
-              label={isIn ? t("fields.note") : `${t("fields.reason")} *`}
-              optional={isIn}
+              label={isIn ? t("fields.note") : t("fields.reason")}
+              optional
             />
           </div>
         </div>

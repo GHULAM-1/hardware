@@ -10,7 +10,7 @@ import { KhataStatus } from "@/lib/enums";
 import { PageHeader } from "@/components/layout/page-header";
 import { KhataTable } from "@/components/khata/khata-table";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { BellPlus, Plus } from "lucide-react";
 
 export default function KhataPage() {
   const { t } = useTranslation();
@@ -25,10 +25,16 @@ export default function KhataPage() {
         title={t("khata.title")}
         actions={
           isSuperAdmin ? (
-            <Button onClick={() => openDialog(DialogKey.KhataForm, null)}>
-              <Plus className="me-1 h-4 w-4" />
-              {t("khata.newEntry")}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => openDialog(DialogKey.ReminderForm, null)}>
+                <BellPlus className="me-1 h-4 w-4" />
+                {t("khata.newReminder")}
+              </Button>
+              <Button onClick={() => openDialog(DialogKey.KhataForm, null)}>
+                <Plus className="me-1 h-4 w-4" />
+                {t("khata.newEntry")}
+              </Button>
+            </div>
           ) : null
         }
       />

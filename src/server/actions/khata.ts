@@ -3,7 +3,7 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { getReminderLeadDays } from "@/server/actions/settings";
-import { khataSchema, type KhataValues } from "@/lib/schemas";
+import { khataSchema, reminderSchema, type KhataValues, type ReminderValues } from "@/lib/schemas";
 import { KhataStatus } from "@/lib/enums";
 import type { Khata, KhataListView } from "@/types/models";
 
@@ -52,6 +52,27 @@ export async function createKhata(accessToken: string, values: KhataValues): Pro
   const { data: row, error } = await client
     .from("khatas")
     .insert({ ...data, status: KhataStatus.Pending, created_by: userData.user?.id ?? null })
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return row;
+}
+
+/** A manual reminder = a customer-less, money-less khata (note + due date). */
+export async function createReminder(accessToken: string, values: ReminderValues): Promise<Khata> {
+  const data = reminderSchema.parse(values);
+  const client = createActionClient(accessToken);
+  const { data: userData } = await client.auth.getUser();
+  const { data: row, error } = await client
+    .from("khatas")
+    .insert({
+      customer_id: null,
+      amount: 0,
+      description: data.description,
+      due_date: data.due_date,
+      status: KhataStatus.Pending,
+      created_by: userData.user?.id ?? null,
+    })
     .select("*")
     .single();
   if (error) throw new Error(error.message);

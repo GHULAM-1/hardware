@@ -16,6 +16,11 @@ export async function listCustomers(accessToken: string, search = ""): Promise<C
   });
 }
 
+/** Fetch one customer by id (used to open the profile dialog from the assistant). */
+export async function getCustomer(accessToken: string, id: string): Promise<Customer> {
+  return runQuery(accessToken, (c) => c.from("customers").select("*").eq("id", id).single());
+}
+
 export async function createCustomer(
   accessToken: string,
   values: CustomerValues,
@@ -39,6 +44,22 @@ export async function deleteCustomer(accessToken: string, id: string): Promise<n
   return runQuery(accessToken, (c) =>
     c.from("customers").delete().eq("id", id).then((r) => ({ data: null, error: r.error })),
   );
+}
+
+/** Customer ids referenced by an order or a khata — these can't be deleted (FK). */
+export async function listUsedCustomerIds(accessToken: string): Promise<string[]> {
+  const client = createActionClient(accessToken);
+  const [orders, khatas] = await Promise.all([
+    client.from("orders").select("customer_id"),
+    client.from("khatas").select("customer_id").not("customer_id", "is", null),
+  ]);
+  if (orders.error) throw new Error(orders.error.message);
+  if (khatas.error) throw new Error(khatas.error.message);
+
+  const ids = new Set<string>();
+  for (const r of orders.data ?? []) if (r.customer_id) ids.add(r.customer_id);
+  for (const r of khatas.data ?? []) if (r.customer_id) ids.add(r.customer_id);
+  return Array.from(ids);
 }
 
 /** Full order history for a customer profile. */

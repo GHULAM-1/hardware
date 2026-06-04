@@ -39,21 +39,16 @@ export const customerSchema = z.object({
 });
 export type CustomerValues = z.output<typeof customerSchema>;
 
-export const stockEntrySchema = z
-  .object({
-    item_id: z.string().uuid(),
-    type: z.enum([StockEntryType.In, StockEntryType.Out]),
-    quantity: z.coerce.number().positive(),
-    supplier_id: z.string().uuid().nullable().optional().default(null),
-    buying_price: z.coerce.number().min(0).nullable().optional().default(null),
-    note: optionalText,
-    entry_date: z.string().min(1),
-  })
-  // A manual deduction (stock out) must state a reason.
-  .refine((v) => v.type !== StockEntryType.Out || Boolean(v.note), {
-    message: "Reason is required for stock out",
-    path: ["note"],
-  });
+export const stockEntrySchema = z.object({
+  item_id: z.string().uuid(),
+  type: z.enum([StockEntryType.In, StockEntryType.Out]),
+  quantity: z.coerce.number().positive(),
+  supplier_id: z.string().uuid().nullable().optional().default(null),
+  buying_price: z.coerce.number().min(0).nullable().optional().default(null),
+  // Reason/note is optional for both stock in and stock out.
+  note: optionalText,
+  entry_date: z.string().min(1),
+});
 export type StockEntryValues = z.output<typeof stockEntrySchema>;
 
 export const userSchema = z.object({
@@ -71,6 +66,13 @@ export const khataSchema = z.object({
   description: optionalText,
 });
 export type KhataValues = z.output<typeof khataSchema>;
+
+// A manual reminder: a note + a due date. Stored as a customer-less khata.
+export const reminderSchema = z.object({
+  description: z.string().trim().min(1),
+  due_date: z.string().min(1),
+});
+export type ReminderValues = z.output<typeof reminderSchema>;
 
 const orderLineSupplierSchema = z.object({
   supplier_id: z.string().uuid().nullable(),

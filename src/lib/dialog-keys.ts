@@ -13,6 +13,7 @@ export const DialogKey = {
   OrderEdit: "order-edit",
   Receipt: "receipt",
   KhataForm: "khata-form",
+  ReminderForm: "reminder-form",
   UserForm: "user-form",
   ConfirmDelete: "confirm-delete",
 } as const;

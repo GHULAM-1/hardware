@@ -11,6 +11,7 @@ import {
   getCustomerOrders,
   getLastPurchase,
   listCustomers,
+  listUsedCustomerIds,
   updateCustomer,
 } from "@/server/actions/customers";
 
@@ -18,6 +19,15 @@ export function useCustomers(search = "") {
   return useQuery({
     queryKey: queryKeys.customers(search),
     queryFn: async () => listCustomers(await getAccessToken(), search),
+  });
+}
+
+/** Set of customer ids referenced by an order or khata (delete is blocked for these). */
+export function useUsedCustomerIds() {
+  return useQuery({
+    queryKey: queryKeys.usedCustomerIds(),
+    queryFn: async () => listUsedCustomerIds(await getAccessToken()),
+    select: (ids) => new Set(ids),
   });
 }
 

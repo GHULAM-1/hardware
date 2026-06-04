@@ -32,7 +32,12 @@
     "addNamed": "\"{{name}}\" شامل کریں",
     "required": "ضروری",
     "optional": "اختیاری",
-    "all": "تمام"
+    "all": "تمام",
+    "collapseSidebar": "سائیڈبار سکیڑیں",
+    "expandSidebar": "سائیڈبار کھولیں",
+    "readAloud": "آواز میں پڑھیں",
+    "stopReading": "روکیں",
+    "ttsError": "متن آواز میں نہیں پڑھا جا سکا"
   },
   "auth": {
     "login": "لاگ ان",
@@ -77,7 +82,8 @@
     "subtitle": "اشیاء اور ان کی فروخت قیمتیں (روپے)",
     "newItem": "نئی آئٹم",
     "editItem": "آئٹم میں ترمیم",
-    "searchItems": "اشیاء تلاش کریں…"
+    "searchItems": "اشیاء تلاش کریں…",
+    "itemInUse": "آرڈرز میں استعمال شدہ — حذف نہیں ہو سکتی"
   },
   "warehouse": {
     "title": "گودام",
@@ -95,7 +101,8 @@
     "editCustomer": "گاہک میں ترمیم",
     "orderHistory": "آرڈر کی تاریخ",
     "lastPurchase": "حالیہ خریداری: {{item}} بقیمت {{price}}",
-    "noPurchases": "کوئی پچھلی خریداری نہیں"
+    "noPurchases": "کوئی پچھلی خریداری نہیں",
+    "customerInUse": "آرڈرز یا کھاتہ موجود — حذف نہیں ہو سکتا"
   },
   "orders": {
     "title": "آرڈرز",
@@ -110,6 +117,16 @@
     "addAtLeastOneItem": "کم از کم ایک آئٹم مقدار اور قیمت کے ساتھ شامل کریں",
     "editPayment": "ادائیگی میں ترمیم"
   },
+  "assistant": {
+    "title": "اسسٹنٹ",
+    "placeholder": "پوچھیں یا تلاش کریں…",
+    "empty": "گاہکوں، آرڈرز، اسٹاک یا واجبات کے بارے میں پوچھیں۔",
+    "exampleHint": "مثلاً \"احمد کے آرڈرز دکھائیں\"",
+    "speak": "بولیں",
+    "listening": "سن رہا ہے…",
+    "thinking": "سوچ رہا ہے…",
+    "error": "کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔"
+  },
   "payment": {
     "cash": "نقد (مکمل)",
     "partial": "جزوی",
@@ -118,6 +135,8 @@
   "khata": {
     "title": "کھاتہ",
     "newEntry": "نیا کھاتہ",
+    "newReminder": "نئی یاد دہانی",
+    "reminderNote": "یاد دہانی",
     "markFulfilled": "ادا شدہ نشان زد کریں",
     "pending": "زیر التواء",
     "fulfilled": "ادا شدہ",

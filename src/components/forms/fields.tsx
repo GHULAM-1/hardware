@@ -75,7 +75,9 @@ export function NumberField<T extends FieldValues>({
   label,
   placeholder,
   optional,
-}: BaseProps<T>) {
+  step = 1,
+  min,
+}: BaseProps<T> & { step?: number | string; min?: number }) {
   return (
     <FormField
       control={control}
@@ -86,8 +88,10 @@ export function NumberField<T extends FieldValues>({
           <FormControl>
             <Input
               type="number"
-              min={0}
-              step="0.01"
+              // Step by whole numbers; `min` is unset by default so the stepper
+              // can go negative. Callers pass min/step to constrain a field.
+              min={min}
+              step={step}
               dir="ltr"
               placeholder={placeholder}
               {...field}

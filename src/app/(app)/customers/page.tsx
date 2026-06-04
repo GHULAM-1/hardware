@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import { useCustomers, useDeleteCustomer } from "@/hooks/use-customers";
+import { useCustomers, useDeleteCustomer, useUsedCustomerIds } from "@/hooks/use-customers";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
@@ -26,6 +26,7 @@ export default function CustomersPage() {
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
   const { data: customers = [], isLoading } = useCustomers(debounced);
+  const { data: usedCustomerIds } = useUsedCustomerIds();
 
   const columns: Column<Customer>[] = [
     {
@@ -43,6 +44,8 @@ export default function CustomersPage() {
         <div onClick={(e) => e.stopPropagation()}>
           <RowActions
             onEdit={() => openDialog(DialogKey.CustomerForm, { customer: row })}
+            deleteDisabled={usedCustomerIds?.has(row.id)}
+            deleteDisabledReason={t("customers.customerInUse")}
             onDelete={() =>
               confirmDelete({
                 title: t("common.delete"),

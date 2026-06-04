@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Boxes } from "lucide-react";
 
 import { useItemsWithStock } from "@/hooks/use-warehouse";
-import { useDeleteItem } from "@/hooks/use-items";
+import { useDeleteItem, useUsedItemIds } from "@/hooks/use-items";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
@@ -29,6 +29,7 @@ export default function WarehousePage() {
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
   const { data: items = [], isLoading } = useItemsWithStock(debounced);
+  const { data: usedItemIds } = useUsedItemIds();
 
   const columns: Column<ItemWithStock>[] = [
     {
@@ -65,6 +66,8 @@ export default function WarehousePage() {
           </Button>
           <RowActions
             onEdit={() => openDialog(DialogKey.ItemForm, { item: row })}
+            deleteDisabled={usedItemIds?.has(row.id)}
+            deleteDisabledReason={t("pricing.itemInUse")}
             onDelete={() =>
               confirmDelete({
                 title: t("common.delete"),

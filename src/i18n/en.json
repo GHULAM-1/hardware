@@ -32,7 +32,12 @@
     "addNamed": "Add \"{{name}}\"",
     "required": "Required",
     "optional": "Optional",
-    "all": "All"
+    "all": "All",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "readAloud": "Read aloud",
+    "stopReading": "Stop",
+    "ttsError": "Couldn't read the text aloud"
   },
   "auth": {
     "login": "Log in",
@@ -77,7 +82,8 @@
     "subtitle": "Items and their selling prices (PKR)",
     "newItem": "New item",
     "editItem": "Edit item",
-    "searchItems": "Search items…"
+    "searchItems": "Search items…",
+    "itemInUse": "Used in orders — can't be deleted"
   },
   "warehouse": {
     "title": "Warehouse",
@@ -95,7 +101,8 @@
     "editCustomer": "Edit customer",
     "orderHistory": "Order history",
     "lastPurchase": "Most recent purchase: {{item}} at {{price}}",
-    "noPurchases": "No previous purchases"
+    "noPurchases": "No previous purchases",
+    "customerInUse": "Has orders or khata — can't be deleted"
   },
   "orders": {
     "title": "Orders",
@@ -110,6 +117,16 @@
     "addAtLeastOneItem": "Add at least one item with quantity and price",
     "editPayment": "Edit payment"
   },
+  "assistant": {
+    "title": "Assistant",
+    "placeholder": "Ask or search…",
+    "empty": "Ask about customers, orders, stock, or dues.",
+    "exampleHint": "e.g. \"check out the orders of Ahmad\"",
+    "speak": "Speak",
+    "listening": "Listening…",
+    "thinking": "Thinking…",
+    "error": "Something went wrong. Please try again."
+  },
   "payment": {
     "cash": "Cash (full)",
     "partial": "Partial",
@@ -118,6 +135,8 @@
   "khata": {
     "title": "Khata",
     "newEntry": "New khata",
+    "newReminder": "New reminder",
+    "reminderNote": "Reminder",
     "markFulfilled": "Mark fulfilled",
     "pending": "Pending",
     "fulfilled": "Fulfilled",

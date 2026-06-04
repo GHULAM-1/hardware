@@ -89,6 +89,42 @@ export type Database = {
         }
         Relationships: []
       }
+      item_embeddings: {
+        Row: {
+          content: string
+          embedding: string
+          item_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          embedding: string
+          item_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          embedding?: string
+          item_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_embeddings_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_embeddings_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "warehouse_stock"
+            referencedColumns: ["item_id"]
+          },
+        ]
+      }
       items: {
         Row: {
           category_id: string | null
@@ -141,7 +177,7 @@ export type Database = {
           amount: number
           created_at: string
           created_by: string | null
-          customer_id: string
+          customer_id: string | null
           description: string | null
           due_date: string
           fulfilled_at: string | null
@@ -154,7 +190,7 @@ export type Database = {
           amount: number
           created_at?: string
           created_by?: string | null
-          customer_id: string
+          customer_id?: string | null
           description?: string | null
           due_date: string
           fulfilled_at?: string | null
@@ -167,7 +203,7 @@ export type Database = {
           amount?: number
           created_at?: string
           created_by?: string | null
-          customer_id?: string
+          customer_id?: string | null
           description?: string | null
           due_date?: string
           fulfilled_at?: string | null
@@ -508,6 +544,18 @@ export type Database = {
       }
       is_active_user: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      match_items: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          id: string
+          name_en: string
+          name_ur: string
+          selling_price: number
+          similarity: number
+          sku: string
+          unit: string
+        }[]
+      }
       unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {

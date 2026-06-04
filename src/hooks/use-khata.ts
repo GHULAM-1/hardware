@@ -5,9 +5,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import { KhataStatus } from "@/lib/enums";
-import type { KhataValues } from "@/lib/schemas";
+import type { KhataValues, ReminderValues } from "@/lib/schemas";
 import {
   createKhata,
+  createReminder,
   deleteKhata,
   getKhataReminders,
   listKhatas,
@@ -37,6 +38,14 @@ export function useCreateKhata() {
   const invalidate = useInvalidateKhata();
   return useMutation({
     mutationFn: async (values: KhataValues) => createKhata(await getAccessToken(), values),
+    onSuccess: invalidate,
+  });
+}
+
+export function useCreateReminder() {
+  const invalidate = useInvalidateKhata();
+  return useMutation({
+    mutationFn: async (values: ReminderValues) => createReminder(await getAccessToken(), values),
     onSuccess: invalidate,
   });
 }

@@ -13,6 +13,7 @@ import { OrderFormDialog } from "@/components/dialogs/order-form-dialog";
 import { ReceiptDialog } from "@/components/dialogs/receipt-dialog";
 import { OrderEditDialog } from "@/components/dialogs/order-edit-dialog";
 import { KhataFormDialog } from "@/components/forms/khata-form-dialog";
+import { ReminderFormDialog } from "@/components/forms/reminder-form-dialog";
 import { UserFormDialog } from "@/components/forms/user-form-dialog";
 
 /**
@@ -32,5 +33,6 @@ export const dialogRegistry: DialogRegistry = {
   [DialogKey.Receipt]: ReceiptDialog,
   [DialogKey.OrderEdit]: OrderEditDialog,
   [DialogKey.KhataForm]: KhataFormDialog,
+  [DialogKey.ReminderForm]: ReminderFormDialog,
   [DialogKey.UserForm]: UserFormDialog,
 };

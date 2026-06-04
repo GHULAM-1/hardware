@@ -36,3 +36,11 @@ export async function updateItem(
 export async function deleteItem(accessToken: string, id: string): Promise<null> {
   return runQuery(accessToken, (c) => c.from("items").delete().eq("id", id).then((r) => ({ data: null, error: r.error })));
 }
+
+/** Item ids referenced by at least one order line — these can't be deleted (FK). */
+export async function listUsedItemIds(accessToken: string): Promise<string[]> {
+  const rows = await runQuery<{ item_id: string }[]>(accessToken, (c) =>
+    c.from("order_items").select("item_id"),
+  );
+  return Array.from(new Set(rows.map((r) => r.item_id)));
+}

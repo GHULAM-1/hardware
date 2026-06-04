@@ -96,6 +96,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
         onSubmit={form.handleSubmit(onSubmit)}
         submitting={submitting}
         submitLabel={t("common.create")}
+        widthClassName="w-[calc(100%-2rem)] sm:max-w-3xl"
       >
         <div className="space-y-5">
           <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
@@ -118,34 +119,35 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
 
           {/* Optional sourcing: suppliers + quantities + buying prices, same dialog */}
           <div className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <Label>{t("orders.sourceFrom")}</Label>
-              <DatePicker value={date} onChange={setDate} className="w-44" />
+              <DatePicker value={date} onChange={setDate} className="w-full sm:w-44" />
             </div>
 
             {rows.map((r) => (
-              <div key={r.key} className="grid items-end gap-2 sm:grid-cols-[2fr_1fr_1fr_auto]">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">{t("fields.supplier")}</Label>
+              <div
+                key={r.key}
+                className="relative grid items-end gap-3 rounded-md border border-border/60 bg-background/60 p-3 pe-10 sm:grid-cols-[2fr_1fr_1fr_auto] sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:pe-0"
+              >
+                <div className="min-w-0 space-y-1.5">
+                  <Label className="whitespace-nowrap text-xs text-muted-foreground">{t("fields.supplier")}</Label>
                   <SupplierCombobox value={r.supplier_id} onChange={(v) => updateRow(r.key, { supplier_id: v })} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">{t("fields.quantity")}</Label>
+                <div className="min-w-0 space-y-1.5">
+                  <Label className="whitespace-nowrap text-xs text-muted-foreground">{t("fields.quantity")}</Label>
                   <Input
                     type="number"
-                    min={0}
-                    step="0.01"
+                    step={1}
                     dir="ltr"
                     value={r.quantity}
                     onChange={(e) => updateRow(r.key, { quantity: e.target.value })}
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">{t("fields.buyingPrice")}</Label>
+                <div className="min-w-0 space-y-1.5">
+                  <Label className="whitespace-nowrap text-xs text-muted-foreground">{t("fields.buyingPrice")}</Label>
                   <Input
                     type="number"
-                    min={0}
-                    step="0.01"
+                    step={1}
                     dir="ltr"
                     value={r.buying_price}
                     onChange={(e) => updateRow(r.key, { buying_price: e.target.value })}
@@ -155,7 +157,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10"
+                  className="absolute end-1 top-1 h-8 w-8 sm:static sm:h-10 sm:w-10"
                   onClick={() => setRows((rs) => (rs.length > 1 ? rs.filter((x) => x.key !== r.key) : rs))}
                 >
                   <X className="h-4 w-4" />

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import { useItems, useDeleteItem } from "@/hooks/use-items";
+import { useItems, useDeleteItem, useUsedItemIds } from "@/hooks/use-items";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
@@ -27,6 +27,7 @@ export default function PricingPage() {
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
   const { data: items = [], isLoading } = useItems(debounced);
+  const { data: usedItemIds } = useUsedItemIds();
 
   const columns: Column<Item>[] = [
     {
@@ -50,6 +51,8 @@ export default function PricingPage() {
       cell: (row) => (
         <RowActions
           onEdit={() => openDialog(DialogKey.ItemForm, { item: row })}
+          deleteDisabled={usedItemIds?.has(row.id)}
+          deleteDisabledReason={t("pricing.itemInUse")}
           onDelete={() =>
             confirmDelete({
               title: t("common.delete"),

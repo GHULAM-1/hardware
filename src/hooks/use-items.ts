@@ -5,12 +5,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { ItemValues } from "@/lib/schemas";
-import { createItem, deleteItem, listItems, updateItem } from "@/server/actions/items";
+import { createItem, deleteItem, listItems, listUsedItemIds, updateItem } from "@/server/actions/items";
 
 export function useItems(search = "") {
   return useQuery({
     queryKey: queryKeys.items(search),
     queryFn: async () => listItems(await getAccessToken(), search),
+  });
+}
+
+/** Set of item ids that appear in orders (delete is blocked for these). */
+export function useUsedItemIds() {
+  return useQuery({
+    queryKey: queryKeys.usedItemIds(),
+    queryFn: async () => listUsedItemIds(await getAccessToken()),
+    select: (ids) => new Set(ids),
   });
 }
 
