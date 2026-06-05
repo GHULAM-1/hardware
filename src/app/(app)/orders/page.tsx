@@ -33,7 +33,12 @@ export default function OrdersPage() {
   const { data: orders = [], isLoading } = useOrders(debounced);
 
   const columns: Column<OrderListView>[] = [
-    { key: "order_no", header: "#", cell: (o) => <span className="font-mono text-sm">{o.order_no}</span> },
+    {
+      key: "row_no",
+      header: "#",
+      headerClassName: "w-12",
+      cell: (_o, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
+    },
     {
       key: "customer",
       header: t("fields.customer"),

@@ -7,6 +7,7 @@ export const queryKeys = {
 
   items: (search?: string) => ["items", { search: search ?? "" }] as const,
   item: (id: string) => ["items", id] as const,
+  itemStock: (id: string) => ["items", id, "stock"] as const,
   usedItemIds: () => ["items", "used"] as const,
 
   suppliers: (search?: string) => ["suppliers", { search: search ?? "" }] as const,

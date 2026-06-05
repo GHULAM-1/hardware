@@ -25,7 +25,7 @@ export function newSupplier(): LineSupplierDraft {
 }
 
 export function newLine(): LineDraft {
-  return { key: nextKey(), item: null, quantity: "1", unit: "pcs", selling_price: "", suppliers: [] };
+  return { key: nextKey(), item: null, quantity: "1", unit: "", selling_price: "", suppliers: [] };
 }
 
 export function lineTotal(line: LineDraft): number {

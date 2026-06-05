@@ -50,7 +50,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
     defaultValues: {
       name_en: "",
       name_ur: "",
-      unit: "pcs",
+      unit: "",
       selling_price: "" as unknown as number,
       category_id: null,
       image_url: null,
@@ -108,7 +108,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
                 <FormItem>
                   <FormLabel>{t("fields.unit")}</FormLabel>
                   <FormControl>
-                    <UnitSelect value={field.value ?? "pcs"} onChange={field.onChange} />
+                    <UnitSelect value={field.value ?? ""} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -138,6 +138,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
                   <Label className="whitespace-nowrap text-xs text-muted-foreground">{t("fields.quantity")}</Label>
                   <Input
                     type="number"
+                    min={0}
                     step={1}
                     dir="ltr"
                     value={r.quantity}
@@ -148,6 +149,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
                   <Label className="whitespace-nowrap text-xs text-muted-foreground">{t("fields.buyingPrice")}</Label>
                   <Input
                     type="number"
+                    min={0}
                     step={1}
                     dir="ltr"
                     value={r.buying_price}

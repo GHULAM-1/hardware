@@ -14,6 +14,19 @@ export function formatPKR(amount: number | string | null | undefined): string {
   return pkr.format(Number.isFinite(n as number) ? (n as number) : 0);
 }
 
+const pkrCompact = new Intl.NumberFormat("en-PK", {
+  style: "currency",
+  currency: "PKR",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+/** Short currency for chart labels, e.g. "PKR 162K". */
+export function formatCompactPKR(amount: number | string | null | undefined): string {
+  const n = typeof amount === "string" ? Number(amount) : amount ?? 0;
+  return pkrCompact.format(Number.isFinite(n as number) ? (n as number) : 0);
+}
+
 export function formatNumber(value: number | string | null | undefined): string {
   const n = typeof value === "string" ? Number(value) : value ?? 0;
   return new Intl.NumberFormat("en-PK").format(Number.isFinite(n as number) ? (n as number) : 0);

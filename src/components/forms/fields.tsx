@@ -78,7 +78,7 @@ export function NumberField<T extends FieldValues>({
   placeholder,
   optional,
   step = 1,
-  min,
+  min = 0,
 }: BaseProps<T> & { step?: number | string; min?: number }) {
   return (
     <FormField
@@ -90,8 +90,8 @@ export function NumberField<T extends FieldValues>({
           <FormControl>
             <Input
               type="number"
-              // Step by whole numbers; `min` is unset by default so the stepper
-              // can go negative. Callers pass min/step to constrain a field.
+              // Prices/quantities are never negative, so min defaults to 0 and we
+              // block the keys that would let a user type a negative/exponent.
               min={min}
               step={step}
               dir="ltr"

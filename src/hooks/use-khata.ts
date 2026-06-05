@@ -1,6 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
@@ -57,6 +59,33 @@ export function useSetKhataStatus() {
       setKhataStatus(await getAccessToken(), args.id, args.status),
     onSuccess: invalidate,
   });
+}
+
+/**
+ * Mark a khata fulfilled with user feedback. Wraps the status mutation with a
+ * success/error toast and exposes `isPending` so callers can disable the button
+ * while the update is in flight (the action used to fail silently).
+ */
+export function useFulfillKhata() {
+  const { t } = useTranslation();
+  const setStatus = useSetKhataStatus();
+
+  const fulfill = (id: string, onDone?: () => void) =>
+    setStatus.mutate(
+      { id, status: KhataStatus.Fulfilled },
+      {
+        onSuccess: () => {
+          toast.success(t("khata.markedFulfilled"));
+          onDone?.();
+        },
+        onError: () => toast.error(t("khata.markFailed")),
+      },
+    );
+
+  // The id currently being saved, so a caller can show a spinner on just that row.
+  const pendingId = setStatus.isPending ? setStatus.variables?.id : undefined;
+
+  return { fulfill, isPending: setStatus.isPending, pendingId };
 }
 
 export function useDeleteKhata() {

@@ -26,9 +26,9 @@ export function UnitSelect({
 }) {
   const { t } = useTranslation();
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value || undefined} onValueChange={onChange}>
       <SelectTrigger id={id} className="w-full">
-        <SelectValue />
+        <SelectValue placeholder={t("fields.selectUnit")} />
       </SelectTrigger>
       <SelectContent>
         {UNITS.map((u) => (

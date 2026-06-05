@@ -4,6 +4,7 @@ import { DialogKey } from "@/lib/dialog-keys";
 import type { DialogRegistry } from "./dialog-manager";
 import { ConfirmDeleteDialog } from "./confirm-delete";
 import { ItemFormDialog } from "@/components/forms/item-form-dialog";
+import { ItemDetailDialog } from "@/components/dialogs/item-detail-dialog";
 import { SupplierFormDialog } from "@/components/forms/supplier-form-dialog";
 import { StockDetailDialog } from "@/components/dialogs/stock-detail-dialog";
 import { ItemCreateDialog } from "@/components/dialogs/item-create-dialog";
@@ -13,6 +14,7 @@ import { OrderFormDialog } from "@/components/dialogs/order-form-dialog";
 import { ReceiptDialog } from "@/components/dialogs/receipt-dialog";
 import { OrderEditDialog } from "@/components/dialogs/order-edit-dialog";
 import { KhataFormDialog } from "@/components/forms/khata-form-dialog";
+import { KhataDetailDialog } from "@/components/dialogs/khata-detail-dialog";
 import { ReminderFormDialog } from "@/components/forms/reminder-form-dialog";
 import { UserFormDialog } from "@/components/forms/user-form-dialog";
 import { UserEditDialog } from "@/components/forms/user-edit-dialog";
@@ -25,6 +27,7 @@ import { UserEditDialog } from "@/components/forms/user-edit-dialog";
 export const dialogRegistry: DialogRegistry = {
   [DialogKey.ConfirmDelete]: ConfirmDeleteDialog,
   [DialogKey.ItemForm]: ItemFormDialog,
+  [DialogKey.ItemDetail]: ItemDetailDialog,
   [DialogKey.SupplierForm]: SupplierFormDialog,
   [DialogKey.StockEntryForm]: StockDetailDialog,
   [DialogKey.ItemCreate]: ItemCreateDialog,
@@ -34,6 +37,7 @@ export const dialogRegistry: DialogRegistry = {
   [DialogKey.Receipt]: ReceiptDialog,
   [DialogKey.OrderEdit]: OrderEditDialog,
   [DialogKey.KhataForm]: KhataFormDialog,
+  [DialogKey.KhataDetail]: KhataDetailDialog,
   [DialogKey.ReminderForm]: ReminderFormDialog,
   [DialogKey.UserForm]: UserFormDialog,
   [DialogKey.UserEdit]: UserEditDialog,

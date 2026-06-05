@@ -8,6 +8,7 @@ import type { StockEntryValues } from "@/lib/schemas";
 import {
   createStockEntry,
   deleteStockEntry,
+  getItemStock,
   listItemsWithStock,
   listStockEntries,
   updateStockEntry,
@@ -17,6 +18,15 @@ export function useItemsWithStock(search = "") {
   return useQuery({
     queryKey: [...queryKeys.warehouseStock(), search],
     queryFn: async () => listItemsWithStock(await getAccessToken(), search),
+  });
+}
+
+/** Current warehouse quantity for one item (used by the pricing item detail). */
+export function useItemStock(itemId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.itemStock(itemId ?? ""),
+    queryFn: async () => getItemStock(await getAccessToken(), itemId as string),
+    enabled: Boolean(itemId),
   });
 }
 

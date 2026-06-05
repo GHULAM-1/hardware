@@ -55,6 +55,7 @@
     "name": "Name",
     "sku": "SKU",
     "unit": "Unit",
+    "selectUnit": "Select unit",
     "category": "Category",
     "sellingPrice": "Selling price",
     "buyingPrice": "Buying price",
@@ -83,7 +84,8 @@
     "newItem": "New item",
     "editItem": "Edit item",
     "searchItems": "Search items…",
-    "itemInUse": "Used in orders — can't be deleted"
+    "itemInUse": "Used in orders — can't be deleted",
+    "itemDetail": "Item details"
   },
   "warehouse": {
     "title": "Warehouse",
@@ -93,7 +95,11 @@
     "stockOut": "Stock out",
     "addStock": "Add stock",
     "manageStock": "Manage stock",
-    "history": "Stock history"
+    "history": "Stock history",
+    "inStock": "In stock",
+    "lowStock": "Low stock",
+    "outOfStock": "Out of stock",
+    "stockValue": "Stock value"
   },
   "customers": {
     "title": "Customers",
@@ -116,6 +122,15 @@
     "selectCustomer": "Please select a customer",
     "addAtLeastOneItem": "Add at least one item with quantity and price",
     "editPayment": "Edit payment"
+  },
+  "globalSearch": {
+    "title": "Search",
+    "placeholder": "Search items, customers, orders…",
+    "hint": "Type to search across the shop.",
+    "empty": "No results. Try a name, SKU, or phone number.",
+    "items": "Items",
+    "customers": "Customers",
+    "orders": "Orders"
   },
   "assistant": {
     "title": "Assistant",
@@ -153,6 +168,13 @@
     "newReminder": "New reminder",
     "reminderNote": "Reminder",
     "markFulfilled": "Mark fulfilled",
+    "markedFulfilled": "Marked as fulfilled",
+    "markFailed": "Couldn't update. Please try again.",
+    "detail": "Khata details",
+    "viewReceipt": "View receipt",
+    "receipt": "Receipt",
+    "settle": "Settle",
+    "createdOn": "Created on",
     "pending": "Pending",
     "fulfilled": "Fulfilled",
     "overdue": "Overdue",
@@ -194,7 +216,8 @@
     "ml": "Milliliter (ml)",
     "meter": "Meter (m)",
     "cm": "Centimeter (cm)",
-    "ft": "Foot (ft)"
+    "ft": "Foot (ft)",
+    "in": "Inch (in)"
   },
   "settings": {
     "title": "Settings",
@@ -209,7 +232,18 @@
     "totalItems": "Items",
     "customers": "Customers",
     "pendingKhata": "Pending Khata",
-    "dueSoon": "Due soon"
+    "dueSoon": "Due soon",
+    "revenueThisMonth": "Revenue this month",
+    "ordersThisMonth": "Orders this month",
+    "outstanding": "Outstanding (Khata)",
+    "products": "Products",
+    "suppliers": "Suppliers",
+    "lowStock": "Low stock items",
+    "outOfStock": "Out of stock",
+    "totalUnits": "Total units in stock",
+    "revenueTrend": "Revenue (last 6 months)",
+    "paymentMix": "Payments this month",
+    "stockHealth": "Stock health"
   },
   "toast": {
     "saved": "Saved",

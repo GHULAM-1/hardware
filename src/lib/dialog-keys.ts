@@ -4,6 +4,7 @@
  */
 export const DialogKey = {
   ItemForm: "item-form",
+  ItemDetail: "item-detail",
   SupplierForm: "supplier-form",
   CustomerForm: "customer-form",
   CustomerProfile: "customer-profile",
@@ -13,6 +14,7 @@ export const DialogKey = {
   OrderEdit: "order-edit",
   Receipt: "receipt",
   KhataForm: "khata-form",
+  KhataDetail: "khata-detail",
   ReminderForm: "reminder-form",
   UserForm: "user-form",
   UserEdit: "user-edit",

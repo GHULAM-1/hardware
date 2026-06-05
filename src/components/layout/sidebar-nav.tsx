@@ -20,7 +20,7 @@ export function SidebarNav({
   const pathname = usePathname();
   const isSuperAdmin = useIsSuperAdmin();
 
-  const items = NAV_ITEMS.filter((i) => !i.superAdminOnly || isSuperAdmin);
+  const items = NAV_ITEMS.filter((i) => isSuperAdmin || i.adminAllowed);
 
   return (
     <nav className={cn("flex-1 space-y-1 overflow-y-auto", collapsed ? "p-2" : "p-3")}>

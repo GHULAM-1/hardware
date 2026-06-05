@@ -12,11 +12,13 @@ import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
+import { stockMeta } from "@/lib/status-meta";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
+import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import type { ItemWithStock } from "@/types/models";
 
@@ -34,18 +36,28 @@ export default function WarehousePage() {
 
   const columns: Column<ItemWithStock>[] = [
     {
-      key: "img",
-      header: "",
+      key: "row_no",
+      header: "#",
       headerClassName: "w-12",
-      cell: (row) => <ImageThumb src={row.image_url} alt={row.name_en} />,
+      cell: (_row, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
     },
     {
       key: "name",
       header: t("fields.name"),
-      cell: (row) => <span className="font-medium">{displayName(row, language)}</span>,
+      cell: (row) => (
+        <div className="flex items-center gap-3">
+          <ImageThumb src={row.image_url} alt={row.name_en} />
+          <span className="font-medium">{displayName(row, language)}</span>
+        </div>
+      ),
     },
-    { key: "sku", header: t("fields.sku"), cell: (row) => <span className="font-mono text-sm">{row.sku}</span> },
-    { key: "unit", header: t("fields.unit"), cell: (row) => t(`units.${row.unit}`) },
+    {
+      key: "unit",
+      header: t("fields.unit"),
+      cell: (row) => t(`units.${row.unit}`),
+      className: "hidden md:table-cell",
+      headerClassName: "hidden md:table-cell",
+    },
     {
       key: "qty",
       header: t("warehouse.currentStock"),
@@ -54,8 +66,14 @@ export default function WarehousePage() {
           {row.quantity}
         </span>
       ),
-      className: "text-end",
-      headerClassName: "text-end",
+    },
+    {
+      key: "status",
+      header: t("fields.status"),
+      cell: (row) => {
+        const m = stockMeta(row.quantity);
+        return <StatusBadge tone={m.tone} label={t(m.labelKey)} />;
+      },
     },
     {
       key: "actions",

@@ -26,6 +26,14 @@ export async function listItemsWithStock(accessToken: string, search = ""): Prom
   return (items ?? []).map((i) => ({ ...i, quantity: qty.get(i.id) ?? 0 }));
 }
 
+/** Derived warehouse quantity (Σin − Σout) for a single item. */
+export async function getItemStock(accessToken: string, itemId: string): Promise<number> {
+  const rows = await runQuery<{ quantity: number | null }[]>(accessToken, (c) =>
+    c.from("warehouse_stock").select("quantity").eq("item_id", itemId),
+  );
+  return Number(rows[0]?.quantity ?? 0);
+}
+
 export async function listStockEntries(
   accessToken: string,
   itemId: string,

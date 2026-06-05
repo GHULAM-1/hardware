@@ -7,10 +7,11 @@ import { khataSchema, reminderSchema, type KhataValues, type ReminderValues } fr
 import { KhataStatus } from "@/lib/enums";
 import type { Khata, KhataListView } from "@/types/models";
 
-const SELECT = "id, amount, due_date, status, description, created_at, order_id, customers(name_en, name_ur)";
+const SELECT =
+  "id, amount, due_date, status, description, created_at, order_id, customers(id, name_en, name_ur, phone)";
 
 type RawKhata = Omit<KhataListView, "customer"> & {
-  customers: { name_en: string; name_ur: string | null } | null;
+  customers: { id: string; name_en: string; name_ur: string | null; phone: string | null } | null;
 };
 
 function toView(rows: RawKhata[]): KhataListView[] {

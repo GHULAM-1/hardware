@@ -3,20 +3,22 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import { useItems, useDeleteItem, useUsedItemIds } from "@/hooks/use-items";
+import { useDeleteItem, useUsedItemIds } from "@/hooks/use-items";
+import { useItemsWithStock } from "@/hooks/use-warehouse";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
+import { formatNumber } from "@/lib/format";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { Money } from "@/components/common/money";
 import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
-import type { Item } from "@/types/models";
+import type { ItemWithStock } from "@/types/models";
 
 export default function PricingPage() {
   const { t } = useTranslation();
@@ -27,22 +29,29 @@ export default function PricingPage() {
 
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
-  const { data: items = [], isLoading } = useItems(debounced);
+  // Pricing shares the catalog with the warehouse; this variant carries each
+  // item's live stock quantity so we can show it alongside the price.
+  const { data: items = [], isLoading } = useItemsWithStock(debounced);
   const { data: usedItemIds } = useUsedItemIds();
 
-  const columns: Column<Item>[] = [
-    {
-      key: "img",
-      header: "",
-      headerClassName: "w-12",
-      cell: (row) => <ImageThumb src={row.image_url} alt={row.name_en} />,
-    },
+  const columns: Column<ItemWithStock>[] = [
     {
       key: "name",
       header: t("fields.name"),
-      cell: (row) => <span className="font-medium">{displayName(row, language)}</span>,
+      cell: (row) => (
+        <div className="flex items-center gap-3">
+          <ImageThumb src={row.image_url} alt={row.name_en} />
+          <span className="font-medium text-primary underline-offset-2 hover:underline">
+            {displayName(row, language)}
+          </span>
+        </div>
+      ),
     },
-    { key: "sku", header: t("fields.sku"), cell: (row) => <span className="font-mono text-sm">{row.sku}</span> },
+    {
+      key: "stock",
+      header: t("warehouse.currentStock"),
+      cell: (row) => <span className="tabular-nums">{formatNumber(row.quantity)}</span>,
+    },
     { key: "unit", header: t("fields.unit"), cell: (row) => t(`units.${row.unit}`) },
     {
       key: "price",
@@ -56,18 +65,20 @@ export default function PricingPage() {
       header: "",
       headerClassName: "w-24",
       cell: (row) => (
-        <RowActions
-          onEdit={() => openDialog(DialogKey.ItemForm, { item: row })}
-          deleteDisabled={usedItemIds?.has(row.id)}
-          deleteDisabledReason={t("pricing.itemInUse")}
-          onDelete={() =>
-            confirmDelete({
-              title: t("common.delete"),
-              description: displayName(row, language),
-              onConfirm: () => deleteItem.mutateAsync(row.id),
-            })
-          }
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <RowActions
+            onEdit={() => openDialog(DialogKey.ItemForm, { item: row })}
+            deleteDisabled={usedItemIds?.has(row.id)}
+            deleteDisabledReason={t("pricing.itemInUse")}
+            onDelete={() =>
+              confirmDelete({
+                title: t("common.delete"),
+                description: displayName(row, language),
+                onConfirm: () => deleteItem.mutateAsync(row.id),
+              })
+            }
+          />
+        </div>
       ),
     },
   ];
@@ -82,7 +93,13 @@ export default function PricingPage() {
         onNew={() => openDialog(DialogKey.ItemCreate, null)}
         newLabel={t("pricing.newItem")}
       />
-      <DataTable columns={columns} rows={items} getRowId={(r) => r.id} loading={isLoading} />
+      <DataTable
+        columns={columns}
+        rows={items}
+        getRowId={(r) => r.id}
+        loading={isLoading}
+        onRowClick={(row) => openDialog(DialogKey.ItemDetail, { item: row })}
+      />
     </div>
   );
 }

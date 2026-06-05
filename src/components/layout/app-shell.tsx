@@ -5,6 +5,7 @@ import * as React from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { SelectionReader } from "@/components/common/selection-reader";
+import { AssistantFab } from "@/components/assistant/assistant-fab";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
 
@@ -30,9 +31,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <AppSidebar collapsed={collapsed} onToggle={toggleSidebar} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar />
-        <main className="flex-1 overflow-y-auto bg-secondary/40 p-4 sm:p-6">{children}</main>
+        {/* pb clears the floating assistant button so it never covers content. */}
+        <main className="flex-1 overflow-y-auto bg-secondary/40 p-4 pb-24 sm:p-6 sm:pb-24">
+          {children}
+        </main>
       </div>
       <SelectionReader />
+      <AssistantFab />
     </div>
   );
 }

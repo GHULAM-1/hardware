@@ -15,7 +15,7 @@ const optionalText = z
 export const itemSchema = z.object({
   name_en: z.string().trim().min(1),
   name_ur: optionalText,
-  unit: z.string().trim().min(1).default("pcs"),
+  unit: z.string().trim().min(1),
   selling_price: z.coerce.number().min(0),
   category_id: z.string().uuid().nullable().optional().default(null),
   image_url: z.string().url().nullable().optional().default(null),
@@ -102,7 +102,7 @@ const orderLineSupplierSchema = z.object({
 const orderLineSchema = z.object({
   item_id: z.string().uuid(),
   quantity: z.coerce.number().positive(),
-  unit: z.string().trim().min(1).default("pcs"),
+  unit: z.string().trim().min(1),
   selling_price: z.coerce.number().min(0),
   suppliers: z.array(orderLineSupplierSchema).default([]),
 });

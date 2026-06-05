@@ -14,6 +14,16 @@ export function paymentMeta(type: PaymentType): { tone: StatusTone; labelKey: st
   }
 }
 
+/** Quantity at/below which an item is flagged "low stock" (amber). */
+export const LOW_STOCK_THRESHOLD = 10;
+
+/** Warehouse stock badge: out (danger) → low (warning) → in stock (success). */
+export function stockMeta(quantity: number): { tone: StatusTone; labelKey: string } {
+  if (quantity <= 0) return { tone: "danger", labelKey: "warehouse.outOfStock" };
+  if (quantity <= LOW_STOCK_THRESHOLD) return { tone: "warning", labelKey: "warehouse.lowStock" };
+  return { tone: "success", labelKey: "warehouse.inStock" };
+}
+
 /**
  * Khata badge. `pending` becomes `overdue` (danger) once the due date has passed.
  */

@@ -33,7 +33,7 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
     defaultValues: {
       name_en: item?.name_en ?? "",
       name_ur: item?.name_ur ?? "",
-      unit: item?.unit ?? "pcs",
+      unit: item?.unit ?? "",
       selling_price: item?.selling_price ?? 0,
       category_id: item?.category_id ?? null,
       image_url: item?.image_url ?? null,
@@ -73,7 +73,7 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
                 <FormItem>
                   <FormLabel>{t("fields.unit")}</FormLabel>
                   <FormControl>
-                    <UnitSelect value={field.value ?? "pcs"} onChange={field.onChange} />
+                    <UnitSelect value={field.value ?? ""} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -12,12 +12,15 @@ export function ListToolbar({
   search,
   onSearchChange,
   searchPlaceholder,
+  filters,
   onNew,
   newLabel,
 }: {
   search: string;
   onSearchChange: (v: string) => void;
   searchPlaceholder?: string;
+  /** Optional extra controls (e.g. a category filter) shown next to the search box. */
+  filters?: React.ReactNode;
   onNew?: () => void;
   newLabel?: string;
 }) {
@@ -25,8 +28,8 @@ export function ListToolbar({
   const isSuperAdmin = useIsSuperAdmin();
 
   return (
-    <div className="mb-4 flex items-center gap-3">
-      <div className="relative max-w-sm flex-1">
+    <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="relative w-full max-w-sm flex-1 basis-48">
         <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
@@ -35,6 +38,7 @@ export function ListToolbar({
           className="ps-9"
         />
       </div>
+      {filters}
       {isSuperAdmin && onNew && (
         <Button onClick={onNew} className="ms-auto">
           <Plus className="me-1 h-4 w-4" />

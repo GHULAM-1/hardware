@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 export type Column<T> = {
   key: string;
   header: React.ReactNode;
-  cell: (row: T) => React.ReactNode;
+  cell: (row: T, index: number) => React.ReactNode;
   className?: string;
   headerClassName?: string;
 };
@@ -74,15 +74,16 @@ export function DataTable<T>({
               </TableCell>
             </TableRow>
           ) : (
-            rows.map((row) => (
+            rows.map((row, index) => (
               <TableRow
                 key={getRowId(row)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={cn(onRowClick && "cursor-pointer")}
+                // Fixed height so rows stay even whether or not a cell has a button.
+                className={cn("h-14", onRowClick && "cursor-pointer")}
               >
                 {columns.map((col) => (
                   <TableCell key={col.key} className={col.className}>
-                    {col.cell(row)}
+                    {col.cell(row, index)}
                   </TableCell>
                 ))}
               </TableRow>

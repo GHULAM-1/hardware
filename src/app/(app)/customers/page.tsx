@@ -31,15 +31,16 @@ export default function CustomersPage() {
 
   const columns: Column<Customer>[] = [
     {
-      key: "img",
-      header: "",
-      headerClassName: "w-12",
-      cell: (row) => <ImageThumb src={row.image_url} alt={row.name_en} />,
-    },
-    {
       key: "name",
       header: t("fields.name"),
-      cell: (row) => <span className="font-medium">{displayName(row, language)}</span>,
+      cell: (row) => (
+        <div className="flex items-center gap-3">
+          <ImageThumb src={row.image_url} alt={row.name_en} />
+          <span className="font-medium text-primary underline-offset-2 hover:underline">
+            {displayName(row, language)}
+          </span>
+        </div>
+      ),
     },
     { key: "phone", header: t("fields.phone"), cell: (row) => (row.phone ? <span dir="ltr">{row.phone}</span> : "—") },
     { key: "address", header: t("fields.address"), cell: (row) => row.address ?? "—" },

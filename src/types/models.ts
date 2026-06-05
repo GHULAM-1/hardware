@@ -59,7 +59,9 @@ export type LastPurchaseView = { item: ItemNamePair; price: number } | null;
 export type KhataListView = Pick<
   Khata,
   "id" | "amount" | "due_date" | "status" | "description" | "created_at" | "order_id"
-> & { customer: { name_en: string; name_ur: string | null } | null };
+> & {
+  customer: { id: string; name_en: string; name_ur: string | null; phone: string | null } | null;
+};
 
 /** An order row with its customer's name resolved, for the orders list. */
 export type OrderListView = Pick<

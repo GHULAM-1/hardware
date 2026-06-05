@@ -10,7 +10,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Logo } from "@/components/layout/logo";
-import { AssistantTrigger } from "@/components/assistant/assistant-trigger";
+import { GlobalSearch } from "@/components/search/global-search";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -47,8 +47,8 @@ export function Topbar() {
       <MobileNav />
       <Logo className="md:hidden" compact />
 
-      <div className="hidden max-w-md flex-1 sm:block">
-        <AssistantTrigger />
+      <div className="flex-1 sm:max-w-md">
+        <GlobalSearch />
       </div>
 
       <div className="ms-auto flex items-center gap-2">

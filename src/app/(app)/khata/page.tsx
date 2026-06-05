@@ -2,11 +2,10 @@
 
 import { useTranslation } from "react-i18next";
 
-import { useKhatas, useSetKhataStatus } from "@/hooks/use-khata";
+import { useKhatas, useFulfillKhata } from "@/hooks/use-khata";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
-import { KhataStatus } from "@/lib/enums";
 import { PageHeader } from "@/components/layout/page-header";
 import { KhataTable } from "@/components/khata/khata-table";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ export default function KhataPage() {
   const { openDialog } = useDialogManager();
   const isSuperAdmin = useIsSuperAdmin();
   const { data: khatas = [], isLoading } = useKhatas();
-  const setStatus = useSetKhataStatus();
+  const { fulfill, pendingId } = useFulfillKhata();
 
   return (
     <div>
@@ -41,7 +40,10 @@ export default function KhataPage() {
       <KhataTable
         rows={khatas}
         loading={isLoading}
-        onMarkFulfilled={(id) => setStatus.mutate({ id, status: KhataStatus.Fulfilled })}
+        onMarkFulfilled={fulfill}
+        markingId={pendingId}
+        onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
+        onRowClick={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
       />
     </div>
   );
