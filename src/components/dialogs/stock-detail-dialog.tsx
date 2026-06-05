@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
+import { StockEntryType } from "@/lib/enums";
 import { useStockEntries, useDeleteStockEntry } from "@/hooks/use-warehouse";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
@@ -35,16 +36,16 @@ export function StockDetailDialog({ payload, onClose }: DialogComponentProps<Sto
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-4xl overflow-y-auto overflow-x-hidden sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{displayName(item, language)}</DialogTitle>
+      <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto overflow-x-hidden sm:max-w-3xl">
+        <DialogHeader className="min-w-0">
+          <DialogTitle className="truncate pe-6">{displayName(item, language)}</DialogTitle>
           <DialogDescription dir="ltr">
             {t("warehouse.currentStock")}: <span className="font-semibold tabular-nums">{item.quantity}</span>{" "}
             {item.unit}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           {isSuperAdmin && (
             <StockEntryForm
               key={editing?.id ?? "new"}
@@ -65,7 +66,7 @@ export function StockDetailDialog({ payload, onClose }: DialogComponentProps<Sto
               onDelete={(entry) =>
                 confirmDelete({
                   title: t("common.delete"),
-                  description: `${entry.type} · ${entry.quantity}`,
+                  description: `${t(entry.type === StockEntryType.In ? "warehouse.stockIn" : "warehouse.stockOut")} · ${entry.quantity}`,
                   onConfirm: () => deleteEntry.mutateAsync(entry.id),
                 })
               }

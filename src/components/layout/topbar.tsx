@@ -42,30 +42,30 @@ export function Topbar() {
   }
 
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-border bg-background px-4">
+    <header className="flex h-16 items-center gap-2 border-b border-border bg-background px-3 sm:gap-3 sm:px-4">
       {/* Mobile: menu button + logo (sidebar is hidden) */}
       <MobileNav />
       <Logo className="md:hidden" compact />
 
-      <div className="flex-1 sm:max-w-md">
+      <div className="flex min-w-0 flex-1 sm:max-w-md">
         <GlobalSearch />
       </div>
 
-      <div className="ms-auto flex items-center gap-2">
+      <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
         <LanguageSwitcher />
         <ModeToggle />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 rounded-md p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <Avatar className="h-9 w-9">
+            <Avatar className="h-9 w-9 shrink-0">
               {profile?.image_url && <AvatarImage src={profile.image_url} alt={profile.full_name ?? ""} />}
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {initials(profile?.full_name)}
               </AvatarFallback>
             </Avatar>
-            <div className="hidden text-start sm:block">
-              <p className="text-sm font-medium leading-tight">{profile?.full_name ?? "—"}</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="hidden min-w-0 max-w-[8rem] text-start lg:block">
+              <p className="truncate text-sm font-medium leading-tight">{profile?.full_name ?? "—"}</p>
+              <p className="truncate text-xs text-muted-foreground">
                 {t(`roles.${profile?.role ?? UserRole.Admin}`)}
               </p>
             </div>

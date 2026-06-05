@@ -17,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { BilingualNameFields, ImageField, NumberField } from "@/components/forms/fields";
+import { BilingualNameFields, ImagesField, NumberField } from "@/components/forms/fields";
 import { UnitSelect } from "@/components/common/unit-select";
 import { SupplierCombobox } from "@/components/common/supplier-combobox";
 import { DatePicker } from "@/components/common/date-picker";
@@ -53,7 +53,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
       unit: "",
       selling_price: "" as unknown as number,
       category_id: null,
-      image_url: null,
+      image_urls: [],
     },
   });
 
@@ -116,7 +116,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
             />
             <NumberField control={form.control} name="selling_price" label={`${t("fields.sellingPrice")} (PKR)`} />
           </div>
-          <ImageField control={form.control} name="image_url" label={t("fields.image")} folder="product" />
+          <ImagesField control={form.control} name="image_urls" label={t("fields.image")} folder="product" />
 
           {/* Optional sourcing: suppliers + quantities + buying prices, same dialog */}
           <div className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4">

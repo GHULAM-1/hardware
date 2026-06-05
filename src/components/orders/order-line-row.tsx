@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { History, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ItemCombobox } from "@/components/common/item-combobox";
@@ -87,9 +87,15 @@ export function OrderLineRow({
       </div>
 
       {lastPrice != null && (
-        <p className="text-xs text-brand">
-          {t("orders.lastSoldToCustomer", { price: formatPKR(lastPrice) })}
-        </p>
+        <button
+          type="button"
+          onClick={() => onChange({ ...line, selling_price: String(lastPrice) })}
+          title={t("orders.useLastPrice")}
+          className="inline-flex items-center gap-2 rounded-lg border border-brand/30 bg-brand/10 px-3 py-2 text-start text-sm font-semibold text-brand transition-colors hover:bg-brand/20"
+        >
+          <History className="h-4 w-4 shrink-0" />
+          <span>{t("orders.lastSoldToCustomer", { price: formatPKR(lastPrice) })}</span>
+        </button>
       )}
 
       {/* Supplier sourcing (informational; stock is subtracted manually in the warehouse) */}

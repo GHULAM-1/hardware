@@ -8,7 +8,6 @@
 /** Read-only app routes the assistant is allowed to send the user to. */
 export const ASSISTANT_ROUTES = [
   "/dashboard",
-  "/pricing",
   "/warehouse",
   "/customers",
   "/orders",

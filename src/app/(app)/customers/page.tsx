@@ -14,7 +14,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
-import { ImageThumb } from "@/components/common/image-thumb";
 import type { Customer } from "@/types/models";
 
 export default function CustomersPage() {
@@ -34,12 +33,9 @@ export default function CustomersPage() {
       key: "name",
       header: t("fields.name"),
       cell: (row) => (
-        <div className="flex items-center gap-3">
-          <ImageThumb src={row.image_url} alt={row.name_en} />
-          <span className="font-medium text-primary underline-offset-2 hover:underline">
-            {displayName(row, language)}
-          </span>
-        </div>
+        <span className="font-medium text-primary underline-offset-2 hover:underline">
+          {displayName(row, language)}
+        </span>
       ),
     },
     { key: "phone", header: t("fields.phone"), cell: (row) => (row.phone ? <span dir="ltr">{row.phone}</span> : "—") },

@@ -1,6 +1,5 @@
 import {
   LayoutDashboard,
-  Tag,
   Warehouse,
   Users,
   ShoppingCart,
@@ -25,7 +24,6 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", i18nKey: "nav.dashboard", icon: LayoutDashboard, adminAllowed: true },
-  { href: "/pricing", i18nKey: "nav.pricing", icon: Tag, adminAllowed: true },
   { href: "/warehouse", i18nKey: "nav.warehouse", icon: Warehouse, adminAllowed: true },
   { href: "/customers", i18nKey: "nav.customers", icon: Users },
   { href: "/orders", i18nKey: "nav.orders", icon: ShoppingCart },

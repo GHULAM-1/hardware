@@ -19,6 +19,7 @@ import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
 import { StatusBadge } from "@/components/common/status-badge";
+import { Money } from "@/components/common/money";
 import { Button } from "@/components/ui/button";
 import type { ItemWithStock } from "@/types/models";
 
@@ -46,8 +47,10 @@ export default function WarehousePage() {
       header: t("fields.name"),
       cell: (row) => (
         <div className="flex items-center gap-3">
-          <ImageThumb src={row.image_url} alt={row.name_en} />
-          <span className="font-medium">{displayName(row, language)}</span>
+          <ImageThumb src={row.image_urls?.[0] ?? row.image_url} alt={row.name_en} />
+          <span className="font-medium text-primary underline-offset-2 hover:underline">
+            {displayName(row, language)}
+          </span>
         </div>
       ),
     },
@@ -74,6 +77,13 @@ export default function WarehousePage() {
         const m = stockMeta(row.quantity);
         return <StatusBadge tone={m.tone} label={t(m.labelKey)} />;
       },
+    },
+    {
+      key: "price",
+      header: t("fields.sellingPrice"),
+      cell: (row) => <Money value={row.selling_price} />,
+      className: "text-end",
+      headerClassName: "text-end",
     },
     {
       key: "actions",
@@ -112,6 +122,7 @@ export default function WarehousePage() {
       <ListToolbar
         search={search}
         onSearchChange={setSearch}
+        searchPlaceholder={t("pricing.searchItems")}
         onNew={() => openDialog(DialogKey.ItemCreate, null)}
         newLabel={t("pricing.newItem")}
       />
@@ -120,7 +131,7 @@ export default function WarehousePage() {
         rows={items}
         getRowId={(r) => r.id}
         loading={isLoading}
-        onRowClick={(row) => openDialog(DialogKey.StockEntryForm, { item: row })}
+        onRowClick={(row) => openDialog(DialogKey.ItemDetail, { item: row })}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/common/image-upload";
+import { MultiImageUpload } from "@/components/common/multi-image-upload";
 import type { ImageFolder } from "@/lib/storage";
 
 /**
@@ -62,6 +63,42 @@ export function TextField<T extends FieldValues>({
               placeholder={placeholder}
               {...field}
               value={(field.value as string | null) ?? ""}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+/**
+ * Pakistani phone field: digits-only, local format (03XXXXXXXXX, max 11). Strips
+ * non-digits live so `+92`/spaces can't be entered; the schema enforces the format.
+ */
+export function PhoneField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  optional,
+}: BaseProps<T>) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <Labelled label={label} optional={optional} />
+          <FormControl>
+            <Input
+              type="tel"
+              dir="ltr"
+              inputMode="numeric"
+              maxLength={11}
+              placeholder="03001234567"
+              {...field}
+              value={(field.value as string | null) ?? ""}
+              onChange={(e) => field.onChange(e.target.value.replace(/\D/g, "").slice(0, 11))}
             />
           </FormControl>
           <FormMessage />
@@ -158,6 +195,43 @@ export function ImageField<T extends FieldValues>({
             <ImageUpload
               value={(field.value as string | null) ?? null}
               onChange={(url) => field.onChange(url)}
+              folder={folder}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+/** RHF-wired multi-image (gallery) upload bound to a string[] `image_urls` field. */
+export function ImagesField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  folder,
+}: {
+  control: Control<T>;
+  name: FieldPath<T>;
+  label: string;
+  folder: ImageFolder;
+}) {
+  const { t } = useTranslation();
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            {label}
+            <span className="ms-1 text-muted-foreground">({t("common.optional")})</span>
+          </FormLabel>
+          <FormControl>
+            <MultiImageUpload
+              value={(field.value as string[] | null) ?? []}
+              onChange={(urls) => field.onChange(urls)}
               folder={folder}
             />
           </FormControl>

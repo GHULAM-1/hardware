@@ -95,13 +95,13 @@ export function StockEntryForm({
           ))}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 [&>*]:min-w-0">
           {isIn && (
             <FormField
               control={form.control}
               name="supplier_id"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <Label>{t("fields.supplier")}</Label>
                   <FormControl>
                     <SupplierCombobox value={field.value ?? null} onChange={(v) => field.onChange(v)} />

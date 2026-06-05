@@ -15,10 +15,13 @@ export function ZoomableImage({
   src,
   alt = "",
   className,
+  fit = "cover",
 }: {
   src: string;
   alt?: string;
   className?: string;
+  /** "cover" crops to fill (thumbnails); "contain" fits the whole image by aspect ratio. */
+  fit?: "cover" | "contain";
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
@@ -35,7 +38,7 @@ export function ZoomableImage({
         className={cn("block overflow-hidden", className)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className="h-full w-full object-cover" />
+        <img src={src} alt={alt} className={cn("h-full w-full", fit === "contain" ? "object-contain" : "object-cover")} />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>

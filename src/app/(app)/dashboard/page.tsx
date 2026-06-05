@@ -147,7 +147,7 @@ export default function DashboardPage() {
             value={num(catalog.data?.products)}
             icon={Tag}
             tone="brand"
-            href="/pricing"
+            href="/warehouse"
           />
         </div>
       )}
@@ -160,7 +160,7 @@ export default function DashboardPage() {
             value={num(catalog.data?.products)}
             icon={Tag}
             tone="brand"
-            href="/pricing"
+            href="/warehouse"
           />
           <WidgetCard
             label={t("dashboard.lowStock")}

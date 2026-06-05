@@ -67,6 +67,13 @@ export function Combobox({
     onSearchChange?.(q);
   }
 
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    // Reset the (server-side) filter on close so the next open shows the full list,
+    // not the leftover query from a prior search or inline create.
+    if (!next && query) handleQueryChange("");
+  }
+
   const trimmed = query.trim();
   const hasExactMatch = options.some((o) => o.label.toLowerCase() === trimmed.toLowerCase());
   const showCreate = Boolean(onCreate) && trimmed.length > 0 && !hasExactMatch;
@@ -78,12 +85,11 @@ export function Combobox({
       setPicked(created);
       onChange(created.value, created);
     }
-    setOpen(false);
-    setQuery("");
+    handleOpenChange(false);
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -97,14 +103,18 @@ export function Combobox({
           <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+      <PopoverContent
+        portal={false}
+        className="w-[--radix-popover-trigger-width] p-0"
+        align="start"
+      >
         <Command shouldFilter={!serverFiltered}>
           <CommandInput
             placeholder={t("common.searchPlaceholder")}
             value={query}
             onValueChange={handleQueryChange}
           />
-          <CommandList>
+          <CommandList className="max-h-[min(18rem,50vh)] overflow-y-auto overscroll-contain">
             {loading ? (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -120,7 +130,7 @@ export function Combobox({
                       onSelect={() => {
                         setPicked(option);
                         onChange(option.value, option);
-                        setOpen(false);
+                        handleOpenChange(false);
                       }}
                     >
                       <Check

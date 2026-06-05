@@ -89,7 +89,7 @@
   },
   "warehouse": {
     "title": "Warehouse",
-    "subtitle": "Stock quantities and supplier sourcing",
+    "subtitle": "Products, stock levels and prices",
     "currentStock": "Current stock",
     "stockIn": "Stock in",
     "stockOut": "Stock out",
@@ -117,6 +117,7 @@
     "addLine": "Add item",
     "sourceFrom": "Source from suppliers",
     "lastSoldToCustomer": "Last sold to this customer at {{price}}",
+    "useLastPrice": "Tap to use this price",
     "total": "Total",
     "print": "Print receipt",
     "selectCustomer": "Please select a customer",
@@ -149,6 +150,9 @@
   },
   "media": {
     "upload": "Upload image",
+    "add": "Add",
+    "cover": "Cover",
+    "makeCover": "Set as cover",
     "replace": "Replace",
     "remove": "Remove",
     "viewImage": "View image",
@@ -184,7 +188,9 @@
   "suppliers": {
     "title": "Suppliers",
     "newSupplier": "New supplier",
-    "editSupplier": "Edit supplier"
+    "editSupplier": "Edit supplier",
+    "duplicatePhone": "A supplier with this phone number already exists",
+    "invalidPhone": "Enter a valid number like 03001234567"
   },
   "users": {
     "title": "Users",

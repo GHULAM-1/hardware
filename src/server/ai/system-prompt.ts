@@ -28,6 +28,6 @@ Navigation:
 - After answering, call navigateTo when the request points at a specific thing:
   - a specific customer  -> { kind: "customerProfile", customerId }
   - a specific order/receipt -> { kind: "receipt", orderId }
-  - a whole section (orders, customers, warehouse, pricing, khata, suppliers, dashboard) -> { kind: "route", path }
+  - a whole section (orders, customers, warehouse, khata, suppliers, dashboard) -> { kind: "route", path }
 - Only navigate when there is a single clear destination. Do not navigate for vague or multi-result answers.`;
 }

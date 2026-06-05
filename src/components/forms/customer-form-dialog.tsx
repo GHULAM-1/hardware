@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Form } from "@/components/ui/form";
-import { BilingualNameFields, ImageField, TextField, TextareaField } from "@/components/forms/fields";
+import { BilingualNameFields, TextField, TextareaField } from "@/components/forms/fields";
 import { customerSchema, type CustomerValues } from "@/lib/schemas";
 import { useCreateCustomer, useUpdateCustomer } from "@/hooks/use-customers";
 import type { Customer } from "@/types/models";
@@ -26,9 +26,7 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
       name_en: customer?.name_en ?? "",
       name_ur: customer?.name_ur ?? "",
       phone: customer?.phone ?? "",
-      email: customer?.email ?? "",
       address: customer?.address ?? "",
-      image_url: customer?.image_url ?? null,
     },
   });
 
@@ -57,12 +55,8 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
       >
         <div className="space-y-4">
           <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField control={form.control} name="phone" label={t("fields.phone")} dir="ltr" optional />
-            <TextField control={form.control} name="email" label={t("fields.email")} type="email" dir="ltr" optional />
-          </div>
+          <TextField control={form.control} name="phone" label={t("fields.phone")} dir="ltr" optional />
           <TextareaField control={form.control} name="address" label={t("fields.address")} optional />
-          <ImageField control={form.control} name="image_url" label={t("fields.image")} folder="customer" />
         </div>
       </FormDialog>
     </Form>

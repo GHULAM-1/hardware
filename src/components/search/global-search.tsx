@@ -195,11 +195,6 @@ export function GlobalSearch() {
                         >
                           <Package className="h-4 w-4" />
                           <span className="truncate">{displayName(item, language)}</span>
-                          {item.sku && (
-                            <span className="ms-auto font-mono text-xs text-muted-foreground">
-                              {item.sku}
-                            </span>
-                          )}
                         </CommandItem>
                       ))}
                     </CommandGroup>

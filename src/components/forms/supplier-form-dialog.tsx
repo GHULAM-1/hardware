@@ -8,9 +8,10 @@ import { toast } from "sonner";
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Form } from "@/components/ui/form";
-import { ImageField, TextField, TextareaField } from "@/components/forms/fields";
+import { ImageField, PhoneField, TextField, TextareaField } from "@/components/forms/fields";
 import { supplierSchema, type SupplierValues } from "@/lib/schemas";
 import { useCreateSupplier, useUpdateSupplier } from "@/hooks/use-suppliers";
+import { DUPLICATE_PHONE } from "@/lib/errors";
 import type { Supplier } from "@/types/models";
 
 export type SupplierFormPayload = { supplier?: Supplier } | null;
@@ -41,7 +42,11 @@ export function SupplierFormDialog({ payload, onClose }: DialogComponentProps<Su
       toast.success(t("toast.saved"));
       onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("toast.error"));
+      if (err instanceof Error && err.message === DUPLICATE_PHONE) {
+        toast.error(t("suppliers.duplicatePhone"));
+      } else {
+        toast.error(err instanceof Error ? err.message : t("toast.error"));
+      }
     }
   }
 
@@ -55,7 +60,7 @@ export function SupplierFormDialog({ payload, onClose }: DialogComponentProps<Su
       >
         <div className="space-y-4">
           <TextField control={form.control} name="name" label={t("fields.name")} />
-          <TextField control={form.control} name="phone" label={t("fields.phone")} dir="ltr" optional />
+          <PhoneField control={form.control} name="phone" label={t("fields.phone")} />
           <TextareaField control={form.control} name="note" label={t("fields.note")} optional />
           <ImageField control={form.control} name="image_url" label={t("fields.image")} folder="supplier" />
         </div>

@@ -3,6 +3,7 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { supplierSchema, type SupplierValues } from "@/lib/schemas";
+import { DUPLICATE_PHONE } from "@/lib/errors";
 import type { Supplier } from "@/types/models";
 
 export async function listSuppliers(accessToken: string, search = ""): Promise<Supplier[]> {
@@ -18,7 +19,28 @@ export async function createSupplier(
   values: SupplierValues,
 ): Promise<Supplier> {
   const data = supplierSchema.parse(values);
+  // Phone is the unique key for suppliers (no email in this business). Pre-check so
+  // the user gets a clear message instead of a raw unique-violation; the DB partial
+  // unique index is the race-safe backstop.
+  if (data.phone) {
+    const phone = data.phone;
+    const dupes = await runQuery<{ id: string }[]>(accessToken, (c) =>
+      c.from("suppliers").select("id").eq("phone", phone).limit(1),
+    );
+    if (dupes.length) throw new Error(DUPLICATE_PHONE);
+  }
   return runQuery(accessToken, (c) => c.from("suppliers").insert(data).select("*").single());
+}
+
+/** Same phone-uniqueness guard for edits (excluding the row being edited). */
+async function assertPhoneFree(accessToken: string, phone: string | null, exceptId?: string) {
+  if (!phone) return;
+  const dupes = await runQuery<{ id: string }[]>(accessToken, (c) => {
+    let q = c.from("suppliers").select("id").eq("phone", phone).limit(1);
+    if (exceptId) q = q.neq("id", exceptId);
+    return q;
+  });
+  if (dupes.length) throw new Error(DUPLICATE_PHONE);
 }
 
 export async function updateSupplier(
@@ -27,6 +49,7 @@ export async function updateSupplier(
   values: SupplierValues,
 ): Promise<Supplier> {
   const data = supplierSchema.parse(values);
+  await assertPhoneFree(accessToken, data.phone, id);
   return runQuery(accessToken, (c) =>
     c.from("suppliers").update(data).eq("id", id).select("*").single(),
   );

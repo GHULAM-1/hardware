@@ -12,20 +12,31 @@ const optionalText = z
   .nullish()
   .transform((v) => (v ? v : null));
 
+// Pakistani mobile number, local format only: 03 + 9 digits (e.g. 03001234567).
+// Country-code / +92 forms are rejected on purpose — the shop enters local numbers.
+export const PK_PHONE_RE = /^03\d{9}$/;
+export const isPkPhone = (v: string) => PK_PHONE_RE.test(v.trim());
+const pkPhoneRequired = z
+  .string()
+  .trim()
+  .regex(PK_PHONE_RE, "Enter a valid number like 03001234567");
+
 export const itemSchema = z.object({
   name_en: z.string().trim().min(1),
   name_ur: optionalText,
   unit: z.string().trim().min(1),
   selling_price: z.coerce.number().min(0),
   category_id: z.string().uuid().nullable().optional().default(null),
-  image_url: z.string().url().nullable().optional().default(null),
+  // Gallery of product images; first is the primary thumbnail used in lists.
+  image_urls: z.array(z.string().url()).default([]),
 });
 export type ItemInput = z.input<typeof itemSchema>;
 export type ItemValues = z.output<typeof itemSchema>;
 
 export const supplierSchema = z.object({
   name: z.string().trim().min(1),
-  phone: optionalText,
+  // Phone is the supplier's unique key, so it's required and must be a valid PK number.
+  phone: pkPhoneRequired,
   note: optionalText,
   image_url: z.string().url().nullable().optional().default(null),
 });
@@ -35,9 +46,7 @@ export const customerSchema = z.object({
   name_en: z.string().trim().min(1),
   name_ur: optionalText,
   phone: optionalText,
-  email: z.string().trim().email().nullable().optional().or(z.literal("").transform(() => null)),
   address: optionalText,
-  image_url: z.string().url().nullable().optional().default(null),
 });
 export type CustomerValues = z.output<typeof customerSchema>;
 

@@ -134,6 +134,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          image_urls: string[]
           name_en: string
           name_ur: string | null
           selling_price: number
@@ -146,6 +147,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          image_urls?: string[]
           name_en: string
           name_ur?: string | null
           selling_price?: number
@@ -158,6 +160,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          image_urls?: string[]
           name_en?: string
           name_ur?: string | null
           selling_price?: number

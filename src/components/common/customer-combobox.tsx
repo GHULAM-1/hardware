@@ -40,9 +40,7 @@ export function CustomerCombobox({
           name_en: name,
           name_ur: null,
           phone: null,
-          email: null,
           address: null,
-          image_url: null,
         });
         return { value: c.id, label: c.name_en };
       }}

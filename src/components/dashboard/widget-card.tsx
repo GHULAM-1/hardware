@@ -36,15 +36,15 @@ export function WidgetCard({
       href={href}
       className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      <Card className="flex h-full flex-row items-center gap-4 p-5 transition group-hover:border-primary/40 group-hover:shadow-md">
+      <Card className="relative flex h-full flex-row items-center gap-4 p-5 transition group-hover:border-primary/40 group-hover:shadow-md">
         <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-lg", toneClasses[tone])}>
           <Icon className="h-6 w-6" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm text-muted-foreground">{label}</p>
-          <div className="text-2xl font-bold tabular-nums">{value}</div>
+          <p className="truncate pe-6 text-sm text-muted-foreground">{label}</p>
+          <div className="truncate text-xl font-bold tabular-nums sm:text-2xl">{value}</div>
         </div>
-        <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 rtl:rotate-180" />
+        <ArrowRight className="absolute end-4 top-4 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 rtl:rotate-180" />
       </Card>
     </Link>
   );
