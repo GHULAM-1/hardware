@@ -190,6 +190,7 @@ export type Database = {
           fulfilled_at: string | null
           id: string
           order_id: string | null
+          proof_url: string | null
           status: Database["public"]["Enums"]["khata_status"]
           updated_at: string
         }
@@ -203,6 +204,7 @@ export type Database = {
           fulfilled_at?: string | null
           id?: string
           order_id?: string | null
+          proof_url?: string | null
           status?: Database["public"]["Enums"]["khata_status"]
           updated_at?: string
         }
@@ -216,6 +218,7 @@ export type Database = {
           fulfilled_at?: string | null
           id?: string
           order_id?: string | null
+          proof_url?: string | null
           status?: Database["public"]["Enums"]["khata_status"]
           updated_at?: string
         }

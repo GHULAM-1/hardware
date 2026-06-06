@@ -201,13 +201,26 @@
     "fulfilled": "Fulfilled",
     "overdue": "Overdue",
     "dueToday": "Due today",
-    "reminders": "Reminders"
+    "reminders": "Reminders",
+    "dueSoonCount": "Payments due soon ({{count}})",
+    "dayLeft": "1 day left",
+    "daysLeft": "{{count}} days left",
+    "dayOverdue": "1 day overdue",
+    "daysOverdue": "{{count}} days overdue",
+    "attachOrder": "Attach an order",
+    "noOrders": "No orders for this customer",
+    "proofImage": "Proof / bill image",
+    "viewProof": "View proof"
   },
   "suppliers": {
     "title": "Suppliers",
     "newSupplier": "New supplier",
     "editSupplier": "Edit supplier",
     "supplierName": "Supplier name",
+    "location": "Location",
+    "frequentItems": "Frequently ordered",
+    "recentOrders": "Recent orders",
+    "noOrders": "No orders yet",
     "duplicatePhone": "A supplier with this phone number already exists",
     "invalidPhone": "Enter a valid number like 03001234567"
   },

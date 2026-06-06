@@ -8,7 +8,7 @@ import { KhataStatus } from "@/lib/enums";
 import type { Khata, KhataListView } from "@/types/models";
 
 const SELECT =
-  "id, amount, due_date, status, description, created_at, order_id, customers(id, name_en, name_ur, phone)";
+  "id, amount, due_date, status, description, created_at, order_id, proof_url, customers(id, name_en, name_ur, phone)";
 
 type RawKhata = Omit<KhataListView, "customer"> & {
   customers: { id: string; name_en: string; name_ur: string | null; phone: string | null } | null;

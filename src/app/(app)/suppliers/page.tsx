@@ -52,7 +52,7 @@ export default function SuppliersPage() {
     },
     {
       key: "address",
-      header: t("fields.address"),
+      header: t("suppliers.location"),
       cell: (row) => row.address ?? "—",
       className: "hidden md:table-cell",
       headerClassName: "hidden md:table-cell",

@@ -201,13 +201,26 @@
     "fulfilled": "ادا شدہ",
     "overdue": "واجب الادا",
     "dueToday": "آج واجب",
-    "reminders": "یاد دہانیاں"
+    "reminders": "یاد دہانیاں",
+    "dueSoonCount": "جلد آنے والی ادائیگیاں ({{count}})",
+    "dayLeft": "1 دن باقی",
+    "daysLeft": "{{count}} دن باقی",
+    "dayOverdue": "1 دن گزر گیا",
+    "daysOverdue": "{{count}} دن گزر گئے",
+    "attachOrder": "آرڈر لگائیں",
+    "noOrders": "اس گاہک کا کوئی آرڈر نہیں",
+    "proofImage": "ثبوت / بل کی تصویر",
+    "viewProof": "ثبوت دیکھیں"
   },
   "suppliers": {
     "title": "سپلائرز",
     "newSupplier": "نیا سپلائر",
     "editSupplier": "سپلائر میں ترمیم",
     "supplierName": "سپلائر کا نام",
+    "location": "جگہ",
+    "frequentItems": "اکثر منگوائی جانے والی چیزیں",
+    "recentOrders": "حالیہ آرڈر",
+    "noOrders": "ابھی کوئی آرڈر نہیں",
     "duplicatePhone": "اس فون نمبر والا سپلائر پہلے سے موجود ہے",
     "invalidPhone": "درست نمبر درج کریں جیسے 03001234567"
   },

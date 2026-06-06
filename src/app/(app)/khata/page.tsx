@@ -8,6 +8,7 @@ import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { PageHeader } from "@/components/layout/page-header";
 import { KhataTable } from "@/components/khata/khata-table";
+import { DueSoonStrip } from "@/components/khata/due-soon-strip";
 import { Button } from "@/components/ui/button";
 import { BellPlus, Plus } from "lucide-react";
 
@@ -36,6 +37,11 @@ export default function KhataPage() {
             </div>
           ) : null
         }
+      />
+      <DueSoonStrip
+        className="mb-6"
+        onOpen={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+        onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
       />
       <KhataTable
         rows={khatas}

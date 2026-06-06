@@ -62,7 +62,7 @@ export function SupplierFormDialog({ payload, onClose }: DialogComponentProps<Su
           <TextField control={form.control} name="name" label={t("suppliers.supplierName")} />
           <PhoneField control={form.control} name="phone" label={t("fields.phone")} />
           <TextField control={form.control} name="shop_name" label={t("fields.shopName")} optional />
-          <TextareaField control={form.control} name="address" label={t("fields.address")} optional />
+          <TextareaField control={form.control} name="address" label={t("suppliers.location")} optional />
         </div>
       </FormDialog>
     </Form>

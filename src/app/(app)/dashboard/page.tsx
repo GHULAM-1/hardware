@@ -33,6 +33,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { WidgetCard } from "@/components/dashboard/widget-card";
 import { BarChart, ChartCard, SegmentBar, type Segment } from "@/components/dashboard/charts";
 import { KhataTable } from "@/components/khata/khata-table";
+import { DueSoonStrip } from "@/components/khata/due-soon-strip";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -103,6 +104,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={t("dashboard.title")} />
+
+      {/* Payments due soon — pinned at the very top so it's seen first. */}
+      {isSuperAdmin && (
+        <DueSoonStrip
+          onOpen={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+          onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
+        />
+      )}
 
       {/* Financial + relationship widgets — super_admin only. */}
       {isSuperAdmin && (

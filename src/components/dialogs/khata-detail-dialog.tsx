@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Check, Loader2, Receipt } from "lucide-react";
+import { Check, ImageIcon, Loader2, Receipt } from "lucide-react";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
@@ -82,6 +82,14 @@ export function KhataDetailDialog({ payload, onClose }: DialogComponentProps<Kha
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
+          {khata.proof_url ? (
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <a href={khata.proof_url} target="_blank" rel="noopener noreferrer">
+                <ImageIcon className="me-1 h-4 w-4" />
+                {t("khata.viewProof")}
+              </a>
+            </Button>
+          ) : null}
           {khata.order_id ? (
             <Button
               variant="outline"

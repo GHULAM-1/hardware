@@ -8,8 +8,10 @@ import type { SupplierOrderReceiveValues, SupplierOrderValues } from "@/lib/sche
 import {
   createSupplierOrder,
   deleteSupplierOrder,
+  getFrequentItemsForSupplier,
   getSupplierOrder,
   listSupplierOrders,
+  listSupplierOrdersBySupplier,
   markSupplierOrderReceived,
   updateSupplierOrderBill,
 } from "@/server/actions/supplier-orders";
@@ -26,6 +28,22 @@ export function useSupplierOrder(id: string | undefined) {
     queryKey: queryKeys.supplierOrder(id ?? ""),
     queryFn: async () => getSupplierOrder(await getAccessToken(), id as string),
     enabled: Boolean(id),
+  });
+}
+
+export function useSupplierOrdersBySupplier(supplierId: string | undefined) {
+  return useQuery({
+    queryKey: ["supplier-orders", "by-supplier", supplierId ?? ""],
+    queryFn: async () => listSupplierOrdersBySupplier(await getAccessToken(), supplierId as string),
+    enabled: Boolean(supplierId),
+  });
+}
+
+export function useFrequentItemsForSupplier(supplierId: string | undefined) {
+  return useQuery({
+    queryKey: ["supplier-orders", "frequent", supplierId ?? ""],
+    queryFn: async () => getFrequentItemsForSupplier(await getAccessToken(), supplierId as string),
+    enabled: Boolean(supplierId),
   });
 }
 

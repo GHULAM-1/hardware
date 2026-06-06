@@ -11,6 +11,7 @@ import {
 import { SupplierOrderStatus } from "@/lib/enums";
 import type {
   ItemNamePair,
+  SupplierFrequentItem,
   SupplierOrder,
   SupplierOrderDetailView,
   SupplierOrderListView,
@@ -47,6 +48,64 @@ export async function listSupplierOrders(
   });
 }
 
+/** Recent orders placed with one supplier (for the supplier detail view). */
+export async function listSupplierOrdersBySupplier(
+  accessToken: string,
+  supplierId: string,
+): Promise<SupplierOrderListView[]> {
+  const client = createActionClient(accessToken);
+  const { data, error } = await client
+    .from("supplier_orders")
+    .select(
+      "id, order_no, created_at, status, received_at, suppliers(name), supplier_order_items(items(name_en, name_ur))",
+    )
+    .eq("supplier_id", supplierId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((o) => {
+    const lines = o.supplier_order_items ?? [];
+    return {
+      id: o.id,
+      order_no: o.order_no,
+      created_at: o.created_at,
+      status: o.status,
+      received_at: o.received_at,
+      supplier: o.suppliers ?? null,
+      item_count: lines.length,
+      items: lines.map((li) => li.items).filter((it): it is ItemNamePair => Boolean(it)),
+    };
+  });
+}
+
+/** Items most often ordered from one supplier, ranked by total quantity. */
+export async function getFrequentItemsForSupplier(
+  accessToken: string,
+  supplierId: string,
+  limit = 8,
+): Promise<SupplierFrequentItem[]> {
+  const client = createActionClient(accessToken);
+  const { data, error } = await client
+    .from("supplier_orders")
+    .select("supplier_order_items(item_id, quantity, items(name_en, name_ur))")
+    .eq("supplier_id", supplierId);
+  if (error) throw new Error(error.message);
+
+  const totals = new Map<string, SupplierFrequentItem>();
+  for (const order of data ?? []) {
+    for (const li of order.supplier_order_items ?? []) {
+      if (!li.items || !li.item_id) continue;
+      const qty = Number(li.quantity) || 0;
+      const existing = totals.get(li.item_id);
+      if (existing) existing.total += qty;
+      else totals.set(li.item_id, { item: li.items, total: qty });
+    }
+  }
+  return Array.from(totals.values())
+    .sort((a, b) => b.total - a.total)
+    .slice(0, limit);
+}
+
 export async function getSupplierOrder(
   accessToken: string,
   id: string,
@@ -55,7 +114,7 @@ export async function getSupplierOrder(
   const { data, error } = await client
     .from("supplier_orders")
     .select(
-      "id, order_no, created_at, status, received_at, note, bill_url, suppliers(name, phone, note), supplier_order_items(quantity, unit, note, items(name_en, name_ur))",
+      "id, order_no, created_at, status, received_at, note, bill_url, suppliers(name, phone, note), supplier_order_items(quantity, unit, note, items(name_en, name_ur, image_urls))",
     )
     .eq("id", id)
     .single();
@@ -74,7 +133,14 @@ export async function getSupplierOrder(
       quantity: li.quantity,
       unit: li.unit,
       note: li.note,
-      item: li.items ?? null,
+      item: li.items
+        ? {
+            name_en: li.items.name_en,
+            name_ur: li.items.name_ur,
+            // Cover image = first gallery image, if any.
+            image_url: li.items.image_urls?.[0] ?? null,
+          }
+        : null,
     })),
   };
 }

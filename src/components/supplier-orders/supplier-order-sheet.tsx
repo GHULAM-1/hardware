@@ -109,7 +109,28 @@ export const SupplierOrderSheet = React.forwardRef<
             <tr key={i}>
               <td style={td}>{i + 1}</td>
               <td style={{ ...td, wordBreak: "break-word", overflowWrap: "anywhere" }}>
-                {l.item ? displayName(l.item, language) : "—"}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {l.item?.image_url ? (
+                    // Plain <img> on purpose: this sheet is captured by html2canvas /
+                    // printed as raw HTML, where next/image can't render. crossOrigin
+                    // lets html2canvas capture the (public) image for the PDF.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={l.item.image_url}
+                      crossOrigin="anonymous"
+                      alt=""
+                      style={{
+                        width: 34,
+                        height: 34,
+                        flexShrink: 0,
+                        objectFit: "cover",
+                        borderRadius: 4,
+                        border: `1px solid ${C.border}`,
+                      }}
+                    />
+                  ) : null}
+                  <span>{l.item ? displayName(l.item, language) : "—"}</span>
+                </div>
               </td>
               <td style={{ ...td, overflowWrap: "anywhere" }}>
                 {l.quantity} {t(`units.${l.unit}`)}

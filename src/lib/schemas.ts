@@ -121,6 +121,9 @@ export const khataSchema = z.object({
   amount: z.coerce.number().min(0),
   due_date: z.string(),
   description: optionalText,
+  // Optionally back the khata with an existing order, or a proof/bill image.
+  order_id: z.string().uuid().nullable().optional().default(null),
+  proof_url: z.string().url().nullable().optional().default(null),
 });
 export type KhataValues = z.output<typeof khataSchema>;
 

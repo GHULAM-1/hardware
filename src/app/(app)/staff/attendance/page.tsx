@@ -139,7 +139,7 @@ export default function AttendancePage() {
 
       {rows.length > 0 ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-1">
+          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 mr-16">
             <span className="min-w-0 truncate text-sm text-muted-foreground">
               {dirty ? t("staff.unsavedChanges") : ""}
             </span>

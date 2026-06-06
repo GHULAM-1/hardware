@@ -12,6 +12,8 @@ export const IMAGE_FOLDER = {
   staff: "staff",
   // Supplier bills (a photo OR a PDF) attached when an order is received.
   supplier_bill: "supplier_bill",
+  // Proof image (receipt photo / written IOU) attached to a khata entry.
+  khata_proof: "khata_proof",
 } as const;
 export type ImageFolder = (typeof IMAGE_FOLDER)[keyof typeof IMAGE_FOLDER];
 

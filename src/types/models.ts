@@ -89,7 +89,7 @@ export type LastPurchaseView = { item: ItemNamePair; price: number } | null;
 /** A khata row with its customer's name resolved, for the khata list & reminders. */
 export type KhataListView = Pick<
   Khata,
-  "id" | "amount" | "due_date" | "status" | "description" | "created_at" | "order_id"
+  "id" | "amount" | "due_date" | "status" | "description" | "created_at" | "order_id" | "proof_url"
 > & {
   customer: { id: string; name_en: string; name_ur: string | null; phone: string | null } | null;
 };
@@ -106,12 +106,15 @@ export type SupplierOrderListView = Pick<
   "id" | "order_no" | "created_at" | "status" | "received_at"
 > & { supplier: { name: string } | null; item_count: number; items: ItemNamePair[] };
 
-/** One line of a supplier order, flattened for display. */
+/** An item aggregated across a supplier's orders — "what we usually buy here". */
+export type SupplierFrequentItem = { item: ItemNamePair; total: number };
+
+/** One line of a supplier order, flattened for display (with the item's cover image). */
 export type SupplierOrderLineView = {
   quantity: number;
   unit: string;
   note: string | null;
-  item: ItemNamePair | null;
+  item: (ItemNamePair & { image_url: string | null }) | null;
 };
 
 /** A full supplier order rendered for the detail dialog + print/PDF. */

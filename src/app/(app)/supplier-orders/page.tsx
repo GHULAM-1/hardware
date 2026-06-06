@@ -85,7 +85,7 @@ export default function SupplierOrdersPage() {
             onDelete={() =>
               confirmDelete({
                 title: t("common.delete"),
-                description: o.order_no,
+                description: o.supplier?.name ?? o.order_no,
                 onConfirm: () => deleteOrder.mutateAsync(o.id),
               })
             }
