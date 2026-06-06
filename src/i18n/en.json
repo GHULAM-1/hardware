@@ -145,7 +145,8 @@
     "empty": "No results. Try a name, SKU, or phone number.",
     "items": "Items",
     "customers": "Customers",
-    "orders": "Orders"
+    "orders": "Orders",
+    "staff": "Staff"
   },
   "assistant": {
     "title": "Assistant",

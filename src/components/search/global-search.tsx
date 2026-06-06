@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Loader2, Mic, Package, Search, ShoppingCart, Square, User } from "lucide-react";
+import { Contact, Loader2, Mic, Package, Search, ShoppingCart, Square, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { displayName } from "@/lib/display";
@@ -17,6 +17,7 @@ import { DialogKey } from "@/lib/dialog-keys";
 import { listItems } from "@/server/actions/items";
 import { listCustomers } from "@/server/actions/customers";
 import { listOrders } from "@/server/actions/orders";
+import { listStaff } from "@/server/actions/staff";
 import {
   Dialog,
   DialogContent,
@@ -93,13 +94,23 @@ export function GlobalSearch() {
     queryFn: async () => listOrders(await getAccessToken(), debounced),
     enabled: active && isSuperAdmin,
   });
+  const staff = useQuery({
+    queryKey: ["global-search", "staff", debounced],
+    queryFn: async () => listStaff(await getAccessToken(), debounced),
+    enabled: active && isSuperAdmin,
+  });
 
-  const loading = items.isFetching || customers.isFetching || orders.isFetching;
+  const loading =
+    items.isFetching || customers.isFetching || orders.isFetching || staff.isFetching;
   const itemRows = items.data ?? [];
   const customerRows = customers.data ?? [];
   const orderRows = orders.data ?? [];
+  const staffRows = staff.data ?? [];
   const hasResults =
-    itemRows.length > 0 || customerRows.length > 0 || orderRows.length > 0;
+    itemRows.length > 0 ||
+    customerRows.length > 0 ||
+    orderRows.length > 0 ||
+    staffRows.length > 0;
 
   function close() {
     setPaletteOpen(false);
@@ -219,6 +230,28 @@ export function GlobalSearch() {
                               {customer.phone}
                             </span>
                           )}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+
+                  {staffRows.length > 0 && (
+                    <CommandGroup heading={t("globalSearch.staff")}>
+                      {staffRows.map((s) => (
+                        <CommandItem
+                          key={s.id}
+                          value={`staff-${s.id}`}
+                          className="cursor-pointer"
+                          onSelect={() => {
+                            close();
+                            openDialog(DialogKey.StaffDetail, { staff: s });
+                          }}
+                        >
+                          <Contact className="h-4 w-4" />
+                          <span className="truncate">{s.name}</span>
+                          <span className="ms-auto text-xs text-muted-foreground" dir="ltr">
+                            {s.phone}
+                          </span>
                         </CommandItem>
                       ))}
                     </CommandGroup>
