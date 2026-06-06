@@ -66,8 +66,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadProfile]);
 
   const signIn = React.useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    // Reject disabled accounts at the door — Supabase auth doesn't know about
+    // is_active, so check the profile and sign back out before any navigation
+    // (own row is always readable via RLS). The login page maps this message.
+    const userId = data.user?.id;
+    if (userId) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", userId)
+        .maybeSingle();
+      if (prof && prof.is_active === false) {
+        await supabase.auth.signOut();
+        throw new Error("ACCOUNT_DISABLED");
+      }
+    }
   }, []);
 
   const signOut = React.useCallback(async () => {

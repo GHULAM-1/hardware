@@ -60,7 +60,8 @@
     "signIn": "سائن ان کریں",
     "signingIn": "سائن ان ہو رہا ہے…",
     "welcome": "خوش آمدید",
-    "invalidCredentials": "ای میل یا پاس ورڈ غلط ہے"
+    "invalidCredentials": "ای میل یا پاس ورڈ غلط ہے",
+    "accountDisabled": "آپ کا اکاؤنٹ بند کر دیا گیا ہے۔ براہِ کرم مالک سے رابطہ کریں۔"
   },
   "fields": {
     "nameEn": "نام (انگریزی)",

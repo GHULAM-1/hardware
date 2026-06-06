@@ -60,7 +60,8 @@
     "signIn": "Sign in",
     "signingIn": "Signing in…",
     "welcome": "Welcome back",
-    "invalidCredentials": "Invalid email or password"
+    "invalidCredentials": "Invalid email or password",
+    "accountDisabled": "Your account has been disabled. Please contact the owner."
   },
   "fields": {
     "nameEn": "Name (English)",

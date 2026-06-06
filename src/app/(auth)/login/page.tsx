@@ -3,14 +3,17 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useAuth } from "@/providers/auth-provider";
+import { loginSchema, type LoginValues } from "@/lib/schemas";
 import { Logo } from "@/components/layout/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form } from "@/components/ui/form";
+import { TextField } from "@/components/forms/fields";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function LoginPage() {
@@ -18,27 +21,32 @@ export default function LoginPage() {
   const router = useRouter();
   const { signIn, session } = useAuth();
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
-  const [submitting, setSubmitting] = React.useState(false);
 
-  // Already signed in → go to the app.
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+  const submitting = form.formState.isSubmitting;
+
+  // Already signed in → go to the app. Suppressed while a sign-in is being
+  // validated (signIn briefly holds a session before rejecting a disabled account),
+  // so a disabled login never flashes the dashboard.
   React.useEffect(() => {
-    if (session) router.replace("/dashboard");
-  }, [session, router]);
+    if (session && !submitting) router.replace("/dashboard");
+  }, [session, submitting, router]);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(values: LoginValues) {
     setError(null);
-    setSubmitting(true);
     try {
-      await signIn(email.trim(), password);
+      await signIn(values.email.trim(), values.password);
       router.replace("/dashboard");
-    } catch {
-      setError(t("auth.invalidCredentials"));
-    } finally {
-      setSubmitting(false);
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === "ACCOUNT_DISABLED"
+          ? t("auth.accountDisabled")
+          : t("auth.invalidCredentials"),
+      );
     }
   }
 
@@ -55,36 +63,28 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground">{t("auth.welcome")}</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("auth.email")}</Label>
-              <Input
-                id="email"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4">
+              <TextField
+                control={form.control}
+                name="email"
+                label={t("auth.email")}
                 type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 dir="ltr"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">{t("auth.password")}</Label>
-              <Input
-                id="password"
+              <TextField
+                control={form.control}
+                name="password"
+                label={t("auth.password")}
                 type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 dir="ltr"
               />
-            </div>
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? t("auth.signingIn") : t("auth.signIn")}
-            </Button>
-          </form>
+              {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? t("auth.signingIn") : t("auth.signIn")}
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>

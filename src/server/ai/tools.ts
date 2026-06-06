@@ -33,9 +33,14 @@ import { ASSISTANT_ROUTES } from "@/types/assistant";
  * Each structured tool reuses an existing server action — no duplicated queries.
  * pgvector (semanticSearch) resolves fuzzy/bilingual references; the rest fetch
  * authoritative relational facts.
+ *
+ * Role-aware: a non-super-admin "admin" gets ONLY catalog + stock tools (what
+ * their dashboard/warehouse already show). The financial/relational tools are
+ * withheld entirely so the assistant can't surface data the UI hides from them —
+ * RLS alone isn't enough because aggregates are derived from readable tables.
  */
-export function buildTools(accessToken: string) {
-  return {
+export function buildTools(accessToken: string, isSuperAdmin: boolean) {
+  const all = {
     semanticSearch: tool({
       description:
         "Find catalog items by meaning, spelling variants, or Urdu names when an exact name is unknown. Use this first to resolve a fuzzy item reference, then read precise data with other tools.",
@@ -396,6 +401,15 @@ export function buildTools(accessToken: string) {
       execute: async ({ target }) => target,
     }),
   };
+
+  if (isSuperAdmin) return all;
+
+  // Admins only get catalog + stock lookups. Everything financial/relational —
+  // revenue, dues, khata, customers, orders, suppliers, supplier-orders,
+  // staff/salary, team accounts — is withheld.
+  const { semanticSearch, searchItems, getItemStock, listLowStock, listCategories, navigateTo } =
+    all;
+  return { semanticSearch, searchItems, getItemStock, listLowStock, listCategories, navigateTo };
 }
 
 export type AssistantTools = ReturnType<typeof buildTools>;

@@ -49,6 +49,13 @@ const optionalCnic = z
   .transform((v) => (v ? v : null))
   .refine((v) => v === null || PK_CNIC_RE.test(v), "validation.invalidCnic");
 
+// Login: a valid email + a non-empty password (real strength is enforced at signup).
+export const loginSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(1),
+});
+export type LoginValues = z.output<typeof loginSchema>;
+
 export const itemSchema = z.object({
   name_en: z.string().trim().min(1),
   name_ur: optionalText,
