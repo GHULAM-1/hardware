@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     system: systemPrompt(language),
     messages: await convertToModelMessages(messages),
     tools: buildTools(token),
-    stopWhen: stepCountIs(8),
+    stopWhen: stepCountIs(10),
   });
 
   return result.toUIMessageStreamResponse();

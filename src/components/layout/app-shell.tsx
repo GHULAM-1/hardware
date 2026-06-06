@@ -4,8 +4,7 @@ import * as React from "react";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Topbar } from "@/components/layout/topbar";
-import { SelectionReader } from "@/components/common/selection-reader";
-import { AssistantFab } from "@/components/assistant/assistant-fab";
+import { ActionFab } from "@/components/assistant/action-fab";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
 
@@ -36,8 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
-      <SelectionReader />
-      <AssistantFab />
+      <ActionFab />
     </div>
   );
 }

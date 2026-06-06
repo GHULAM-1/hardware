@@ -20,3 +20,4 @@ export function useSetReminderLeadDays() {
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.settings() }),
   });
 }
+

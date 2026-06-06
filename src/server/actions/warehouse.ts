@@ -3,6 +3,7 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { stockEntrySchema, type StockEntryValues } from "@/lib/schemas";
+import { searchTokens } from "@/lib/search";
 import type { ItemWithStock, StockEntry, StockEntryWithSupplier } from "@/types/models";
 
 /** Items with their derived warehouse quantity (Σin − Σout). One item, two screens. */
@@ -10,10 +11,7 @@ export async function listItemsWithStock(accessToken: string, search = ""): Prom
   const client = createActionClient(accessToken);
 
   let iq = client.from("items").select("*").order("name_en").limit(100);
-  if (search.trim()) {
-    const q = search.trim().replace(/[%,]/g, "");
-    iq = iq.or(`name_en.ilike.%${q}%,name_ur.ilike.%${q}%,sku.ilike.%${q}%`);
-  }
+  for (const t of searchTokens(search)) iq = iq.ilike("search_norm", `%${t}%`);
   const { data: items, error } = await iq;
   if (error) throw new Error(error.message);
 

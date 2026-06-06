@@ -24,6 +24,8 @@ export type OrderItem = Row<"order_items">;
 export type OrderItemSupplier = Row<"order_item_suppliers">;
 export type Khata = Row<"khatas">;
 export type AppSetting = Row<"app_settings">;
+export type SupplierOrder = Row<"supplier_orders">;
+export type SupplierOrderItem = Row<"supplier_order_items">;
 
 export type WarehouseStock = Views["warehouse_stock"]["Row"];
 
@@ -68,6 +70,29 @@ export type OrderListView = Pick<
   Order,
   "id" | "order_no" | "created_at" | "total" | "amount_paid" | "balance_due" | "payment_type" | "status" | "due_date"
 > & { customer: { name_en: string; name_ur: string | null } | null };
+
+/** A supplier order row for the list, with supplier name + item names resolved. */
+export type SupplierOrderListView = Pick<
+  SupplierOrder,
+  "id" | "order_no" | "created_at" | "status" | "received_at"
+> & { supplier: { name: string } | null; item_count: number; items: ItemNamePair[] };
+
+/** One line of a supplier order, flattened for display. */
+export type SupplierOrderLineView = {
+  quantity: number;
+  unit: string;
+  note: string | null;
+  item: ItemNamePair | null;
+};
+
+/** A full supplier order rendered for the detail dialog + print/PDF. */
+export type SupplierOrderDetailView = Pick<
+  SupplierOrder,
+  "id" | "order_no" | "created_at" | "status" | "received_at" | "note" | "bill_url"
+> & {
+  supplier: { name: string; phone: string | null; note: string | null } | null;
+  lines: SupplierOrderLineView[];
+};
 
 /** A full order rendered as a printable receipt. */
 export type OrderReceiptView = Pick<

@@ -12,6 +12,7 @@ import {
   type FieldPath,
   type FieldValues,
 } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
@@ -136,8 +137,12 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
+  const { t } = useTranslation()
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : props.children
+  // Validation messages are i18n keys (e.g. "validation.required"); translate them
+  // here. defaultValue makes any non-key message pass through unchanged.
+  const raw = error ? String(error?.message ?? "") : props.children
+  const body = typeof raw === "string" && raw ? t(raw, { defaultValue: raw }) : raw
 
   if (!body) {
     return null

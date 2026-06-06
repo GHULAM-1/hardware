@@ -10,8 +10,18 @@
     "orders": "Orders",
     "khata": "Khata",
     "suppliers": "Suppliers",
+    "supplierOrders": "Supplier orders",
     "users": "Users",
     "settings": "Settings"
+  },
+  "voice": {
+    "speak": "Speak the note",
+    "stop": "Stop recording",
+    "transcribing": "Writing…",
+    "nothingHeard": "Couldn't hear anything — try again.",
+    "micDenied": "Microphone access is blocked. Allow it in your browser to use voice.",
+    "unsupported": "Voice input isn't supported on this device.",
+    "failed": "Couldn't transcribe the audio. Please try again."
   },
   "common": {
     "add": "Add",
@@ -36,6 +46,8 @@
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
     "readAloud": "Read aloud",
+    "readSelection": "Read selection",
+    "reading": "Reading…",
     "stopReading": "Stop",
     "ttsError": "Couldn't read the text aloud"
   },
@@ -53,6 +65,7 @@
     "nameEn": "Name (English)",
     "nameUr": "Name (Urdu)",
     "name": "Name",
+    "shopName": "Shop name",
     "sku": "SKU",
     "unit": "Unit",
     "selectUnit": "Select unit",
@@ -157,14 +170,17 @@
     "remove": "Remove",
     "viewImage": "View image",
     "hint": "JPG, PNG or WebP · up to 5MB",
+    "docHint": "JPG, PNG, WebP or PDF · up to 10MB",
     "invalidType": "Only JPG, PNG or WebP images are allowed",
+    "invalidDocType": "Only images or PDF files are allowed",
     "tooLarge": "Image must be 5MB or smaller",
+    "documentTooLarge": "File must be 10MB or smaller",
     "uploadFailed": "Upload failed. Please try again."
   },
   "payment": {
     "cash": "Cash (full)",
     "partial": "Partial",
-    "credit": "Credit"
+    "credit": "Udhaar"
   },
   "khata": {
     "title": "Khata",
@@ -189,8 +205,38 @@
     "title": "Suppliers",
     "newSupplier": "New supplier",
     "editSupplier": "Edit supplier",
+    "supplierName": "Supplier name",
     "duplicatePhone": "A supplier with this phone number already exists",
     "invalidPhone": "Enter a valid number like 03001234567"
+  },
+  "supplierOrders": {
+    "title": "Supplier orders",
+    "newOrder": "New order",
+    "detail": "Supplier order",
+    "searchOrders": "Search orders…",
+    "orderNo": "Order #",
+    "items": "Items",
+    "addItem": "Add item",
+    "addLowStock": "Add low-stock items",
+    "noLowStock": "No low or out-of-stock items",
+    "orderNote": "Note for supplier",
+    "orderNotePlaceholder": "Any instructions for the supplier…",
+    "notePlaceholder": "e.g. brand or size",
+    "addAtLeastOneItem": "Add at least one item with a quantity",
+    "materialList": "Material request",
+    "pending": "Pending",
+    "received": "Received",
+    "receivedOn": "Received on {{date}}",
+    "markReceived": "Mark as received",
+    "markedReceived": "Marked as received",
+    "attachBill": "Attach supplier bill",
+    "replaceBill": "Replace bill",
+    "viewBill": "View bill",
+    "openBill": "Open in new tab",
+    "print": "Print",
+    "downloadPdf": "Download PDF",
+    "pdfFailed": "Couldn't create the PDF. Please try again.",
+    "empty": "No supplier orders yet"
   },
   "users": {
     "title": "Users",
@@ -250,6 +296,13 @@
     "revenueTrend": "Revenue (last 6 months)",
     "paymentMix": "Payments this month",
     "stockHealth": "Stock health"
+  },
+  "validation": {
+    "required": "Please fill this in",
+    "invalid": "Please check this",
+    "invalidPhone": "Enter a valid number like 03001234567",
+    "min": "Number is too small",
+    "tooLong": "This is too long"
   },
   "toast": {
     "saved": "Saved",

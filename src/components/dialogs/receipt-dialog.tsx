@@ -9,6 +9,7 @@ import { useLanguage } from "@/providers/i18n-provider";
 import { PaymentType } from "@/lib/enums";
 import { displayName } from "@/lib/display";
 import { formatDate } from "@/lib/format";
+import { shopHeaderHtml } from "@/lib/shop-header";
 import { printReceipt } from "@/lib/print-receipt";
 import { Money } from "@/components/common/money";
 import { Button } from "@/components/ui/button";
@@ -38,24 +39,22 @@ export function ReceiptDialog({ payload, onClose }: DialogComponentProps<Receipt
         {isLoading || !receipt ? (
           <p className="py-10 text-center text-muted-foreground">{t("common.loading")}</p>
         ) : (
-          <div className="space-y-4">
-            {/* Header */}
-            <div className="text-center">
-              <h2 className="text-lg font-bold">{t("app.name")}</h2>
-              <p className="text-sm text-muted-foreground">{t("orders.title")}</p>
-            </div>
+          <div className="min-w-0 space-y-4">
+            {/* Header (shop signboard-style banner) */}
+            <div className="min-w-0 overflow-hidden" dangerouslySetInnerHTML={{ __html: shopHeaderHtml() }} />
+            <p className="text-center text-sm text-muted-foreground">{t("orders.title")}</p>
 
-            <div className="flex justify-between text-sm">
-              <div>
+            <div className="flex justify-between gap-3 text-sm">
+              <div className="min-w-0">
                 <p className="font-mono font-semibold">{receipt.order_no}</p>
                 <p className="text-muted-foreground">{formatDate(receipt.created_at)}</p>
               </div>
-              <div className="text-end">
-                <p className="font-medium">
+              <div className="min-w-0 text-end">
+                <p className="truncate font-medium">
                   {receipt.customer ? displayName(receipt.customer, language) : "—"}
                 </p>
                 {receipt.customer?.phone && (
-                  <p dir="ltr" className="text-muted-foreground">
+                  <p dir="ltr" className="truncate text-muted-foreground">
                     {receipt.customer.phone}
                   </p>
                 )}

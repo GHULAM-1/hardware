@@ -35,6 +35,12 @@ export const KhataStatus = {
 } as const;
 export type KhataStatus = (typeof KhataStatus)[keyof typeof KhataStatus];
 
+export const SupplierOrderStatus = {
+  Pending: "pending",
+  Received: "received",
+} as const;
+export type SupplierOrderStatus = (typeof SupplierOrderStatus)[keyof typeof SupplierOrderStatus];
+
 /** Supported UI languages (Module 7). */
 export const Language = {
   English: "en",

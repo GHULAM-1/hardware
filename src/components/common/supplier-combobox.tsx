@@ -69,8 +69,8 @@ export function SupplierCombobox({
       const s = await create.mutateAsync({
         name,
         phone,
-        note: null,
-        image_url: null,
+        shop_name: null,
+        address: null,
       });
       onChange(s.id, { value: s.id, label: s.name });
       setDraftName(null);

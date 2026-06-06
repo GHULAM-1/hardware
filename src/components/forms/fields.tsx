@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { VoiceInputButton } from "@/components/common/voice-input-button";
 import { ImageUpload } from "@/components/common/image-upload";
 import { MultiImageUpload } from "@/components/common/multi-image-upload";
 import type { ImageFolder } from "@/lib/storage";
@@ -150,20 +151,31 @@ export function TextareaField<T extends FieldValues>({
   label,
   placeholder,
   optional,
-}: BaseProps<T>) {
+  voice = false,
+}: BaseProps<T> & { voice?: boolean }) {
   return (
     <FormField
       control={control}
       name={name}
-      render={({ field }) => (
-        <FormItem>
-          <Labelled label={label} optional={optional} />
-          <FormControl>
-            <Textarea placeholder={placeholder} {...field} value={(field.value as string | null) ?? ""} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field }) => {
+        const current = (field.value as string | null) ?? "";
+        return (
+          <FormItem>
+            <div className="flex items-center justify-between gap-2">
+              <Labelled label={label} optional={optional} />
+              {voice ? (
+                <VoiceInputButton
+                  onText={(text) => field.onChange(current ? `${current} ${text}` : text)}
+                />
+              ) : null}
+            </div>
+            <FormControl>
+              <Textarea placeholder={placeholder} {...field} value={current} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 }

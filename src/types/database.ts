@@ -137,6 +137,7 @@ export type Database = {
           image_urls: string[]
           name_en: string
           name_ur: string | null
+          search_norm: string | null
           selling_price: number
           sku: string
           unit: string
@@ -399,6 +400,112 @@ export type Database = {
           },
         ]
       }
+      supplier_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          note: string | null
+          quantity: number
+          supplier_order_id: string
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          note?: string | null
+          quantity: number
+          supplier_order_id: string
+          unit?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          note?: string | null
+          quantity?: number
+          supplier_order_id?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "warehouse_stock"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "supplier_order_items_supplier_order_id_fkey"
+            columns: ["supplier_order_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_orders: {
+        Row: {
+          bill_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          order_no: string
+          received_at: string | null
+          status: Database["public"]["Enums"]["supplier_order_status"]
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bill_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_no?: string
+          received_at?: string | null
+          status?: Database["public"]["Enums"]["supplier_order_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bill_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_no?: string
+          received_at?: string | null
+          status?: Database["public"]["Enums"]["supplier_order_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -502,30 +609,36 @@ export type Database = {
       }
       suppliers: {
         Row: {
+          address: string | null
           created_at: string
           id: string
           image_url: string | null
           name: string
           note: string | null
           phone: string | null
+          shop_name: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
           name: string
           note?: string | null
           phone?: string | null
+          shop_name?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
           name?: string
           note?: string | null
           phone?: string | null
+          shop_name?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -575,6 +688,7 @@ export type Database = {
       order_status: "draft" | "completed" | "cancelled"
       payment_type: "cash" | "partial" | "credit"
       stock_entry_type: "in" | "out"
+      supplier_order_status: "pending" | "received"
       user_role: "super_admin" | "admin"
     }
     CompositeTypes: {
@@ -707,6 +821,7 @@ export const Constants = {
       order_status: ["draft", "completed", "cancelled"],
       payment_type: ["cash", "partial", "credit"],
       stock_entry_type: ["in", "out"],
+      supplier_order_status: ["pending", "received"],
       user_role: ["super_admin", "admin"],
     },
   },

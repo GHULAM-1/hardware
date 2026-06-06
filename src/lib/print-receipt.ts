@@ -1,6 +1,7 @@
 import { PaymentType, Language } from "@/lib/enums";
 import { displayName } from "@/lib/display";
 import { formatDate, formatPKR } from "@/lib/format";
+import { shopHeaderHtml } from "@/lib/shop-header";
 import type { OrderReceiptView } from "@/types/models";
 
 type Labels = {
@@ -69,7 +70,7 @@ export function printReceipt(receipt: OrderReceiptView, language: Language, labe
 </style>
 </head>
 <body>
-  <h1>${esc(labels.appName)}</h1>
+  ${shopHeaderHtml()}
   <div class="meta">
     <div><strong>${esc(receipt.order_no)}</strong><br/>${esc(formatDate(receipt.created_at))}</div>
     <div style="text-align:end">${esc(receipt.customer ? displayName(receipt.customer, language) : "—")}${

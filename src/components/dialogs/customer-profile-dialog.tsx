@@ -61,15 +61,15 @@ export function CustomerProfileDialog({ payload, onClose }: DialogComponentProps
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-4xl overflow-y-auto overflow-x-hidden sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{displayName(customer, language)}</DialogTitle>
+        <DialogHeader className="min-w-0">
+          <DialogTitle className="truncate pe-6">{displayName(customer, language)}</DialogTitle>
           <DialogDescription>
             {customer.phone ? <span dir="ltr">{customer.phone}</span> : null}
           </DialogDescription>
         </DialogHeader>
 
         {last ? (
-          <p className="rounded-md bg-secondary px-3 py-2 text-sm">
+          <p className="min-w-0 break-words rounded-md bg-secondary px-3 py-2 text-sm">
             {t("customers.lastPurchase", {
               item: displayName(last.item, language),
               price: formatPKR(last.price),
@@ -79,7 +79,7 @@ export function CustomerProfileDialog({ payload, onClose }: DialogComponentProps
           <p className="text-sm text-muted-foreground">{t("customers.noPurchases")}</p>
         )}
 
-        <div>
+        <div className="min-w-0">
           <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
             {t("customers.orderHistory")}
           </h3>

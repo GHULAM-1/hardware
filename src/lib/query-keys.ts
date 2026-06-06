@@ -23,6 +23,9 @@ export const queryKeys = {
   orders: (search?: string) => ["orders", { search: search ?? "" }] as const,
   order: (id: string) => ["orders", id] as const,
 
+  supplierOrders: (search?: string) => ["supplier-orders", { search: search ?? "" }] as const,
+  supplierOrder: (id: string) => ["supplier-orders", id] as const,
+
   khatas: (status?: string) => ["khatas", { status: status ?? "" }] as const,
   khataReminders: () => ["khatas", "reminders"] as const,
 

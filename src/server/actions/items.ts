@@ -2,17 +2,15 @@
 
 import { runQuery } from "@/server/actions/_client";
 import { itemSchema, type ItemValues } from "@/lib/schemas";
+import { searchTokens } from "@/lib/search";
 import type { Item } from "@/types/models";
-
-function searchFilter(query: string) {
-  const q = query.replace(/[%,]/g, "");
-  return `name_en.ilike.%${q}%,name_ur.ilike.%${q}%,sku.ilike.%${q}%`;
-}
 
 export async function listItems(accessToken: string, search = ""): Promise<Item[]> {
   return runQuery(accessToken, (c) => {
     let q = c.from("items").select("*").order("created_at", { ascending: false }).limit(50);
-    if (search.trim()) q = q.or(searchFilter(search.trim()));
+    // Match every word as a substring of the normalized column, so "50 kg" and
+    // "50kg" both find "Cement Bag 50kg" and word order doesn't matter.
+    for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
     return q;
   });
 }

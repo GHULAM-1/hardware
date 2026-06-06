@@ -12,7 +12,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
-import { ImageThumb } from "@/components/common/image-thumb";
 import type { Supplier } from "@/types/models";
 
 export default function SuppliersPage() {
@@ -26,25 +25,55 @@ export default function SuppliersPage() {
   const { data: suppliers = [], isLoading } = useSuppliers(debounced);
 
   const columns: Column<Supplier>[] = [
-    { key: "img", header: "", headerClassName: "w-12", cell: (row) => <ImageThumb src={row.image_url} alt={row.name} /> },
-    { key: "name", header: t("fields.name"), cell: (row) => <span className="font-medium">{row.name}</span> },
-    { key: "phone", header: t("fields.phone"), cell: (row) => row.phone ?? "—" },
-    { key: "note", header: t("fields.note"), cell: (row) => row.note ?? "—" },
+    {
+      key: "row_no",
+      header: "#",
+      headerClassName: "w-12",
+      cell: (_row, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
+    },
+    {
+      key: "name",
+      header: t("suppliers.supplierName"),
+      cell: (row) => (
+        <span className="font-medium text-primary underline-offset-2 hover:underline">
+          {row.name}
+        </span>
+      ),
+    },
+    {
+      key: "shop_name",
+      header: t("fields.shopName"),
+      cell: (row) => row.shop_name ?? "—",
+    },
+    {
+      key: "phone",
+      header: t("fields.phone"),
+      cell: (row) => (row.phone ? <span dir="ltr">{row.phone}</span> : "—"),
+    },
+    {
+      key: "address",
+      header: t("fields.address"),
+      cell: (row) => row.address ?? "—",
+      className: "hidden md:table-cell",
+      headerClassName: "hidden md:table-cell",
+    },
     {
       key: "actions",
       header: "",
       headerClassName: "w-24",
       cell: (row) => (
-        <RowActions
-          onEdit={() => openDialog(DialogKey.SupplierForm, { supplier: row })}
-          onDelete={() =>
-            confirmDelete({
-              title: t("common.delete"),
-              description: row.name,
-              onConfirm: () => deleteSupplier.mutateAsync(row.id),
-            })
-          }
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <RowActions
+            onEdit={() => openDialog(DialogKey.SupplierForm, { supplier: row })}
+            onDelete={() =>
+              confirmDelete({
+                title: t("common.delete"),
+                description: row.name,
+                onConfirm: () => deleteSupplier.mutateAsync(row.id),
+              })
+            }
+          />
+        </div>
       ),
     },
   ];
@@ -58,7 +87,13 @@ export default function SuppliersPage() {
         onNew={() => openDialog(DialogKey.SupplierForm, null)}
         newLabel={t("suppliers.newSupplier")}
       />
-      <DataTable columns={columns} rows={suppliers} getRowId={(r) => r.id} loading={isLoading} />
+      <DataTable
+        columns={columns}
+        rows={suppliers}
+        getRowId={(r) => r.id}
+        loading={isLoading}
+        onRowClick={(row) => openDialog(DialogKey.SupplierDetail, { supplier: row })}
+      />
     </div>
   );
 }

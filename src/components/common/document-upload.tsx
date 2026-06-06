@@ -1,34 +1,32 @@
 "use client";
 
 import * as React from "react";
-import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { FileText, Loader2, Trash2, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ZoomableImage } from "@/components/common/zoomable-image";
 import {
-  ACCEPT_ATTR,
+  ACCEPT_DOCUMENT_ATTR,
+  isPdfUrl,
   removeImage,
   uploadImage,
-  validateImageFile,
-  type ImageFolder,
+  validateDocumentFile,
 } from "@/lib/storage";
 
 /**
- * Controlled image picker: uploads to the public `media` bucket and reports the
- * resulting public URL via onChange. Replacing or removing also deletes the
- * previously stored file (best-effort) so the bucket doesn't accumulate orphans.
+ * Controlled file picker for a single document (image OR PDF) — used to attach a
+ * supplier's bill. Mirrors ImageUpload but allows PDFs (shown with a file icon).
+ * Uploads to the public `media` bucket and reports the public URL via onChange.
  */
-export function ImageUpload({
+export function DocumentUpload({
   value,
   onChange,
-  folder,
   disabled,
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
-  folder: ImageFolder;
   disabled?: boolean;
 }) {
   const { t } = useTranslation();
@@ -37,18 +35,18 @@ export function ImageUpload({
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-picking the same file
+    e.target.value = "";
     if (!file) return;
 
-    const problem = validateImageFile(file);
+    const problem = validateDocumentFile(file);
     if (problem) {
-      toast.error(t(problem === "type" ? "media.invalidType" : "media.tooLarge"));
+      toast.error(t(problem === "type" ? "media.invalidDocType" : "media.documentTooLarge"));
       return;
     }
 
     setBusy(true);
     try {
-      const url = await uploadImage(folder, file);
+      const url = await uploadImage("supplier_bill", file);
       const previous = value;
       onChange(url);
       if (previous) void removeImage(previous);
@@ -65,14 +63,28 @@ export function ImageUpload({
     if (previous) void removeImage(previous);
   }
 
+  const pdf = value ? isPdfUrl(value) : false;
+
   return (
     <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
       <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
         {value ? (
-          <ZoomableImage src={value} className="h-full w-full" />
+          pdf ? (
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-full w-full items-center justify-center text-muted-foreground hover:text-foreground"
+              title={t("media.viewImage")}
+            >
+              <FileText className="h-7 w-7" />
+            </a>
+          ) : (
+            <ZoomableImage src={value} className="h-full w-full" />
+          )
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <ImagePlus className="h-6 w-6" />
+            <Upload className="h-6 w-6" />
           </div>
         )}
         {busy && (
@@ -86,7 +98,7 @@ export function ImageUpload({
         <input
           ref={inputRef}
           type="file"
-          accept={ACCEPT_ATTR}
+          accept={ACCEPT_DOCUMENT_ATTR}
           className="hidden"
           onChange={onPick}
           disabled={disabled || busy}
@@ -115,7 +127,7 @@ export function ImageUpload({
             </Button>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">{t("media.hint")}</p>
+        <p className="text-xs text-muted-foreground">{t("media.docHint")}</p>
       </div>
     </div>
   );

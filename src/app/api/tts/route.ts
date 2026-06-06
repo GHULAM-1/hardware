@@ -16,16 +16,34 @@ export async function POST(request: Request) {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { text } = (await request.json()) as { text?: string };
+  const { text, lang } = (await request.json()) as { text?: string; lang?: string };
   const value = text?.trim();
   if (!value) {
     return Response.json({ error: "No text" }, { status: 400 });
   }
 
+  // Read in the voice/language of the current UI so Urdu text isn't spoken with an
+  // English accent. Whitelist the language; anything else falls back to English.
+  const isUrdu = lang === "ur";
+  const speech = isUrdu
+    ? {
+        language: "ur",
+        voice: "nova",
+        instructions:
+          "Read the following text aloud in natural, conversational Urdu (اردو) with authentic pronunciation and a calm, clear pace.",
+      }
+    : {
+        language: "en",
+        voice: "alloy",
+        instructions: "Read the following text aloud in clear, natural English.",
+      };
+
   const { audio } = await generateSpeech({
     model: openai.speech("gpt-4o-mini-tts"),
     text: value.slice(0, 4000), // cap length (cost/abuse guard)
-    voice: "alloy",
+    voice: speech.voice,
+    language: speech.language,
+    instructions: speech.instructions,
     outputFormat: "mp3",
   });
 

@@ -1,22 +1,16 @@
 "use client";
 
-import { History, Plus, Trash2 } from "lucide-react";
+import { History, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ItemCombobox } from "@/components/common/item-combobox";
-import { OrderSupplierRow } from "@/components/orders/order-supplier-row";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Money } from "@/components/common/money";
 import { useLastItemPrice } from "@/hooks/use-orders";
 import { formatPKR } from "@/lib/format";
-import {
-  lineTotal,
-  newSupplier,
-  type LineDraft,
-  type LineSupplierDraft,
-} from "@/components/orders/order-form-types";
+import { lineTotal, type LineDraft } from "@/components/orders/order-form-types";
 
 export function OrderLineRow({
   line,
@@ -33,10 +27,6 @@ export function OrderLineRow({
 }) {
   const { t } = useTranslation();
   const { data: lastPrice } = useLastItemPrice(customerId, line.item?.id ?? null);
-
-  function setSupplier(key: string, next: LineSupplierDraft) {
-    onChange({ ...line, suppliers: line.suppliers.map((s) => (s.key === key ? next : s)) });
-  }
 
   return (
     <div className="min-w-0 space-y-3 rounded-lg border border-border bg-card p-4">
@@ -97,31 +87,6 @@ export function OrderLineRow({
           <span>{t("orders.lastSoldToCustomer", { price: formatPKR(lastPrice) })}</span>
         </button>
       )}
-
-      {/* Supplier sourcing (informational; stock is subtracted manually in the warehouse) */}
-      <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">{t("orders.sourceFrom")}</Label>
-        {line.suppliers.map((s) => (
-          <OrderSupplierRow
-            key={s.key}
-            itemId={line.item?.id ?? null}
-            value={s}
-            onChange={(next) => setSupplier(s.key, next)}
-            onRemove={() =>
-              onChange({ ...line, suppliers: line.suppliers.filter((x) => x.key !== s.key) })
-            }
-          />
-        ))}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => onChange({ ...line, suppliers: [...line.suppliers, newSupplier()] })}
-        >
-          <Plus className="me-1 h-3.5 w-3.5" />
-          {t("fields.supplier")}
-        </Button>
-      </div>
 
       <div className="flex justify-end border-t border-border pt-2 text-sm">
         <span className="me-2 text-muted-foreground">{t("orders.total")}:</span>

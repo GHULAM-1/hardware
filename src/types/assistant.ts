@@ -13,6 +13,7 @@ export const ASSISTANT_ROUTES = [
   "/orders",
   "/khata",
   "/suppliers",
+  "/supplier-orders",
 ] as const;
 
 export type AssistantRoute = (typeof ASSISTANT_ROUTES)[number];

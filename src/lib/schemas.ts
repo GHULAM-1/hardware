@@ -4,6 +4,26 @@ import { PaymentType, StockEntryType, UserRole } from "@/lib/enums";
 
 /** Single source of truth for form/payload validation schemas. */
 
+// Friendly, translatable validation messages. The map returns i18n KEYS (e.g.
+// "validation.required"); FormMessage runs them through t() so errors show in the
+// user's language with plain wording instead of zod's raw "Too small: …" text.
+z.config({
+  customError: (issue) => {
+    switch (issue.code) {
+      case "invalid_type":
+        return "validation.required";
+      case "too_small":
+        return issue.origin === "string" ? "validation.required" : "validation.min";
+      case "too_big":
+        return "validation.tooLong";
+      case "invalid_format":
+        return "validation.invalid";
+      default:
+        return undefined;
+    }
+  },
+});
+
 // Accepts string | null | undefined (so the schema is idempotent: re-parsing its
 // own output — which uses null for empties — succeeds on the server).
 const optionalText = z
@@ -16,10 +36,7 @@ const optionalText = z
 // Country-code / +92 forms are rejected on purpose — the shop enters local numbers.
 export const PK_PHONE_RE = /^03\d{9}$/;
 export const isPkPhone = (v: string) => PK_PHONE_RE.test(v.trim());
-const pkPhoneRequired = z
-  .string()
-  .trim()
-  .regex(PK_PHONE_RE, "Enter a valid number like 03001234567");
+const pkPhoneRequired = z.string().trim().regex(PK_PHONE_RE, "validation.invalidPhone");
 
 export const itemSchema = z.object({
   name_en: z.string().trim().min(1),
@@ -35,10 +52,11 @@ export type ItemValues = z.output<typeof itemSchema>;
 
 export const supplierSchema = z.object({
   name: z.string().trim().min(1),
+  // The supplier's business (shop) name.
+  shop_name: optionalText,
   // Phone is the supplier's unique key, so it's required and must be a valid PK number.
   phone: pkPhoneRequired,
-  note: optionalText,
-  image_url: z.string().url().nullable().optional().default(null),
+  address: optionalText,
 });
 export type SupplierValues = z.output<typeof supplierSchema>;
 
@@ -136,3 +154,25 @@ export const orderSchema = z
     { message: "due_date required for partial/credit", path: ["due_date"] },
   );
 export type OrderValues = z.output<typeof orderSchema>;
+
+// Supplier order: a material REQUEST list (no prices). Supplier is optional.
+const supplierOrderLineSchema = z.object({
+  item_id: z.string().uuid(),
+  quantity: z.coerce.number().positive(),
+  unit: z.string().trim().min(1),
+  note: optionalText,
+});
+
+export const supplierOrderSchema = z.object({
+  supplier_id: z.string().uuid().nullable().optional().default(null),
+  note: optionalText,
+  lines: z.array(supplierOrderLineSchema).min(1),
+});
+export type SupplierOrderValues = z.output<typeof supplierOrderSchema>;
+
+/** Marking a supplier order received, optionally attaching the supplier's bill. */
+export const supplierOrderReceiveSchema = z.object({
+  bill_url: z.string().url().nullable().optional().default(null),
+});
+export type SupplierOrderReceiveValues = z.output<typeof supplierOrderReceiveSchema>;
+

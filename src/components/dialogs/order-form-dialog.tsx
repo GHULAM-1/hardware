@@ -79,13 +79,6 @@ export function OrderFormDialog({ onClose }: DialogComponentProps<null>) {
           quantity: l.quantity,
           unit: l.unit,
           selling_price: l.selling_price,
-          suppliers: l.suppliers
-            .filter((s) => s.supplier_id && Number(s.quantity) > 0)
-            .map((s) => ({
-              supplier_id: s.supplier_id,
-              quantity: s.quantity,
-              buying_price: s.buying_price === "" ? null : s.buying_price,
-            })),
         })),
     };
 

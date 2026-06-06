@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Form } from "@/components/ui/form";
-import { ImageField, PhoneField, TextField, TextareaField } from "@/components/forms/fields";
+import { PhoneField, TextField, TextareaField } from "@/components/forms/fields";
 import { supplierSchema, type SupplierValues } from "@/lib/schemas";
 import { useCreateSupplier, useUpdateSupplier } from "@/hooks/use-suppliers";
 import { DUPLICATE_PHONE } from "@/lib/errors";
@@ -25,9 +25,9 @@ export function SupplierFormDialog({ payload, onClose }: DialogComponentProps<Su
     resolver: zodResolver(supplierSchema),
     defaultValues: {
       name: supplier?.name ?? "",
+      shop_name: supplier?.shop_name ?? "",
       phone: supplier?.phone ?? "",
-      note: supplier?.note ?? "",
-      image_url: supplier?.image_url ?? null,
+      address: supplier?.address ?? "",
     },
   });
 
@@ -59,10 +59,10 @@ export function SupplierFormDialog({ payload, onClose }: DialogComponentProps<Su
         submitting={submitting}
       >
         <div className="space-y-4">
-          <TextField control={form.control} name="name" label={t("fields.name")} />
+          <TextField control={form.control} name="name" label={t("suppliers.supplierName")} />
           <PhoneField control={form.control} name="phone" label={t("fields.phone")} />
-          <TextareaField control={form.control} name="note" label={t("fields.note")} optional />
-          <ImageField control={form.control} name="image_url" label={t("fields.image")} folder="supplier" />
+          <TextField control={form.control} name="shop_name" label={t("fields.shopName")} optional />
+          <TextareaField control={form.control} name="address" label={t("fields.address")} optional />
         </div>
       </FormDialog>
     </Form>

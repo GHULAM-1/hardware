@@ -6,11 +6,22 @@ import { createActionClient } from "@/lib/supabase/server";
 import { embedText, toVectorLiteral } from "@/server/ai/embed";
 import { listCustomers, getCustomerOrders, getLastPurchase } from "@/server/actions/customers";
 import { listItems } from "@/server/actions/items";
-import { listItemsWithStock } from "@/server/actions/warehouse";
+import { listItemsWithStock, listStockEntries } from "@/server/actions/warehouse";
 import { listOrders, getOrderReceipt } from "@/server/actions/orders";
-import { listKhatas } from "@/server/actions/khata";
-import { getDashboardStats } from "@/server/actions/dashboard";
+import { listKhatas, getKhataReminders } from "@/server/actions/khata";
+import { listSuppliers } from "@/server/actions/suppliers";
+import { listSupplierOrders, getSupplierOrder } from "@/server/actions/supplier-orders";
+import { listUsers } from "@/server/actions/users";
+import { getReminderLeadDays } from "@/server/actions/settings";
+import {
+  getDashboardStats,
+  getCatalogSummary,
+  getFinancialSummary,
+  getRevenueTrend,
+  getPaymentBreakdown,
+} from "@/server/actions/dashboard";
 import { KhataStatus } from "@/lib/enums";
+import { LOW_STOCK_THRESHOLD } from "@/lib/status-meta";
 import { ASSISTANT_ROUTES } from "@/types/assistant";
 
 /**
@@ -128,6 +139,153 @@ export function buildTools(accessToken: string) {
       description: "Get shop-wide counts: total items, total customers, pending khata count.",
       inputSchema: z.object({}),
       execute: async () => getDashboardStats(accessToken),
+    }),
+
+    // ── Suppliers ────────────────────────────────────────────────────────────
+    searchSuppliers: tool({
+      description:
+        "Search suppliers by name. Returns each supplier with shop name, phone and address. Use for questions like 'what's Hamza Traders' phone' or 'list my suppliers'.",
+      inputSchema: z.object({ query: z.string().default("") }),
+      execute: async ({ query }) => {
+        const rows = await listSuppliers(accessToken, query);
+        return rows.map((s) => ({
+          id: s.id,
+          name: s.name,
+          shop_name: s.shop_name,
+          phone: s.phone,
+          address: s.address,
+        }));
+      },
+    }),
+
+    // ── Supplier orders (material request lists) ──────────────────────────────
+    listSupplierOrders: tool({
+      description:
+        "List supplier orders (material request lists sent to suppliers), most recent first. Each shows its number, date, supplier, status (pending or received) and the items requested. Use for 'what did I order from suppliers' or 'which supplier orders are pending'.",
+      inputSchema: z.object({ search: z.string().default("") }),
+      execute: async ({ search }) => listSupplierOrders(accessToken, search),
+    }),
+
+    getSupplierOrder: tool({
+      description:
+        "Get one supplier order in full by its id: supplier details, every line item with quantity and note, status, and whether a bill is attached.",
+      inputSchema: z.object({ supplierOrderId: z.string().uuid() }),
+      execute: async ({ supplierOrderId }) => getSupplierOrder(accessToken, supplierOrderId),
+    }),
+
+    // ── Stock movement history ────────────────────────────────────────────────
+    getStockHistory: tool({
+      description:
+        "Get the stock in/out movement history for one item id: each entry's type (in or out), quantity, date, buying price, and the supplier it came from. Use getItemStock for the current total; use this for the movement log behind it.",
+      inputSchema: z.object({ itemId: z.string().uuid() }),
+      execute: async ({ itemId }) => {
+        const rows = await listStockEntries(accessToken, itemId);
+        return rows.map((e) => ({
+          type: e.type,
+          quantity: e.quantity,
+          entry_date: e.entry_date,
+          buying_price: e.buying_price,
+          supplier: e.suppliers?.name ?? null,
+          note: e.note,
+        }));
+      },
+    }),
+
+    // ── Low / out-of-stock listing ────────────────────────────────────────────
+    listLowStock: tool({
+      description:
+        "List items that are low or out of stock right now (quantity at or below the low-stock threshold). Use for 'what's running low' or 'what do I need to reorder'.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const items = await listItemsWithStock(accessToken);
+        return items
+          .filter((i) => i.quantity <= LOW_STOCK_THRESHOLD)
+          .map((i) => ({
+            id: i.id,
+            name_en: i.name_en,
+            name_ur: i.name_ur,
+            unit: i.unit,
+            quantity: i.quantity,
+            state: i.quantity <= 0 ? "out_of_stock" : "low_stock",
+          }));
+      },
+    }),
+
+    // ── Categories ────────────────────────────────────────────────────────────
+    listCategories: tool({
+      description: "List the catalog categories (id, name) used to group items.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const client = createActionClient(accessToken);
+        const { data, error } = await client
+          .from("categories")
+          .select("id, name")
+          .order("name");
+        if (error) throw new Error(error.message);
+        return data ?? [];
+      },
+    }),
+
+    // ── Staff / users (owner-only) ────────────────────────────────────────────
+    listStaff: tool({
+      description:
+        "List staff accounts with their role (owner/super_admin or admin) and active status. Only the owner can read this.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        try {
+          const rows = await listUsers(accessToken);
+          return rows.map((u) => ({
+            full_name: u.full_name,
+            email: u.email,
+            role: u.role,
+            is_active: u.is_active,
+          }));
+        } catch {
+          return { error: "not_permitted" };
+        }
+      },
+    }),
+
+    // ── Dues coming due ──────────────────────────────────────────────────────
+    getDuesReminders: tool({
+      description:
+        "List khata dues that are coming due soon (within the shop's reminder window), with who owes and when. Also returns the reminder lead-day setting.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const [reminders, leadDays] = await Promise.all([
+          getKhataReminders(accessToken),
+          getReminderLeadDays(accessToken),
+        ]);
+        return { reminders, leadDays };
+      },
+    }),
+
+    // ── Business analytics ────────────────────────────────────────────────────
+    getBusinessSummary: tool({
+      description:
+        "Get the shop's business overview: this month's revenue and order count, total outstanding dues, customer and supplier counts, plus catalog health (products, low/out-of-stock, total units).",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const [financial, catalog] = await Promise.all([
+          getFinancialSummary(accessToken),
+          getCatalogSummary(accessToken),
+        ]);
+        return { financial, catalog };
+      },
+    }),
+
+    getRevenueTrend: tool({
+      description:
+        "Get completed-order revenue per month for the last N months (default 6), for trend questions like 'how has revenue changed'.",
+      inputSchema: z.object({ months: z.number().int().min(1).max(24).default(6) }),
+      execute: async ({ months }) => getRevenueTrend(accessToken, months),
+    }),
+
+    getPaymentBreakdown: tool({
+      description:
+        "Get this month's completed-order revenue split by how it was paid: cash, partial, and credit (udhaar).",
+      inputSchema: z.object({}),
+      execute: async () => getPaymentBreakdown(accessToken),
     }),
 
     navigateTo: tool({

@@ -80,7 +80,7 @@ export function KhataFormDialog({ onClose }: DialogComponentProps<null>) {
               )}
             />
           </div>
-          <TextareaField control={form.control} name="description" label={t("fields.note")} optional />
+          <TextareaField control={form.control} name="description" label={t("fields.note")} optional voice />
         </div>
       </FormDialog>
     </Form>

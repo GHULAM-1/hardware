@@ -5,6 +5,7 @@ import {
   ShoppingCart,
   BookUser,
   Truck,
+  ClipboardList,
   UserCog,
   Settings,
   type LucideIcon,
@@ -29,6 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/orders", i18nKey: "nav.orders", icon: ShoppingCart },
   { href: "/khata", i18nKey: "nav.khata", icon: BookUser },
   { href: "/suppliers", i18nKey: "nav.suppliers", icon: Truck },
+  { href: "/supplier-orders", i18nKey: "nav.supplierOrders", icon: ClipboardList },
   { href: "/users", i18nKey: "nav.users", icon: UserCog },
   { href: "/settings", i18nKey: "nav.settings", icon: Settings },
 ];

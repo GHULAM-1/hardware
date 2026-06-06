@@ -10,8 +10,18 @@
     "orders": "آرڈرز",
     "khata": "کھاتہ",
     "suppliers": "سپلائرز",
+    "supplierOrders": "سپلائر آرڈرز",
     "users": "صارفین",
     "settings": "ترتیبات"
+  },
+  "voice": {
+    "speak": "بول کر لکھیں",
+    "stop": "ریکارڈنگ بند کریں",
+    "transcribing": "لکھا جا رہا ہے…",
+    "nothingHeard": "کچھ سنائی نہیں دیا — دوبارہ کوشش کریں۔",
+    "micDenied": "مائیک بند ہے۔ آواز استعمال کرنے کے لیے براؤزر میں اجازت دیں۔",
+    "unsupported": "اس ڈیوائس پر آواز سے لکھنا دستیاب نہیں۔",
+    "failed": "آواز کو لکھا نہیں جا سکا۔ دوبارہ کوشش کریں۔"
   },
   "common": {
     "add": "شامل کریں",
@@ -36,6 +46,8 @@
     "collapseSidebar": "سائیڈبار سکیڑیں",
     "expandSidebar": "سائیڈبار کھولیں",
     "readAloud": "آواز میں پڑھیں",
+    "readSelection": "منتخب متن پڑھیں",
+    "reading": "پڑھ رہا ہے…",
     "stopReading": "روکیں",
     "ttsError": "متن آواز میں نہیں پڑھا جا سکا"
   },
@@ -53,6 +65,7 @@
     "nameEn": "نام (انگریزی)",
     "nameUr": "نام (اردو)",
     "name": "نام",
+    "shopName": "دکان کا نام",
     "sku": "ایس کے یو",
     "unit": "اکائی",
     "selectUnit": "اکائی منتخب کریں",
@@ -157,8 +170,11 @@
     "remove": "ہٹا دیں",
     "viewImage": "تصویر دیکھیں",
     "hint": "JPG، PNG یا WebP · زیادہ سے زیادہ 5MB",
+    "docHint": "JPG، PNG، WebP یا PDF · زیادہ سے زیادہ 10MB",
     "invalidType": "صرف JPG، PNG یا WebP تصاویر کی اجازت ہے",
+    "invalidDocType": "صرف تصاویر یا PDF فائلوں کی اجازت ہے",
     "tooLarge": "تصویر 5MB یا اس سے کم ہونی چاہیے",
+    "documentTooLarge": "فائل 10MB یا اس سے کم ہونی چاہیے",
     "uploadFailed": "اپ لوڈ ناکام۔ دوبارہ کوشش کریں۔"
   },
   "payment": {
@@ -189,8 +205,38 @@
     "title": "سپلائرز",
     "newSupplier": "نیا سپلائر",
     "editSupplier": "سپلائر میں ترمیم",
+    "supplierName": "سپلائر کا نام",
     "duplicatePhone": "اس فون نمبر والا سپلائر پہلے سے موجود ہے",
     "invalidPhone": "درست نمبر درج کریں جیسے 03001234567"
+  },
+  "supplierOrders": {
+    "title": "سپلائر آرڈرز",
+    "newOrder": "نیا آرڈر",
+    "detail": "سپلائر آرڈر",
+    "searchOrders": "آرڈر تلاش کریں…",
+    "orderNo": "آرڈر #",
+    "items": "اشیاء",
+    "addItem": "آئٹم شامل کریں",
+    "addLowStock": "کم اسٹاک اشیاء شامل کریں",
+    "noLowStock": "کوئی کم یا ختم اسٹاک آئٹم نہیں",
+    "orderNote": "سپلائر کے لیے نوٹ",
+    "orderNotePlaceholder": "سپلائر کے لیے کوئی ہدایت…",
+    "notePlaceholder": "مثلاً برانڈ یا سائز",
+    "addAtLeastOneItem": "کم از کم ایک آئٹم مقدار کے ساتھ شامل کریں",
+    "materialList": "مال کی درخواست",
+    "pending": "باقی",
+    "received": "موصول ہوگیا",
+    "receivedOn": "موصول ہوا: {{date}}",
+    "markReceived": "موصول شدہ لگائیں",
+    "markedReceived": "موصول شدہ لگا دیا",
+    "attachBill": "سپلائر کا بل لگائیں",
+    "replaceBill": "بل تبدیل کریں",
+    "viewBill": "بل دیکھیں",
+    "openBill": "نئے ٹیب میں کھولیں",
+    "print": "پرنٹ کریں",
+    "downloadPdf": "پی ڈی ایف ڈاؤن لوڈ کریں",
+    "pdfFailed": "پی ڈی ایف نہیں بن سکی۔ دوبارہ کوشش کریں۔",
+    "empty": "ابھی کوئی سپلائر آرڈر نہیں"
   },
   "users": {
     "title": "صارفین",
@@ -250,6 +296,13 @@
     "revenueTrend": "آمدنی (گزشتہ 6 ماہ)",
     "paymentMix": "اس ماہ کی ادائیگیاں",
     "stockHealth": "اسٹاک کی صورتحال"
+  },
+  "validation": {
+    "required": "یہ خانہ بھریں",
+    "invalid": "براہ کرم اسے دیکھیں",
+    "invalidPhone": "درست نمبر لکھیں جیسے 03001234567",
+    "min": "نمبر بہت چھوٹا ہے",
+    "tooLong": "یہ بہت لمبا ہے"
   },
   "toast": {
     "saved": "محفوظ ہو گیا",
