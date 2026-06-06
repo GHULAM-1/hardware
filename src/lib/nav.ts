@@ -7,6 +7,7 @@ import {
   Truck,
   ClipboardList,
   UserCog,
+  Contact,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -31,6 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/khata", i18nKey: "nav.khata", icon: BookUser },
   { href: "/suppliers", i18nKey: "nav.suppliers", icon: Truck },
   { href: "/supplier-orders", i18nKey: "nav.supplierOrders", icon: ClipboardList },
+  { href: "/staff", i18nKey: "nav.staff", icon: Contact },
   { href: "/users", i18nKey: "nav.users", icon: UserCog },
   { href: "/settings", i18nKey: "nav.settings", icon: Settings },
 ];

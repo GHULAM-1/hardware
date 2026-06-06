@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { PaymentType, StockEntryType, UserRole } from "@/lib/enums";
+import { PaymentType, StaffAttendanceStatus, StockEntryType, UserRole } from "@/lib/enums";
 
 /** Single source of truth for form/payload validation schemas. */
 
@@ -37,6 +37,17 @@ const optionalText = z
 export const PK_PHONE_RE = /^03\d{9}$/;
 export const isPkPhone = (v: string) => PK_PHONE_RE.test(v.trim());
 const pkPhoneRequired = z.string().trim().regex(PK_PHONE_RE, "validation.invalidPhone");
+
+// Pakistani CNIC: exactly 13 digits, stored raw (no dashes); formatted for display.
+export const PK_CNIC_RE = /^\d{13}$/;
+export const isPkCnic = (v: string) => PK_CNIC_RE.test(v.trim());
+// Optional CNIC: empty -> null; if present must be 13 digits.
+const optionalCnic = z
+  .string()
+  .trim()
+  .nullish()
+  .transform((v) => (v ? v : null))
+  .refine((v) => v === null || PK_CNIC_RE.test(v), "validation.invalidCnic");
 
 export const itemSchema = z.object({
   name_en: z.string().trim().min(1),
@@ -175,4 +186,54 @@ export const supplierOrderReceiveSchema = z.object({
   bill_url: z.string().url().nullable().optional().default(null),
 });
 export type SupplierOrderReceiveValues = z.output<typeof supplierOrderReceiveSchema>;
+
+// ── Staff management ─────────────────────────────────────────────────────────
+
+// A staff member (non-login employee). Phone is the unique key (PK format);
+// CNIC is optional but unique when present. Salary is required.
+export const staffSchema = z.object({
+  name: z.string().trim().min(1),
+  phone: pkPhoneRequired,
+  cnic: optionalCnic,
+  address: optionalText,
+  image_url: z.string().url().nullable().optional().default(null),
+  // Required: a real, positive WHOLE amount (0/blank/decimals rejected).
+  monthly_salary: z.coerce.number().int("validation.noDecimals").positive("validation.required"),
+  is_active: z.boolean().default(true),
+});
+export type StaffValues = z.output<typeof staffSchema>;
+
+// One staff member's mark for one day.
+export const attendanceEntrySchema = z.object({
+  staff_id: z.string().uuid(),
+  status: z.enum([StaffAttendanceStatus.Present, StaffAttendanceStatus.Absent]),
+});
+
+// A whole day's attendance, saved in one batch (the daily checklist).
+export const attendanceBatchSchema = z.object({
+  date: z.string().min(1),
+  entries: z.array(attendanceEntrySchema).min(1),
+});
+export type AttendanceBatchValues = z.output<typeof attendanceBatchSchema>;
+
+// A mid-month salary advance: money the employee took early.
+export const salaryAdvanceSchema = z.object({
+  staff_id: z.string().uuid(),
+  amount: z.coerce.number().int("validation.noDecimals").positive(),
+  advance_date: z.string().min(1),
+  note: optionalText,
+});
+export type SalaryAdvanceValues = z.output<typeof salaryAdvanceSchema>;
+
+// Recording the salary actually paid for a month. The admin types amount_paid
+// (defaults to the computed net in the UI, but is the final word); the computed
+// figures are snapshot server-side.
+export const salaryPaymentSchema = z.object({
+  staff_id: z.string().uuid(),
+  period_month: z.string().regex(/^\d{4}-\d{2}$/), // YYYY-MM
+  amount_paid: z.coerce.number().int("validation.noDecimals").min(0),
+  paid_on: z.string().min(1),
+  note: optionalText,
+});
+export type SalaryPaymentValues = z.output<typeof salaryPaymentSchema>;
 

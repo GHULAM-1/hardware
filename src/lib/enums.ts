@@ -41,6 +41,12 @@ export const SupplierOrderStatus = {
 } as const;
 export type SupplierOrderStatus = (typeof SupplierOrderStatus)[keyof typeof SupplierOrderStatus];
 
+export const StaffAttendanceStatus = {
+  Present: "present",
+  Absent: "absent",
+} as const;
+export type StaffAttendanceStatus = (typeof StaffAttendanceStatus)[keyof typeof StaffAttendanceStatus];
+
 /** Supported UI languages (Module 7). */
 export const Language = {
   English: "en",

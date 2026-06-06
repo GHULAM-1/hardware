@@ -109,6 +109,52 @@ export function PhoneField<T extends FieldValues>({
   );
 }
 
+/**
+ * Pakistani CNIC field: digits-only (max 13), shown live as 35201-1234567-1 but
+ * stored RAW (13 digits) in form state so the schema/unique-index stay simple.
+ */
+export function CnicField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  optional,
+}: BaseProps<T>) {
+  const formatCnicDisplay = (digits: string) => {
+    const p1 = digits.slice(0, 5);
+    const p2 = digits.slice(5, 12);
+    const p3 = digits.slice(12, 13);
+    return [p1, p2, p3].filter(Boolean).join("-");
+  };
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => {
+        const raw = ((field.value as string | null) ?? "").replace(/\D/g, "").slice(0, 13);
+        return (
+          <FormItem>
+            <Labelled label={label} optional={optional} />
+            <FormControl>
+              <Input
+                type="text"
+                dir="ltr"
+                inputMode="numeric"
+                placeholder="35201-1234567-1"
+                value={formatCnicDisplay(raw)}
+                onChange={(e) => field.onChange(e.target.value.replace(/\D/g, "").slice(0, 13))}
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
+    />
+  );
+}
+
 export function NumberField<T extends FieldValues>({
   control,
   name,
@@ -117,7 +163,8 @@ export function NumberField<T extends FieldValues>({
   optional,
   step = 1,
   min = 0,
-}: BaseProps<T> & { step?: number | string; min?: number }) {
+  integer = false,
+}: BaseProps<T> & { step?: number | string; min?: number; integer?: boolean }) {
   return (
     <FormField
       control={control}
@@ -130,8 +177,17 @@ export function NumberField<T extends FieldValues>({
               type="number"
               // Prices/quantities are never negative, so min defaults to 0 and we
               // block the keys that would let a user type a negative/exponent.
+              // `integer` additionally blocks the decimal point (whole values only).
               min={min}
-              step={step}
+              step={integer ? 1 : step}
+              inputMode={integer ? "numeric" : undefined}
+              onKeyDown={
+                integer
+                  ? (e) => {
+                      if (["e", "E", "+", "-", "."].includes(e.key)) e.preventDefault();
+                    }
+                  : undefined
+              }
               dir="ltr"
               placeholder={placeholder}
               {...field}

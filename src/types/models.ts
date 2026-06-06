@@ -3,6 +3,7 @@
  * Keeps the rest of the app from importing the verbose generated shapes directly.
  */
 import type { Database } from "@/types/database";
+import type { StaffAttendanceStatus } from "@/lib/enums";
 
 type Tables = Database["public"]["Tables"];
 type Views = Database["public"]["Views"];
@@ -26,6 +27,34 @@ export type Khata = Row<"khatas">;
 export type AppSetting = Row<"app_settings">;
 export type SupplierOrder = Row<"supplier_orders">;
 export type SupplierOrderItem = Row<"supplier_order_items">;
+export type Staff = Row<"staff">;
+export type StaffAttendance = Row<"staff_attendance">;
+export type SalaryAdvance = Row<"salary_advances">;
+export type SalaryPayment = Row<"salary_payments">;
+
+/** One staff member's mark for a given day (null = not yet marked → treated present). */
+export type AttendanceRow = { staff: Staff; status: StaffAttendanceStatus | null };
+
+/** A staff member's salary picture for one month — the breakdown + paid status. */
+export type StaffSalaryRow = {
+  staff: Staff;
+  daysInMonth: number;
+  absentDays: number;
+  perDay: number;
+  absenceDeduction: number;
+  advancesTotal: number;
+  /** Suggested net to pay (salary − absence deduction − advances); may be negative. */
+  netPayable: number;
+  paid: boolean;
+  /** What the admin actually recorded as paid (null until paid). */
+  amountPaid: number | null;
+  paidOn: string | null;
+  /** The note saved with the payment (null until paid / no note) — for prefilling edits. */
+  paymentNote: string | null;
+};
+
+/** A staff member's salary for one month, with that month's advances listed. */
+export type StaffSalaryDetail = StaffSalaryRow & { advances: SalaryAdvance[] };
 
 export type WarehouseStock = Views["warehouse_stock"]["Row"];
 

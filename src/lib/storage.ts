@@ -8,6 +8,8 @@ export const IMAGE_FOLDER = {
   customer: "customer",
   supplier: "supplier",
   user: "user",
+  // Staff (employee) profile photos.
+  staff: "staff",
   // Supplier bills (a photo OR a PDF) attached when an order is received.
   supplier_bill: "supplier_bill",
 } as const;

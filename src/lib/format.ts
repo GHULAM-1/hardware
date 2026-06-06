@@ -37,6 +37,27 @@ export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * Today's date as a LOCAL `YYYY-MM-DD` (en-CA yields ISO order). Unlike todayISO()
+ * (which is UTC and rolls over ~5h early in PKT), this matches the shopkeeper's
+ * wall-clock day — use it for attendance defaults and salary month boundaries.
+ */
+export function todayLocalISO(): string {
+  return new Date().toLocaleDateString("en-CA");
+}
+
+/** Current local month as `YYYY-MM` (for the salary screen's default period). */
+export function monthKeyLocal(): string {
+  return todayLocalISO().slice(0, 7);
+}
+
+/** Format raw CNIC digits for display: 3520112345671 -> 35201-1234567-1. */
+export function formatCnic(raw: string | null | undefined): string {
+  const d = (raw ?? "").replace(/\D/g, "");
+  if (d.length !== 13) return raw ?? "";
+  return `${d.slice(0, 5)}-${d.slice(5, 12)}-${d.slice(12)}`;
+}
+
 export function formatDate(value: string | Date | null | undefined): string {
   if (!value) return "—";
   const d = typeof value === "string" ? new Date(value) : value;

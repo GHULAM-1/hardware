@@ -643,6 +643,191 @@ export type Database = {
         }
         Relationships: []
       }
+      staff: {
+        Row: {
+          address: string | null
+          cnic: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          monthly_salary: number
+          name: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          cnic?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          monthly_salary: number
+          name: string
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          cnic?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          monthly_salary?: number
+          name?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_attendance: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          staff_id: string
+          status: Database["public"]["Enums"]["staff_attendance_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date: string
+          id?: string
+          staff_id: string
+          status: Database["public"]["Enums"]["staff_attendance_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          staff_id?: string
+          status?: Database["public"]["Enums"]["staff_attendance_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_attendance_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salary_advances: {
+        Row: {
+          advance_date: string
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          advance_date: string
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          advance_date?: string
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_advances_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salary_payments: {
+        Row: {
+          absence_deduction: number
+          advances_total: number
+          amount_paid: number
+          computed_net: number
+          created_at: string
+          created_by: string | null
+          id: string
+          monthly_salary: number
+          note: string | null
+          paid_on: string
+          period_month: string
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          absence_deduction?: number
+          advances_total?: number
+          amount_paid: number
+          computed_net: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          monthly_salary: number
+          note?: string | null
+          paid_on: string
+          period_month: string
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          absence_deduction?: number
+          advances_total?: number
+          amount_paid?: number
+          computed_net?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          monthly_salary?: number
+          note?: string | null
+          paid_on?: string
+          period_month?: string
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_payments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       warehouse_stock: {
@@ -687,6 +872,7 @@ export type Database = {
       khata_status: "pending" | "fulfilled"
       order_status: "draft" | "completed" | "cancelled"
       payment_type: "cash" | "partial" | "credit"
+      staff_attendance_status: "present" | "absent"
       stock_entry_type: "in" | "out"
       supplier_order_status: "pending" | "received"
       user_role: "super_admin" | "admin"
@@ -820,6 +1006,7 @@ export const Constants = {
       khata_status: ["pending", "fulfilled"],
       order_status: ["draft", "completed", "cancelled"],
       payment_type: ["cash", "partial", "credit"],
+      staff_attendance_status: ["present", "absent"],
       stock_entry_type: ["in", "out"],
       supplier_order_status: ["pending", "received"],
       user_role: ["super_admin", "admin"],

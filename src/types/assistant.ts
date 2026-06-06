@@ -14,6 +14,7 @@ export const ASSISTANT_ROUTES = [
   "/khata",
   "/suppliers",
   "/supplier-orders",
+  "/staff",
 ] as const;
 
 export type AssistantRoute = (typeof ASSISTANT_ROUTES)[number];

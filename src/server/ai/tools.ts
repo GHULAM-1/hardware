@@ -12,6 +12,9 @@ import { listKhatas, getKhataReminders } from "@/server/actions/khata";
 import { listSuppliers } from "@/server/actions/suppliers";
 import { listSupplierOrders, getSupplierOrder } from "@/server/actions/supplier-orders";
 import { listUsers } from "@/server/actions/users";
+import { listStaff } from "@/server/actions/staff";
+import { getAttendanceForDate } from "@/server/actions/attendance";
+import { getStaffSalary, listSalaryOverview } from "@/server/actions/salary";
 import { getReminderLeadDays } from "@/server/actions/settings";
 import {
   getDashboardStats,
@@ -226,10 +229,10 @@ export function buildTools(accessToken: string) {
       },
     }),
 
-    // ── Staff / users (owner-only) ────────────────────────────────────────────
-    listStaff: tool({
+    // ── Team / login accounts (owner-only) ──────────────────────────────────────
+    listTeamAccounts: tool({
       description:
-        "List staff accounts with their role (owner/super_admin or admin) and active status. Only the owner can read this.",
+        "List the app's LOGIN accounts (the team who can sign in) with their role (owner/super_admin or admin) and active status. These are NOT shop employees — use the staff tools for employees. Only the owner can read this.",
       inputSchema: z.object({}),
       execute: async () => {
         try {
@@ -239,6 +242,97 @@ export function buildTools(accessToken: string) {
             email: u.email,
             role: u.role,
             is_active: u.is_active,
+          }));
+        } catch {
+          return { error: "not_permitted" };
+        }
+      },
+    }),
+
+    // ── Staff (employees: salary, attendance, advances — owner-only via RLS) ─────
+    listStaff: tool({
+      description:
+        "List shop employees (non-login staff) with their phone, monthly salary (PKR) and whether they're active. Use for 'who works here', 'X's salary', 'staff list'.",
+      inputSchema: z.object({ search: z.string().default("") }),
+      execute: async () => {
+        try {
+          const rows = await listStaff(accessToken);
+          return rows.map((s) => ({
+            id: s.id,
+            name: s.name,
+            phone: s.phone,
+            monthly_salary: s.monthly_salary,
+            is_active: s.is_active,
+          }));
+        } catch {
+          return { error: "not_permitted" };
+        }
+      },
+    }),
+
+    getStaffSalary: tool({
+      description:
+        "Get one employee's salary for a month: monthly salary, absent days, absence deduction, advances taken, the suggested net to pay, and whether it's been paid (and how much). Use after listStaff. month is 'YYYY-MM'; omit for the current month.",
+      inputSchema: z.object({
+        staffId: z.string().uuid(),
+        month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+      }),
+      execute: async ({ staffId, month }) => {
+        try {
+          const m = month ?? new Date().toLocaleDateString("en-CA").slice(0, 7);
+          const d = await getStaffSalary(accessToken, staffId, m);
+          return {
+            name: d.staff.name,
+            month: m,
+            monthly_salary: d.staff.monthly_salary,
+            absent_days: d.absentDays,
+            absence_deduction: d.absenceDeduction,
+            advances_total: d.advancesTotal,
+            suggested_net: d.netPayable,
+            paid: d.paid,
+            amount_paid: d.amountPaid,
+            paid_on: d.paidOn,
+          };
+        } catch {
+          return { error: "not_permitted" };
+        }
+      },
+    }),
+
+    listSalaryOverview: tool({
+      description:
+        "List every employee's salary picture for a month: absent days, advances, suggested net, and paid/unpaid status. Use for 'who hasn't been paid', 'salaries this month'. month is 'YYYY-MM'; omit for the current month.",
+      inputSchema: z.object({ month: z.string().regex(/^\d{4}-\d{2}$/).optional() }),
+      execute: async ({ month }) => {
+        try {
+          const m = month ?? new Date().toLocaleDateString("en-CA").slice(0, 7);
+          const rows = await listSalaryOverview(accessToken, m);
+          return rows.map((r) => ({
+            name: r.staff.name,
+            absent_days: r.absentDays,
+            advances_total: r.advancesTotal,
+            suggested_net: r.netPayable,
+            paid: r.paid,
+            amount_paid: r.amountPaid,
+          }));
+        } catch {
+          return { error: "not_permitted" };
+        }
+      },
+    }),
+
+    getStaffAttendance: tool({
+      description:
+        "Get who was present or absent on a specific day. date is 'YYYY-MM-DD'; omit for today. Use for 'who was absent today', 'attendance on <date>'.",
+      inputSchema: z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }),
+      execute: async ({ date }) => {
+        try {
+          const d = date ?? new Date().toLocaleDateString("en-CA");
+          const rows = await getAttendanceForDate(accessToken, d);
+          return rows.map((r) => ({
+            name: r.staff.name,
+            // Unmarked staff are treated as present (the default).
+            status: r.status ?? "present",
           }));
         } catch {
           return { error: "not_permitted" };
