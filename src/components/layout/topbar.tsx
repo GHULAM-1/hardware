@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { LogOut, UserCog } from "lucide-react";
 
@@ -33,6 +33,10 @@ function initials(name: string | null | undefined): string {
 export function Topbar() {
   const { t } = useTranslation();
   const router = useRouter();
+  const pathname = usePathname();
+  // The dashboard hides the sidebar (it's a launcher), so surface the full logo
+  // in the topbar there on desktop too.
+  const isDashboard = pathname === "/dashboard";
   const { profile, signOut } = useAuth();
 
   async function onLogout() {
@@ -42,9 +46,11 @@ export function Topbar() {
 
   return (
     <header className="flex h-16 items-center gap-2 px-3 text-white sm:gap-3 sm:px-4">
-      {/* Mobile: menu button + logo (sidebar is hidden) */}
+      {/* Mobile: menu button + logo (sidebar is hidden). On the dashboard the
+          sidebar is hidden on desktop too, so show the full logo there. */}
       <MobileNav />
       <Logo className="md:hidden" compact />
+      {isDashboard && <Logo className="me-1 hidden md:flex" />}
 
       <div className="flex min-w-0 flex-1 sm:max-w-md">
         <GlobalSearch />

@@ -82,70 +82,74 @@ export function StatBar() {
   });
 
   return (
-    <div className="flex shrink-0 items-center gap-3 overflow-x-auto px-4 pt-3 pb-1 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {isSuperAdmin ? (
-        <>
-          <StatCard
-            href="/orders"
-            color="green"
-            icon="cart-plus"
-            label={t("dashboard.salesToday")}
-            value={formatPKR(today.data?.salesToday ?? 0)}
-            loading={today.isLoading}
-          />
-          <StatCard
-            href="/khata"
-            color="orange"
-            icon="receipt"
-            label={t("dashboard.outstanding")}
-            value={formatPKR(finance.data?.outstanding ?? 0)}
-            loading={finance.isLoading}
-          />
-          <StatCard
-            href="/customers"
-            color="purple"
-            icon="users"
-            label={t("dashboard.customers")}
-            value={formatNumber(finance.data?.customers ?? 0)}
-            loading={finance.isLoading}
-          />
-          <StatCard
-            href="/warehouse"
-            color="blue"
-            icon="boxes"
-            label={t("dashboard.products")}
-            value={formatNumber(catalog.data?.products ?? 0)}
-            loading={catalog.isLoading}
-          />
-        </>
-      ) : (
-        <>
-          <StatCard
-            href="/warehouse"
-            color="blue"
-            icon="boxes"
-            label={t("dashboard.products")}
-            value={formatNumber(catalog.data?.products ?? 0)}
-            loading={catalog.isLoading}
-          />
-          <StatCard
-            href="/warehouse"
-            color="red"
-            icon="alert-triangle"
-            label={t("dashboard.lowStock")}
-            value={formatNumber(catalog.data?.lowStock ?? 0)}
-            loading={catalog.isLoading}
-          />
-          <StatCard
-            href="/warehouse"
-            color="purple"
-            icon="box"
-            label={t("dashboard.outOfStock")}
-            value={formatNumber(catalog.data?.outOfStock ?? 0)}
-            loading={catalog.isLoading}
-          />
-        </>
-      )}
+    <div className="shrink-0 overflow-x-auto px-4 pt-3 pb-1 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* w-max + mx-auto centres the cards when they fit but still lets them scroll
+          from the start on narrow screens (plain justify-center clips the first). */}
+      <div className="mx-auto flex w-max items-center gap-3">
+        {isSuperAdmin ? (
+          <>
+            <StatCard
+              href="/orders"
+              color="green"
+              icon="cart-plus"
+              label={t("dashboard.salesToday")}
+              value={formatPKR(today.data?.salesToday ?? 0)}
+              loading={today.isLoading}
+            />
+            <StatCard
+              href="/khata"
+              color="orange"
+              icon="receipt"
+              label={t("dashboard.outstanding")}
+              value={formatPKR(finance.data?.outstanding ?? 0)}
+              loading={finance.isLoading}
+            />
+            <StatCard
+              href="/customers"
+              color="purple"
+              icon="users"
+              label={t("dashboard.customers")}
+              value={formatNumber(finance.data?.customers ?? 0)}
+              loading={finance.isLoading}
+            />
+            <StatCard
+              href="/warehouse"
+              color="blue"
+              icon="boxes"
+              label={t("dashboard.products")}
+              value={formatNumber(catalog.data?.products ?? 0)}
+              loading={catalog.isLoading}
+            />
+          </>
+        ) : (
+          <>
+            <StatCard
+              href="/warehouse"
+              color="blue"
+              icon="boxes"
+              label={t("dashboard.products")}
+              value={formatNumber(catalog.data?.products ?? 0)}
+              loading={catalog.isLoading}
+            />
+            <StatCard
+              href="/warehouse"
+              color="red"
+              icon="alert-triangle"
+              label={t("dashboard.lowStock")}
+              value={formatNumber(catalog.data?.lowStock ?? 0)}
+              loading={catalog.isLoading}
+            />
+            <StatCard
+              href="/warehouse"
+              color="purple"
+              icon="box"
+              label={t("dashboard.outOfStock")}
+              value={formatNumber(catalog.data?.outOfStock ?? 0)}
+              loading={catalog.isLoading}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }

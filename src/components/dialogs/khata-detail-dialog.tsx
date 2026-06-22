@@ -1,11 +1,13 @@
 "use client";
 
+import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Check, ImageIcon, Loader2, Receipt } from "lucide-react";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useFulfillKhata } from "@/hooks/use-khata";
+import { ConfirmAlert } from "@/components/common/confirm-alert";
 import { useLanguage } from "@/providers/i18n-provider";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
@@ -44,6 +46,11 @@ export function KhataDetailDialog({ payload, onClose }: DialogComponentProps<Kha
   const isSuperAdmin = useIsSuperAdmin();
   const { openDialog } = useDialogManager();
   const { fulfill, isPending } = useFulfillKhata();
+
+  // Settling a khata is one-way (the button disappears once it's fulfilled), so a
+  // stray tap shouldn't commit it. Gate it behind a confirm that stacks on top of
+  // this dialog (ConfirmAlert, not the shared dialog) so cancelling returns here.
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
 
   const { khata } = payload;
   const meta = khataMeta(khata.status as KhataStatus, khata.due_date, todayISO());
@@ -104,7 +111,7 @@ export function KhataDetailDialog({ payload, onClose }: DialogComponentProps<Kha
             <Button
               className="w-full sm:w-auto"
               disabled={isPending}
-              onClick={() => fulfill(khata.id, onClose)}
+              onClick={() => setConfirmOpen(true)}
             >
               {isPending ? (
                 <Loader2 className="me-1 h-4 w-4 animate-spin" />
@@ -116,6 +123,16 @@ export function KhataDetailDialog({ payload, onClose }: DialogComponentProps<Kha
           ) : null}
         </DialogFooter>
       </DialogContent>
+
+      <ConfirmAlert
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("khata.markFulfilledTitle")}
+        description={t("khata.markFulfilledConfirm")}
+        confirmLabel={t("khata.markFulfilled")}
+        destructive={false}
+        onConfirm={() => fulfill(khata.id, onClose)}
+      />
     </Dialog>
   );
 }

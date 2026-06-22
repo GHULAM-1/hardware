@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { useUsers, useSetUserActive, useSetUserRole } from "@/hooks/use-users";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useAuth } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { UserRole } from "@/lib/enums";
@@ -29,9 +30,38 @@ export default function UsersPage() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { openDialog } = useDialogManager();
+  const confirmDelete = useConfirmDelete();
   const { data: users = [], isLoading } = useUsers();
   const setActive = useSetUserActive();
   const setRole = useSetUserRole();
+
+  // Both of these flip silently on a single click (a stray tap on the switch or
+  // the role picker), so each is gated behind a confirm. Neither is a "delete",
+  // so they use the non-destructive (non-red) confirm button.
+  const confirmSetActive = (u: ProfileWithEmail, isActive: boolean) =>
+    confirmDelete({
+      title: isActive ? t("users.activateTitle") : t("users.deactivateTitle"),
+      description: t(isActive ? "users.activateConfirm" : "users.deactivateConfirm", {
+        name: u.full_name ?? u.email ?? "",
+      }),
+      confirmLabel: isActive ? t("users.activate") : t("users.deactivate"),
+      destructive: !isActive,
+      onConfirm: () => setActive.mutateAsync({ id: u.id, isActive }),
+    });
+
+  const confirmSetRole = (u: ProfileWithEmail, role: UserRole) => {
+    if (role === u.role) return;
+    confirmDelete({
+      title: t("users.changeRoleTitle"),
+      description: t("users.changeRoleConfirm", {
+        name: u.full_name ?? u.email ?? "",
+        role: t(`roles.${role}`),
+      }),
+      confirmLabel: t("users.changeRole"),
+      destructive: false,
+      onConfirm: () => setRole.mutateAsync({ id: u.id, role }),
+    });
+  };
 
   const columns: Column<ProfileWithEmail>[] = [
     {
@@ -52,7 +82,7 @@ export default function UsersPage() {
       cell: (u) => (
         <Select
           value={u.role}
-          onValueChange={(v) => setRole.mutate({ id: u.id, role: v as UserRole })}
+          onValueChange={(v) => confirmSetRole(u, v as UserRole)}
           disabled={u.id === profile?.id}
         >
           <SelectTrigger className="w-40">
@@ -83,7 +113,7 @@ export default function UsersPage() {
         <Switch
           checked={u.is_active}
           disabled={u.id === profile?.id}
-          onCheckedChange={(checked) => setActive.mutate({ id: u.id, isActive: checked })}
+          onCheckedChange={(checked) => confirmSetActive(u, checked)}
         />
       ),
     },

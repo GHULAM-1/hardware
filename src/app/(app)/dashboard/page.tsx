@@ -1,248 +1,44 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import {
-  AlertTriangle,
-  BellPlus,
-  BookUser,
-  PackageX,
-  ShoppingCart,
-  Tag,
-  Truck,
-  Users,
-  Wallet,
-} from "lucide-react";
-
-import { getAccessToken } from "@/lib/auth-token";
-import {
-  getCatalogSummary,
-  getFinancialSummary,
-  getPaymentBreakdown,
-  getRevenueTrend,
-} from "@/server/actions/dashboard";
-import { getKhataReminders } from "@/server/actions/khata";
-import { useFulfillKhata } from "@/hooks/use-khata";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
-import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
-import { queryKeys } from "@/lib/query-keys";
-import { formatCompactPKR, formatNumber, formatPKR } from "@/lib/format";
-import { PageHeader } from "@/components/layout/page-header";
-import { WidgetCard } from "@/components/dashboard/widget-card";
-import { BarChart, ChartCard, SegmentBar, type Segment } from "@/components/dashboard/charts";
-import { KhataTable } from "@/components/khata/khata-table";
 import { DueSoonStrip } from "@/components/khata/due-soon-strip";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardNavGrid } from "@/components/dashboard/dashboard-nav-grid";
+import { DashboardInfoCards } from "@/components/dashboard/dashboard-info-cards";
 
+/**
+ * The dashboard is the app's launcher. The StatBar (AppShell) stays pinned on
+ * top. The route grid comes first so it's what you land on; payments-due-soon
+ * follows. The quick-actions + key-figures cards stay pinned at the bottom
+ * (super-admin only), side by side and centered.
+ */
 export default function DashboardPage() {
-  const { t } = useTranslation();
-  const { language } = useLanguage();
   const { openDialog } = useDialogManager();
   const isSuperAdmin = useIsSuperAdmin();
-  const { fulfill, pendingId } = useFulfillKhata();
-
-  // Catalog/stock health is safe for everyone; financials + reminders are
-  // fetched only for super_admin so a read-only admin never pulls revenue data.
-  const catalog = useQuery({
-    queryKey: ["dashboard", "catalog"],
-    queryFn: async () => getCatalogSummary(await getAccessToken()),
-  });
-  const finance = useQuery({
-    queryKey: ["dashboard", "finance"],
-    queryFn: async () => getFinancialSummary(await getAccessToken()),
-    enabled: isSuperAdmin,
-  });
-  const revenue = useQuery({
-    queryKey: ["dashboard", "revenue-trend"],
-    queryFn: async () => getRevenueTrend(await getAccessToken(), 6),
-    enabled: isSuperAdmin,
-  });
-  const payments = useQuery({
-    queryKey: ["dashboard", "payments"],
-    queryFn: async () => getPaymentBreakdown(await getAccessToken()),
-    enabled: isSuperAdmin,
-  });
-  const reminders = useQuery({
-    queryKey: queryKeys.khataReminders(),
-    queryFn: async () => getKhataReminders(await getAccessToken()),
-    enabled: isSuperAdmin,
-  });
-
-  const num = (v: number | undefined) =>
-    v === undefined ? <Skeleton className="h-7 w-12" /> : formatNumber(v);
-  const money = (v: number | undefined) =>
-    v === undefined ? <Skeleton className="h-7 w-24" /> : formatPKR(v);
-
-  // Localized short month labels for the revenue bars (e.g. Jan, Feb…).
-  const monthFmt = new Intl.DateTimeFormat(language === "ur" ? "ur-PK" : "en-PK", {
-    month: "short",
-  });
-  const revenueData = (revenue.data ?? []).map((p) => ({
-    label: monthFmt.format(new Date(`${p.key}-01`)),
-    value: p.total,
-    valueLabel: formatCompactPKR(p.total),
-  }));
-
-  const pb = payments.data ?? { cash: 0, partial: 0, credit: 0 };
-  const paymentSegments: Segment[] = [
-    { label: t("payment.cash"), value: pb.cash, valueLabel: formatPKR(pb.cash), tone: "success" },
-    { label: t("payment.partial"), value: pb.partial, valueLabel: formatPKR(pb.partial), tone: "warning" },
-    { label: t("payment.credit"), value: pb.credit, valueLabel: formatPKR(pb.credit), tone: "danger" },
-  ];
-
-  const cat = catalog.data;
-  const inStock = cat ? Math.max(cat.products - cat.lowStock - cat.outOfStock, 0) : 0;
-  const stockSegments: Segment[] = [
-    { label: t("warehouse.inStock"), value: inStock, tone: "success" },
-    { label: t("warehouse.lowStock"), value: cat?.lowStock ?? 0, tone: "warning" },
-    { label: t("warehouse.outOfStock"), value: cat?.outOfStock ?? 0, tone: "danger" },
-  ];
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={t("dashboard.title")} />
-
-      {/* Payments due soon — pinned at the very top so it's seen first. */}
-      {isSuperAdmin && (
-        <DueSoonStrip
-          beacon
-          onOpen={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
-          onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
-        />
-      )}
-
-      {/* Financial + relationship widgets — super_admin only. */}
-      {isSuperAdmin && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <WidgetCard
-            label={t("dashboard.revenueThisMonth")}
-            value={money(finance.data?.revenueThisMonth)}
-            icon={Wallet}
-            icon3d="wallet"
-            tone="success"
-            href="/orders"
-          />
-          <WidgetCard
-            label={t("dashboard.ordersThisMonth")}
-            value={num(finance.data?.ordersThisMonth)}
-            icon={ShoppingCart}
-            icon3d="cart-plus"
-            tone="primary"
-            href="/orders"
-          />
-          <WidgetCard
-            label={t("dashboard.outstanding")}
-            value={money(finance.data?.outstanding)}
-            icon={BookUser}
-            icon3d="receipt"
-            tone="warning"
-            href="/khata"
-          />
-          <WidgetCard
-            label={t("dashboard.customers")}
-            value={num(finance.data?.customers)}
-            icon={Users}
-            icon3d="users"
-            tone="brand"
-            href="/customers"
-          />
-          <WidgetCard
-            label={t("dashboard.suppliers")}
-            value={num(finance.data?.suppliers)}
-            icon={Truck}
-            icon3d="truck"
-            tone="primary"
-            href="/suppliers"
-          />
-          <WidgetCard
-            label={t("dashboard.products")}
-            value={num(catalog.data?.products)}
-            icon={Tag}
-            icon3d="boxes"
-            tone="brand"
-            href="/warehouse"
-          />
+    <div className="flex h-full flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-6 sm:p-6">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <DashboardNavGrid />
+          {isSuperAdmin && (
+            <DueSoonStrip
+              beacon
+              onOpen={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+              onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
+            />
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Read-only admin: a compact stock-only set (no charts overload). */}
-      {!isSuperAdmin && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <WidgetCard
-            label={t("dashboard.products")}
-            value={num(catalog.data?.products)}
-            icon={Tag}
-            icon3d="boxes"
-            tone="brand"
-            href="/warehouse"
-          />
-          <WidgetCard
-            label={t("dashboard.lowStock")}
-            value={num(catalog.data?.lowStock)}
-            icon={AlertTriangle}
-            tone="warning"
-            href="/warehouse"
-          />
-          <WidgetCard
-            label={t("dashboard.outOfStock")}
-            value={num(catalog.data?.outOfStock)}
-            icon={PackageX}
-            tone="danger"
-            href="/warehouse"
-          />
-        </div>
-      )}
-
-      {/* Charts. Super_admin: revenue + payment mix + stock health (with totals);
-          a read-only admin: the stock-health chart only. */}
-      {isSuperAdmin ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <ChartCard title={t("dashboard.revenueTrend")} className="lg:col-span-2">
-            {revenue.isLoading ? (
-              <Skeleton className="h-48 w-full" />
-            ) : (
-              <BarChart data={revenueData} />
-            )}
-          </ChartCard>
-          <ChartCard title={t("dashboard.paymentMix")}>
-            {payments.isLoading ? (
-              <Skeleton className="h-32 w-full" />
-            ) : (
-              <SegmentBar segments={paymentSegments} />
-            )}
-          </ChartCard>
-          <ChartCard title={t("dashboard.stockHealth")}>
-            <SegmentBar segments={stockSegments} />
-          </ChartCard>
-        </div>
-      ) : (
-        <ChartCard title={t("dashboard.stockHealth")}>
-          <SegmentBar segments={stockSegments} />
-        </ChartCard>
-      )}
-
-      {/* Khata reminders panel — super_admin only. */}
+      {/* Pinned bottom cards (super-admin). The floating + button just hovers over
+          the corner — no reserved gutter — so the cards get the full width. */}
       {isSuperAdmin && (
-        <div>
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-lg font-bold text-white">{t("khata.reminders")}</h2>
-            <Button variant="outline" size="sm" onClick={() => openDialog(DialogKey.ReminderForm, null)}>
-              <BellPlus className="me-1 h-4 w-4" />
-              {t("khata.newReminder")}
-            </Button>
+        <div className="shrink-0 px-4 pb-3 sm:px-6 sm:pb-4">
+          <div className="mx-auto max-w-3xl">
+            <DashboardInfoCards />
           </div>
-          <KhataTable
-            rows={reminders.data ?? []}
-            loading={reminders.isLoading}
-            onMarkFulfilled={fulfill}
-            markingId={pendingId}
-            onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
-            onRowClick={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
-            emptyText={t("common.noResults")}
-          />
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ZoomableImage } from "@/components/common/zoomable-image";
+import { ConfirmAlert } from "@/components/common/confirm-alert";
 import { cn } from "@/lib/utils";
 import {
   ACCEPT_ATTR,
@@ -35,6 +36,9 @@ export function MultiImageUpload({
 }) {
   const { t } = useTranslation();
   const [busy, setBusy] = React.useState(false);
+  // Index pending a remove-confirm (null = none). Stays inside the component so a
+  // stray tap on an image's X asks first before deleting the stored file.
+  const [removingIndex, setRemovingIndex] = React.useState<number | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
@@ -107,7 +111,7 @@ export function MultiImageUpload({
             {!disabled && (
               <button
                 type="button"
-                onClick={() => removeAt(i)}
+                onClick={() => setRemovingIndex(i)}
                 aria-label={t("media.remove")}
                 className="absolute end-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-background/80 text-destructive shadow hover:bg-background"
               >
@@ -140,6 +144,17 @@ export function MultiImageUpload({
         disabled={disabled || busy}
       />
       <p className="text-xs text-muted-foreground">{t("media.hint")}</p>
+
+      <ConfirmAlert
+        open={removingIndex !== null}
+        onOpenChange={(next) => !next && setRemovingIndex(null)}
+        title={t("media.removeTitle")}
+        description={t("media.removeConfirm")}
+        confirmLabel={t("media.remove")}
+        onConfirm={() => {
+          if (removingIndex !== null) removeAt(removingIndex);
+        }}
+      />
     </div>
   );
 }

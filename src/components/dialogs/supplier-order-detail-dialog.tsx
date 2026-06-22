@@ -11,6 +11,7 @@ import {
   useMarkSupplierOrderReceived,
   useUpdateSupplierOrderBill,
 } from "@/hooks/use-supplier-orders";
+import { ConfirmAlert } from "@/components/common/confirm-alert";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { useLanguage } from "@/providers/i18n-provider";
 import { Language, SupplierOrderStatus } from "@/lib/enums";
@@ -43,6 +44,7 @@ export function SupplierOrderDetailDialog({
   const { data: order, isLoading } = useSupplierOrder(payload.id);
   const markReceived = useMarkSupplierOrderReceived();
   const updateBill = useUpdateSupplierOrderBill();
+  const [confirmReceiveOpen, setConfirmReceiveOpen] = React.useState(false);
 
   const sheetRef = React.useRef<HTMLDivElement | null>(null);
   const [billUrl, setBillUrl] = React.useState<string | null>(null);
@@ -75,6 +77,7 @@ export function SupplierOrderDetailDialog({
       toast.error(err instanceof Error ? err.message : t("toast.error"));
     }
   }
+
 
   async function onBillChange(url: string | null) {
     try {
@@ -179,7 +182,7 @@ export function SupplierOrderDetailDialog({
                   <span className="ms-1 text-muted-foreground">({t("common.optional")})</span>
                 </Label>
                 <DocumentUpload value={billUrl} onChange={setBillUrl} disabled={markReceived.isPending} />
-                <Button onClick={onMarkReceived} disabled={markReceived.isPending} className="w-full sm:w-auto">
+                <Button onClick={() => setConfirmReceiveOpen(true)} disabled={markReceived.isPending} className="w-full sm:w-auto">
                   {markReceived.isPending ? (
                     <Loader2 className="me-1 h-4 w-4 animate-spin" />
                   ) : (
@@ -192,6 +195,16 @@ export function SupplierOrderDetailDialog({
           </div>
         )}
       </DialogContent>
+
+      <ConfirmAlert
+        open={confirmReceiveOpen}
+        onOpenChange={setConfirmReceiveOpen}
+        title={t("supplierOrders.markReceivedTitle")}
+        description={t("supplierOrders.markReceivedConfirm")}
+        confirmLabel={t("supplierOrders.markReceived")}
+        destructive={false}
+        onConfirm={onMarkReceived}
+      />
     </Dialog>
   );
 }

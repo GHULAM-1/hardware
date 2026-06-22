@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,42 +14,53 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export type ConfirmDeletePayload = {
-  title?: string;
+/**
+ * A self-contained confirmation, rendered in its own portal via local `open`
+ * state. Unlike the shared {@link ConfirmDeleteDialog} (which goes through the
+ * single-slot DialogManager and therefore REPLACES whatever dialog is open), this
+ * stacks ON TOP of the surrounding dialog or form and leaves it mounted — so
+ * cancelling returns the user to exactly where they were, with their input intact.
+ * Use this for destructive actions that live INSIDE another dialog or a form
+ * (e.g. removing an uploaded image, settling a khata from its detail view).
+ */
+export function ConfirmAlert({
+  open,
+  onOpenChange,
+  title,
+  description,
+  confirmLabel,
+  destructive = true,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
   description?: string;
   /** Action-button label. Defaults to the (red) "Delete". */
   confirmLabel?: string;
-  /**
-   * Whether this is a destructive (red) confirm. Defaults to true so every
-   * existing delete keeps its red button; pass false for reversible changes
-   * (e.g. flipping a user's role or re-activating an account).
-   */
+  /** Red destructive button when true (the default); plain button when false. */
   destructive?: boolean;
   onConfirm: () => Promise<unknown> | void;
-};
-
-/** Generic confirmation dialog. Registered under DialogKey.ConfirmDelete. */
-export function ConfirmDeleteDialog({ payload, onClose }: DialogComponentProps<ConfirmDeletePayload>) {
+}) {
   const { t } = useTranslation();
   const [busy, setBusy] = React.useState(false);
-  const destructive = payload.destructive ?? true;
 
   async function handleConfirm() {
     setBusy(true);
     try {
-      await payload.onConfirm();
-      onClose();
+      await onConfirm();
+      onOpenChange(false);
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <AlertDialog open onOpenChange={(open) => !open && onClose()}>
+    <AlertDialog open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{payload.title ?? t("common.confirm")}</AlertDialogTitle>
-          <AlertDialogDescription>{payload.description}</AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>{t("common.cancel")}</AlertDialogCancel>
@@ -66,7 +76,7 @@ export function ConfirmDeleteDialog({ payload, onClose }: DialogComponentProps<C
                 : undefined
             }
           >
-            {payload.confirmLabel ?? t("common.delete")}
+            {confirmLabel ?? t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

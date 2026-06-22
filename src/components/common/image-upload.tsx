@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ZoomableImage } from "@/components/common/zoomable-image";
+import { ConfirmAlert } from "@/components/common/confirm-alert";
 import {
   ACCEPT_ATTR,
   removeImage,
@@ -33,6 +34,7 @@ export function ImageUpload({
 }) {
   const { t } = useTranslation();
   const [busy, setBusy] = React.useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
@@ -59,7 +61,9 @@ export function ImageUpload({
     }
   }
 
-  function onRemove() {
+  // The Trash button only opens the confirm; the actual removal (which deletes the
+  // stored file) runs after the user confirms.
+  function doRemove() {
     const previous = value;
     onChange(null);
     if (previous) void removeImage(previous);
@@ -108,7 +112,7 @@ export function ImageUpload({
               size="sm"
               className="text-destructive hover:text-destructive"
               disabled={disabled || busy}
-              onClick={onRemove}
+              onClick={() => setConfirmRemoveOpen(true)}
             >
               <Trash2 className="me-1 h-4 w-4" />
               {t("media.remove")}
@@ -117,6 +121,15 @@ export function ImageUpload({
         </div>
         <p className="text-xs text-muted-foreground">{t("media.hint")}</p>
       </div>
+
+      <ConfirmAlert
+        open={confirmRemoveOpen}
+        onOpenChange={setConfirmRemoveOpen}
+        title={t("media.removeTitle")}
+        description={t("media.removeConfirm")}
+        confirmLabel={t("media.remove")}
+        onConfirm={doRemove}
+      />
     </div>
   );
 }
