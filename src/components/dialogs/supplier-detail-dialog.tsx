@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Pencil } from "lucide-react";
+import { Icon3D } from "@/components/ui/icon-3d";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
@@ -125,7 +125,7 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
               className="w-full sm:w-auto"
               onClick={() => openDialog(DialogKey.SupplierForm, { supplier })}
             >
-              <Pencil className="me-1 h-4 w-4" />
+              <Icon3D name="pencil" size={24} className="-ms-1 me-1" alt="" />
               {t("suppliers.editSupplier")}
             </Button>
           </DialogFooter>

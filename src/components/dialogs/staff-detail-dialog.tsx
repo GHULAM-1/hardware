@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { Pencil, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
+
+import { Icon3D } from "@/components/ui/icon-3d";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
@@ -78,7 +80,7 @@ export function StaffDetailDialog({ payload, onClose }: DialogComponentProps<Sta
             className="w-full sm:w-auto"
             onClick={() => openDialog(DialogKey.StaffForm, { staff })}
           >
-            <Pencil className="me-1 h-4 w-4" />
+            <Icon3D name="pencil" size={24} className="-ms-1 me-1" alt="" />
             {t("staff.editStaff")}
           </Button>
         </DialogFooter>

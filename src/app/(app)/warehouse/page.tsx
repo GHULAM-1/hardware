@@ -21,6 +21,8 @@ import { ImageThumb } from "@/components/common/image-thumb";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Money } from "@/components/common/money";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ItemDetailBody } from "@/components/warehouse/item-detail-body";
 import type { ItemWithStock } from "@/types/models";
 
 export default function WarehousePage() {
@@ -34,6 +36,22 @@ export default function WarehousePage() {
   const debounced = useDebounce(search);
   const { data: items = [], isLoading } = useItemsWithStock(debounced);
   const { data: usedItemIds } = useUsedItemIds();
+
+  // Desktop shows a master-detail side panel; the first row is selected by default.
+  // Mobile keeps the tap-to-open detail dialog.
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const selected = items.find((i) => i.id === selectedId) ?? items[0];
+
+  const handleRowClick = React.useCallback(
+    (row: ItemWithStock) => {
+      if (typeof window !== "undefined" && window.matchMedia("(min-width: 1280px)").matches) {
+        setSelectedId(row.id);
+      } else {
+        openDialog(DialogKey.ItemDetail, { item: row });
+      }
+    },
+    [openDialog],
+  );
 
   const columns: Column<ItemWithStock>[] = [
     {
@@ -90,10 +108,14 @@ export default function WarehousePage() {
       header: "",
       headerClassName: "w-px",
       cell: (row) => (
-        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex shrink-0 items-center justify-end gap-1 whitespace-nowrap"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Button
             variant="outline"
             size="sm"
+            className="shrink-0"
             onClick={() => openDialog(DialogKey.StockEntryForm, { item: row })}
           >
             <Boxes className="me-1 h-4 w-4" />
@@ -126,13 +148,36 @@ export default function WarehousePage() {
         onNew={() => openDialog(DialogKey.ItemCreate, null)}
         newLabel={t("pricing.newItem")}
       />
-      <DataTable
-        columns={columns}
-        rows={items}
-        getRowId={(r) => r.id}
-        loading={isLoading}
-        onRowClick={(row) => openDialog(DialogKey.ItemDetail, { item: row })}
-      />
+      <div className="flex gap-4">
+        <div className="min-w-0 flex-1">
+          <DataTable
+            columns={columns}
+            rows={items}
+            getRowId={(r) => r.id}
+            loading={isLoading}
+            selectedRowId={selected?.id}
+            onRowClick={handleRowClick}
+          />
+        </div>
+        {/* Desktop master-detail panel; mobile uses the tap-to-open dialog instead. */}
+        <aside className="hidden w-[360px] shrink-0 xl:block">
+          {selected ? (
+            <Card className="sticky top-0 gap-4 p-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <ImageThumb src={selected.image_urls?.[0] ?? selected.image_url} alt={selected.name_en} />
+                <span className="min-w-0 truncate text-lg font-extrabold text-ink">
+                  {displayName(selected, language)}
+                </span>
+              </div>
+              <ItemDetailBody item={selected} />
+            </Card>
+          ) : (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              {t("common.noResults")}
+            </Card>
+          )}
+        </aside>
+      </div>
     </div>
   );
 }

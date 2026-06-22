@@ -1,132 +1,107 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark mode is driven by a `.dark` class on <html> (next-themes attribute="class"). */
-@custom-variant dark (&:is(.dark *));
+/* Dark mode is intentionally disabled — this is a single bright "candy" theme.
+   Keep a never-matching `dark` variant so any leftover `dark:` utilities stay inert
+   (otherwise Tailwind's default `dark:` would fire on OS dark-mode users). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================================
-   WORKSHOP AMBER — design tokens
-   Primary  = amber   (#F59E0B)  → primary actions + active nav
-   Brand    = blue    (#2563EB)  → data, links, charts only
-   Status   = green / red / amber-soft → badges
-   High contrast in both light and dark for older users.
+   LAHORE HARDWARE — Game-Style POS theme
+   Glossy, chunky "candy" controls on a deep-blue canvas. Every raised surface is
+   a top-lit gradient block sitting on a solid colored "ledge" shadow.
+   SOURCE OF TRUTH: change a family hex here and the whole app re-skins.
    ========================================================================== */
 
 :root {
-  --radius: 0.625rem;
+  /* ---- candy color families: base / dark (ledge) / light (top of gradient) ---- */
+  --green:  #33a93b;  --green-d:  #1d7a26;  --green-l:  #62cf69;
+  --blue:   #2f7de0;  --blue-d:   #19529e;  --blue-l:   #69a8f6;
+  --orange: #f59a1a;  --orange-d: #c2730a;  --orange-l: #ffb942;
+  --purple: #7c40d6;  --purple-d: #562aa0;  --purple-l: #a06bf0;
+  --red:    #e23b3b;  --red-d:    #ac2222;  --red-l:    #f26c6c;
+  --teal:   #159b85;  --teal-d:   #0d7361;  --teal-l:   #33c0a8;
+  --pink:   #d63d77;  --pink-d:   #a82a58;  --pink-l:   #f06a9e;
+  --slate:  #56627a;  --slate-d:  #3c485f;  --slate-l:  #7d8aa3;
 
+  /* ---- brand & surface ---- */
+  --gold: #ffd24a;
+  --ink: #13316b;
+  --cream: #fbf6ea;
+  --cream-border: #e0d8c4;
+  --tile: #f0f3f8;
+  --row-alt: #e9eff9;
+  --row-selected: #fff6d6;
+  --input-border: #d4dcea;
+  /* The whole-CRM background image (public/bg.png) under a deep-blue scrim — the
+     scrim is stronger up top so white chrome text (page titles, topbar) stays
+     legible over the bright sky; #0c2d76 is the fallback if the image fails. */
+  --app-bg: linear-gradient(180deg, rgba(10, 30, 82, 0.6) 0%, rgba(10, 30, 82, 0.42) 45%, rgba(10, 30, 82, 0.5) 100%),
+    url("/bg.png") center / cover no-repeat #0c2d76;
+
+  --radius: 0.875rem;
+
+  /* ---- semantic tokens (mapped onto the candy palette) ----
+     NOTE: --background is the elevated white surface (dialogs/sheets/popovers).
+     The app *canvas* is painted separately with --app-bg (see .bg-app / body). */
   --background: #ffffff;
-  --foreground: #0f172a;
+  --foreground: var(--ink);
 
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: var(--ink);
 
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: var(--ink);
 
-  /* Amber primary — dark text sits on it for legibility */
-  --primary: #f59e0b;
-  --primary-foreground: #1a1206;
+  --primary: var(--blue);
+  --primary-foreground: #ffffff;
 
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
+  --secondary: #eef2f9;
+  --secondary-foreground: var(--ink);
 
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted: var(--tile);
+  --muted-foreground: #5d6b85;
 
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --accent: #eef2f9;
+  --accent-foreground: var(--ink);
 
-  --destructive: #ef4444;
+  --destructive: var(--red);
   --destructive-foreground: #ffffff;
 
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #f59e0b;
+  --border: #e6ebf3;
+  --input: var(--input-border);
+  --ring: var(--blue);
 
-  /* Custom semantic tokens used across the CRM */
-  --brand: #2563eb;            /* blue — links, charts, info */
+  /* extra semantic helpers used across the CRM */
+  --brand: var(--blue);
   --brand-foreground: #ffffff;
-  --success: #16a34a;
+  --success: var(--green);
   --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #1a1206;
-  --info: #2563eb;
+  --warning: var(--orange);
+  --warning-foreground: #ffffff;
+  --info: var(--blue);
   --info-foreground: #ffffff;
 
-  /* Charts: amber, blue, green, red, slate */
-  --chart-1: #f59e0b;
-  --chart-2: #2563eb;
-  --chart-3: #16a34a;
-  --chart-4: #ef4444;
-  --chart-5: #64748b;
+  /* charts: green, blue, orange, purple, pink */
+  --chart-1: var(--green);
+  --chart-2: var(--blue);
+  --chart-3: var(--orange);
+  --chart-4: var(--purple);
+  --chart-5: var(--pink);
 
-  /* Sidebar */
-  --sidebar: #f8fafc;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #f59e0b;
-  --sidebar-primary-foreground: #1a1206;
-  --sidebar-accent: #fef3c7;          /* amber-100 active highlight */
-  --sidebar-accent-foreground: #92400e;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #f59e0b;
+  /* sidebar: items are individually colored candy buttons; the rail itself is
+     transparent on desktop (over the blue canvas) but solid blue in the mobile sheet. */
+  --sidebar: #15439f;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: var(--gold);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: rgba(255, 255, 255, 0.14);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.16);
+  --sidebar-ring: var(--gold);
 }
 
-.dark {
-  --background: #0b1220;
-  --foreground: #f1f5f9;
-
-  --card: #131c2e;
-  --card-foreground: #f1f5f9;
-
-  --popover: #131c2e;
-  --popover-foreground: #f1f5f9;
-
-  --primary: #f59e0b;
-  --primary-foreground: #1a1206;
-
-  --secondary: #1e293b;
-  --secondary-foreground: #f1f5f9;
-
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-
-  --accent: #1e293b;
-  --accent-foreground: #f1f5f9;
-
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-
-  --border: #334155;
-  --input: #334155;
-  --ring: #f59e0b;
-
-  --brand: #3b82f6;
-  --brand-foreground: #ffffff;
-  --success: #22c55e;
-  --success-foreground: #052e16;
-  --warning: #f59e0b;
-  --warning-foreground: #1a1206;
-  --info: #3b82f6;
-  --info-foreground: #ffffff;
-
-  --chart-1: #f59e0b;
-  --chart-2: #3b82f6;
-  --chart-3: #22c55e;
-  --chart-4: #ef4444;
-  --chart-5: #94a3b8;
-
-  --sidebar: #0b1220;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #f59e0b;
-  --sidebar-primary-foreground: #1a1206;
-  --sidebar-accent: #422006;          /* deep amber active highlight */
-  --sidebar-accent-foreground: #fcd34d;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #f59e0b;
-}
-
-/* Map tokens to Tailwind theme so utilities like bg-primary / text-muted-foreground work */
+/* Map tokens to the Tailwind theme so utilities resolve at use-site (runtime swap safe). */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -157,6 +132,23 @@
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
 
+  /* candy families as Tailwind colors → bg-game-green, text-game-purple-d, border-game-red-l … */
+  --color-game-green: var(--green);   --color-game-green-d: var(--green-d);   --color-game-green-l: var(--green-l);
+  --color-game-blue: var(--blue);     --color-game-blue-d: var(--blue-d);     --color-game-blue-l: var(--blue-l);
+  --color-game-orange: var(--orange); --color-game-orange-d: var(--orange-d); --color-game-orange-l: var(--orange-l);
+  --color-game-purple: var(--purple); --color-game-purple-d: var(--purple-d); --color-game-purple-l: var(--purple-l);
+  --color-game-red: var(--red);       --color-game-red-d: var(--red-d);       --color-game-red-l: var(--red-l);
+  --color-game-teal: var(--teal);     --color-game-teal-d: var(--teal-d);     --color-game-teal-l: var(--teal-l);
+  --color-game-pink: var(--pink);     --color-game-pink-d: var(--pink-d);     --color-game-pink-l: var(--pink-l);
+  --color-game-slate: var(--slate);   --color-game-slate-d: var(--slate-d);   --color-game-slate-l: var(--slate-l);
+  --color-gold: var(--gold);
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+  --color-cream-border: var(--cream-border);
+  --color-tile: var(--tile);
+  --color-row-alt: var(--row-alt);
+  --color-row-selected: var(--row-selected);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -172,13 +164,21 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-2xl: 18px;
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* depth recipe: static card ledge + the pressable "ledge" (color via --ledge per element) */
+  --shadow-card: 0 6px 0 rgba(0, 0, 0, 0.16), 0 14px 26px rgba(0, 0, 0, 0.2);
+  --shadow-ledge-sm: 0 3px 0 var(--ledge, rgba(0, 0, 0, 0.28));
+  --shadow-ledge: 0 4px 0 var(--ledge, rgba(0, 0, 0, 0.28)), 0 6px 10px rgba(0, 0, 0, 0.22);
+  --shadow-ledge-lg: 0 5px 0 var(--ledge, rgba(0, 0, 0, 0.28)), 0 8px 14px rgba(0, 0, 0, 0.28);
+
+  --font-sans: var(--font-baloo), var(--font-urdu), system-ui, sans-serif;
+  --font-display: var(--font-baloo), system-ui, sans-serif;
+  --font-mono: var(--font-baloo), ui-monospace, monospace;
 }
 
 @layer base {
@@ -186,13 +186,148 @@
     border-color: var(--border);
     outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
   }
+  html,
   body {
-    background-color: var(--background);
-    color: var(--foreground);
+    background: var(--app-bg);
   }
-  /* Urdu (RTL): switch to the embedded Nastaliq face for legible script. */
+  body {
+    color: var(--foreground);
+    background: var(--app-bg);
+    background-attachment: fixed;
+  }
+  /* Urdu (RTL): switch to the Naskh face — legible at dense-UI sizes (not Nastaliq). */
   html[dir="rtl"] body {
-    font-family: var(--font-urdu), var(--font-geist-sans), sans-serif;
-    line-height: 2;
+    font-family: var(--font-urdu), var(--font-baloo), sans-serif;
+    line-height: 1.7;
+  }
+}
+
+@layer components {
+  /* The deep-blue app canvas. */
+  .bg-app {
+    background: var(--app-bg);
+  }
+
+  /* ---- The signature "candy" surface ----
+     A pressable, top-lit gradient block on a solid colored ledge. Choose a family
+     with .candy-<name>; size the ledge with .candy-sm / .candy-lg. Press depresses
+     onto the ledge. */
+  .candy {
+    background: linear-gradient(180deg, var(--top, var(--blue-l)), var(--base, var(--blue)));
+    box-shadow: 0 4px 0 var(--ledge, var(--blue-d)), 0 6px 10px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    color: #fff;
+    border: 0;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  .candy:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--ledge, var(--blue-d));
+  }
+  .candy-sm {
+    box-shadow: 0 3px 0 var(--ledge, var(--blue-d)), 0 4px 7px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  }
+  .candy-sm:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--ledge, var(--blue-d));
+  }
+  .candy-lg {
+    box-shadow: 0 6px 0 var(--ledge, var(--blue-d)), 0 10px 16px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  .candy-lg:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--ledge, var(--blue-d));
+  }
+
+  /* family modifiers (set the three gradient/ledge stops) */
+  .candy-green  { --top: var(--green-l);  --base: var(--green);  --ledge: var(--green-d); }
+  .candy-blue   { --top: var(--blue-l);   --base: var(--blue);   --ledge: var(--blue-d); }
+  .candy-orange { --top: var(--orange-l); --base: var(--orange); --ledge: var(--orange-d); }
+  .candy-purple { --top: var(--purple-l); --base: var(--purple); --ledge: var(--purple-d); }
+  .candy-red    { --top: var(--red-l);    --base: var(--red);    --ledge: var(--red-d); }
+  .candy-teal   { --top: var(--teal-l);   --base: var(--teal);   --ledge: var(--teal-d); }
+  .candy-pink   { --top: var(--pink-l);   --base: var(--pink);   --ledge: var(--pink-d); }
+  .candy-slate  { --top: var(--slate-l);  --base: var(--slate);  --ledge: var(--slate-d); }
+
+  /* active/selected: gold ring while keeping the family ledge underneath */
+  .ring-gold {
+    box-shadow: 0 0 0 3px var(--gold), 0 4px 0 var(--ledge, var(--blue-d));
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   Urdu weight bump. The Naskh face reads lighter than the chunky Latin (Baloo),
+   so in RTL/Urdu mode shift the whole weight scale up a step. Unlayered on
+   purpose: that lets it win over Tailwind's `font-*` utilities (which live in
+   @layer utilities). Capped at 700 — the heaviest Noto Naskh Arabic weight loaded.
+   --------------------------------------------------------------------------- */
+html[dir="rtl"] body,
+html[dir="rtl"] .font-normal,
+html[dir="rtl"] .font-medium {
+  font-weight: 600;
+}
+html[dir="rtl"] .font-semibold,
+html[dir="rtl"] .font-bold,
+html[dir="rtl"] .font-extrabold {
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------------------------------
+   Police-style red beacon — a glossy red dome that flashes with a glowing red
+   halo and a rotating sweep beam. Used beside the dashboard "Payments due soon"
+   title to flag urgency. Honors prefers-reduced-motion.
+   --------------------------------------------------------------------------- */
+@keyframes beacon-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 12px 4px rgba(226, 59, 59, 1), 0 0 30px 12px rgba(226, 59, 59, 0.7);
+    transform: scale(1.06);
+  }
+  50% {
+    box-shadow: 0 0 5px 1px rgba(226, 59, 59, 0.5), 0 0 12px 4px rgba(226, 59, 59, 0.25);
+    transform: scale(0.9);
+  }
+}
+@keyframes beacon-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.beacon {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  box-shadow: 0 0 12px 4px rgba(226, 59, 59, 1), 0 0 26px 10px rgba(226, 59, 59, 0.65);
+  animation: beacon-flash 0.8s ease-in-out infinite;
+}
+.beacon::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    rgba(255, 120, 120, 0.85),
+    transparent 35%,
+    transparent 65%,
+    rgba(255, 120, 120, 0.85)
+  );
+  animation: beacon-sweep 1.4s linear infinite;
+}
+.beacon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 35%, #ff9a9a 0%, #e23b3b 48%, #ac2222 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65);
+}
+@media (prefers-reduced-motion: reduce) {
+  .beacon,
+  .beacon::before {
+    animation: none;
   }
 }

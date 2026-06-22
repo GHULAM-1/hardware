@@ -21,14 +21,14 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 md:flex",
-        collapsed ? "w-16" : "w-64",
+        "hidden shrink-0 flex-col text-white transition-[width] duration-200 md:flex",
+        collapsed ? "w-[72px]" : "w-64",
       )}
     >
       <div
         className={cn(
-          "flex h-16 items-center border-b border-sidebar-border",
-          collapsed ? "justify-center px-2" : "justify-between px-5",
+          "flex h-16 items-center",
+          collapsed ? "justify-center px-2" : "justify-between px-4",
         )}
       >
         {!collapsed && <Logo />}

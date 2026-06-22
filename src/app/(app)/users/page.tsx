@@ -20,7 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+
+import { Icon3D } from "@/components/ui/icon-3d";
 import type { ProfileWithEmail } from "@/types/models";
 
 export default function UsersPage() {
@@ -88,17 +90,18 @@ export default function UsersPage() {
     {
       key: "edit",
       header: "",
-      headerClassName: "w-12",
+      headerClassName: "w-16 text-end",
+      className: "text-end",
       cell: (u) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
+        <button
+          type="button"
+          className="ms-auto shrink-0 active:scale-95"
           title={t("users.editUser")}
+          aria-label={t("users.editUser")}
           onClick={() => openDialog(DialogKey.UserEdit, { user: u })}
         >
-          <Pencil className="h-4 w-4" />
-        </Button>
+          <Icon3D name="pencil" size={34} alt="" />
+        </button>
       ),
     },
   ];

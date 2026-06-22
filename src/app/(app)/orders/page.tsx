@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Pencil, Receipt } from "lucide-react";
+import { Receipt } from "lucide-react";
+
+import { Icon3D } from "@/components/ui/icon-3d";
 
 import { Button } from "@/components/ui/button";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
@@ -72,21 +74,25 @@ export default function OrdersPage() {
       header: "",
       headerClassName: "w-px",
       cell: (o) => (
-        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap ps-2"
+          onClick={(e) => e.stopPropagation()}
+        >
           {isSuperAdmin && o.payment_type !== PaymentType.Cash && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
+            <button
+              type="button"
+              className="shrink-0 active:scale-95"
               title={t("orders.editPayment")}
+              aria-label={t("orders.editPayment")}
               onClick={() => openDialog(DialogKey.OrderEdit, { order: o })}
             >
-              <Pencil className="h-4 w-4" />
-            </Button>
+              <Icon3D name="pencil" size={34} alt="" />
+            </button>
           )}
           <Button
             variant="outline"
             size="sm"
+            className="shrink-0"
             onClick={() => openDialog(DialogKey.Receipt, { orderId: o.id })}
           >
             <Receipt className="me-1 h-4 w-4" />

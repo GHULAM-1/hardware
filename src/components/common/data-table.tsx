@@ -32,6 +32,7 @@ export function DataTable<T>({
   loading = false,
   emptyText,
   onRowClick,
+  selectedRowId,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -39,6 +40,8 @@ export function DataTable<T>({
   loading?: boolean;
   emptyText?: string;
   onRowClick?: (row: T) => void;
+  /** When set, the matching row is highlighted (desktop master-detail selection). */
+  selectedRowId?: string;
 }) {
   const { t } = useTranslation();
 
@@ -77,6 +80,7 @@ export function DataTable<T>({
             rows.map((row, index) => (
               <TableRow
                 key={getRowId(row)}
+                data-state={selectedRowId === getRowId(row) ? "selected" : undefined}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 // Fixed height so rows stay even whether or not a cell has a button.
                 className={cn("h-14", onRowClick && "cursor-pointer")}

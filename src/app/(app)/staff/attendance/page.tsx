@@ -68,7 +68,7 @@ export default function AttendancePage() {
 
   return (
     <div className="pb-24">
-      <Button asChild variant="ghost" size="sm" className="-ms-2 mb-2 text-muted-foreground">
+      <Button asChild variant="ghost" size="sm" className="-ms-2 mb-2 text-white/80 hover:text-white">
         <Link href="/staff">
           <ArrowLeft className="me-1 h-4 w-4 rtl:rotate-180" />
           {t("staff.title")}
@@ -78,13 +78,13 @@ export default function AttendancePage() {
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <DatePicker value={date} onChange={changeDate} className="w-48" />
-        <p className="text-sm text-muted-foreground">{t("staff.presentNote")}</p>
+        <p className="text-sm font-medium text-white/80">{t("staff.presentNote")}</p>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+        <p className="text-sm font-medium text-white/80">{t("common.loading")}</p>
       ) : rows.length === 0 ? (
-        <p className="rounded-lg border border-border p-6 text-center text-sm text-muted-foreground">
+        <p className="rounded-xl border border-white/20 p-6 text-center text-sm font-medium text-white/80">
           {t("staff.noActiveStaff")}
         </p>
       ) : (

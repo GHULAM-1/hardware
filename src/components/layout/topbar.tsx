@@ -6,7 +6,6 @@ import { LogOut, UserCog } from "lucide-react";
 
 import { useAuth } from "@/providers/auth-provider";
 import { UserRole } from "@/lib/enums";
-import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Logo } from "@/components/layout/logo";
@@ -42,7 +41,7 @@ export function Topbar() {
   }
 
   return (
-    <header className="flex h-16 items-center gap-2 border-b border-border bg-background px-3 sm:gap-3 sm:px-4">
+    <header className="flex h-16 items-center gap-2 px-3 text-white sm:gap-3 sm:px-4">
       {/* Mobile: menu button + logo (sidebar is hidden) */}
       <MobileNav />
       <Logo className="md:hidden" compact />
@@ -53,19 +52,18 @@ export function Topbar() {
 
       <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
         <LanguageSwitcher />
-        <ModeToggle />
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-md p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <Avatar className="h-9 w-9 shrink-0">
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg p-1 outline-none focus-visible:ring-2 focus-visible:ring-gold">
+            <Avatar className="h-10 w-10 shrink-0 border-2 border-gold">
               {profile?.image_url && <AvatarImage src={profile.image_url} alt={profile.full_name ?? ""} />}
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {initials(profile?.full_name)}
               </AvatarFallback>
             </Avatar>
             <div className="hidden min-w-0 max-w-[8rem] text-start lg:block">
-              <p className="truncate text-sm font-medium leading-tight">{profile?.full_name ?? "—"}</p>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate text-sm font-bold leading-tight text-white">{profile?.full_name ?? "—"}</p>
+              <p className="truncate text-xs font-semibold text-gold">
                 {t(`roles.${profile?.role ?? UserRole.Admin}`)}
               </p>
             </div>

@@ -9,7 +9,6 @@ import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { useLanguage } from "@/providers/i18n-provider";
 import { Language } from "@/lib/enums";
 import { PageHeader } from "@/components/layout/page-header";
-import { ModeToggle } from "@/components/mode-toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,14 +88,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.theme")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ModeToggle />
-        </CardContent>
-      </Card>
     </div>
   );
 }

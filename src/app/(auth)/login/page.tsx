@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/providers/auth-provider";
 import { loginSchema, type LoginValues } from "@/lib/schemas";
 import { Logo } from "@/components/layout/logo";
-import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -51,10 +50,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-1 items-center justify-center bg-secondary p-4">
+    <div className="bg-app flex min-h-dvh flex-1 items-center justify-center p-4">
       <div className="absolute end-4 top-4 flex items-center gap-2">
         <LanguageSwitcher />
-        <ModeToggle />
       </div>
 
       <Card className="w-full max-w-sm">

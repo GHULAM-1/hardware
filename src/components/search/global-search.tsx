@@ -137,6 +137,7 @@ export function GlobalSearch() {
 
       <Dialog open={open} onOpenChange={setPaletteOpen}>
         <DialogContent
+          plain
           showCloseButton={false}
           className="w-[calc(100%-1.5rem)] overflow-hidden p-0 sm:max-w-xl"
         >

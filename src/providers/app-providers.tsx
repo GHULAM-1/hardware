@@ -9,17 +9,20 @@ import { I18nProvider } from "@/providers/i18n-provider";
 import { DialogManagerProvider } from "@/components/dialogs/dialog-manager";
 import { dialogRegistry } from "@/components/dialogs/registry";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" forcedTheme="light" enableSystem={false} disableTransitionOnChange>
       <QueryProvider>
         <AuthProvider>
           <I18nProvider>
-            <DialogManagerProvider registry={dialogRegistry}>
-              {children}
-              <Toaster richColors position="top-center" />
-            </DialogManagerProvider>
+            <TooltipProvider>
+              <DialogManagerProvider registry={dialogRegistry}>
+                {children}
+                <Toaster richColors position="top-center" />
+              </DialogManagerProvider>
+            </TooltipProvider>
           </I18nProvider>
         </AuthProvider>
       </QueryProvider>

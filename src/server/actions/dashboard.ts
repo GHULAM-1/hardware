@@ -96,6 +96,27 @@ export async function getFinancialSummary(accessToken: string): Promise<Financia
   };
 }
 
+/** Today's completed-order sales total + order count (super_admin). */
+export type TodayStats = { salesToday: number; ordersToday: number };
+
+export async function getTodayStats(accessToken: string): Promise<TodayStats> {
+  const client = createActionClient(accessToken);
+
+  const dayStart = new Date();
+  dayStart.setHours(0, 0, 0, 0);
+
+  const { data } = await client
+    .from("orders")
+    .select("total, status")
+    .gte("created_at", dayStart.toISOString());
+
+  const completed = (data ?? []).filter((o) => o.status === OrderStatus.Completed);
+  return {
+    salesToday: completed.reduce((sum, o) => sum + Number(o.total ?? 0), 0),
+    ordersToday: completed.length,
+  };
+}
+
 /** `YYYY-MM` bucket key for a date (local time). */
 function monthKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;

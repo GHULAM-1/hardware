@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Nastaliq_Urdu } from "next/font/google";
+import { Baloo_2, Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/providers/app-providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display / Latin / numbers — the chunky rounded "game" face.
+const baloo = Baloo_2({
+  variable: "--font-baloo",
   subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const notoNastaliq = Noto_Nastaliq_Urdu({
+// Urdu body & labels — Naskh (legible at dense-UI sizes, unlike Nastaliq).
+const notoNaskh = Noto_Naskh_Arabic({
   variable: "--font-urdu",
   subsets: ["arabic"],
   weight: ["400", "500", "600", "700"],
@@ -37,7 +35,7 @@ export default function RootLayout({
       lang="en"
       dir="ltr"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${notoNastaliq.variable} h-full antialiased`}
+      className={`${baloo.variable} ${notoNaskh.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: setLangScript }} />

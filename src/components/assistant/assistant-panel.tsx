@@ -102,7 +102,7 @@ export function AssistantPanel({ onNavigated }: { onNavigated?: () => void }) {
                   dir={rtl ? "rtl" : "ltr"}
                   style={
                     rtl
-                      ? { fontFamily: "var(--font-urdu), var(--font-geist-sans), sans-serif" }
+                      ? { fontFamily: "var(--font-urdu), var(--font-baloo), sans-serif" }
                       : undefined
                   }
                   className={cn(

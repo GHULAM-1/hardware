@@ -83,7 +83,7 @@ export default function SalaryPage() {
 
   return (
     <div>
-      <Button asChild variant="ghost" size="sm" className="-ms-2 mb-2 text-muted-foreground">
+      <Button asChild variant="ghost" size="sm" className="-ms-2 mb-2 text-white/80 hover:text-white">
         <Link href="/staff">
           <ArrowLeft className="me-1 h-4 w-4 rtl:rotate-180" />
           {t("staff.title")}
@@ -95,7 +95,7 @@ export default function SalaryPage() {
         <Button variant="outline" size="icon" onClick={() => setMonth((m) => shiftMonth(m, -1))}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="min-w-44 text-center font-medium">{monthLabel(month)}</span>
+        <span className="min-w-44 text-center font-bold text-white">{monthLabel(month)}</span>
         <Button
           variant="outline"
           size="icon"

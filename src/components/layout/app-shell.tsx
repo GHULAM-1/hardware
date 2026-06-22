@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { StatBar } from "@/components/layout/stat-bar";
 import { ActionFab } from "@/components/assistant/action-fab";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
@@ -26,12 +27,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex overflow-hidden">
+    <div className="bg-app fixed inset-0 flex overflow-hidden">
       <AppSidebar collapsed={collapsed} onToggle={toggleSidebar} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar />
+        <StatBar />
         {/* pb clears the floating assistant button so it never covers content. */}
-        <main className="flex-1 overflow-y-auto bg-secondary/40 p-4 pb-24 sm:p-6 sm:pb-24">
+        <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-24">
           {children}
         </main>
       </div>

@@ -1,15 +1,23 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useIsSuperAdmin } from "@/providers/auth-provider";
-import { Button } from "@/components/ui/button";
+import { Icon3D } from "@/components/ui/icon-3d";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 /**
  * Edit/delete actions for a table row. Renders nothing for `admin` (read-only),
  * so list pages don't each re-implement the role gate. Delete can be disabled
  * (e.g. an item referenced by orders can't be removed) with a reason tooltip.
+ *
+ * Both actions use the glossy 3D icons (pencil = edit, trash = delete) at a
+ * consistent size, with a bilingual tooltip and no hover-lift.
  */
+const ACTION_BOX = "shrink-0 active:scale-95";
+const ICON_SIZE = 34;
+
 export function RowActions({
   onEdit,
   onDelete,
@@ -21,27 +29,42 @@ export function RowActions({
   deleteDisabled?: boolean;
   deleteDisabledReason?: string;
 }) {
+  const { t } = useTranslation();
   const isSuperAdmin = useIsSuperAdmin();
   if (!isSuperAdmin) return null;
 
   return (
-    <div className="flex items-center justify-end gap-1">
+    <div className="flex shrink-0 items-center justify-end">
       {onEdit && (
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}>
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label={t("common.edit")} onClick={onEdit} className={ACTION_BOX}>
+              <Icon3D name="pencil" size={ICON_SIZE} alt="" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t("common.edit")}</TooltipContent>
+        </Tooltip>
       )}
       {onDelete && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:text-destructive"
-          onClick={onDelete}
-          disabled={deleteDisabled}
-          title={deleteDisabled ? deleteDisabledReason : undefined}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {/* span wrapper so the tooltip still shows when the button is disabled */}
+            <span className="inline-flex">
+              <button
+                type="button"
+                aria-label={t("common.delete")}
+                onClick={onDelete}
+                disabled={deleteDisabled}
+                className={cn(ACTION_BOX, deleteDisabled && "pointer-events-none opacity-40 grayscale")}
+              >
+                <Icon3D name="trash" size={ICON_SIZE} alt="" />
+              </button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            {deleteDisabled && deleteDisabledReason ? deleteDisabledReason : t("common.delete")}
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   );

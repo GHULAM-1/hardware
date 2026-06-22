@@ -29,10 +29,13 @@ export function DueSoonStrip({
   onOpen,
   onViewReceipt,
   className,
+  beacon = false,
 }: {
   onOpen: (khata: KhataListView) => void;
   onViewReceipt?: (orderId: string) => void;
   className?: string;
+  /** Show the flashing red police-style urgency beacon beside the title (dashboard). */
+  beacon?: boolean;
 }) {
   const { t } = useTranslation();
   const { language } = useLanguage();
@@ -61,10 +64,14 @@ export function DueSoonStrip({
   }
 
   return (
-    <div className={cn("rounded-lg border border-warning/40 bg-warning/10 p-3 sm:p-4", className)}>
-      <div className="mb-3 flex items-center gap-2">
-        <BellRing className="h-5 w-5 shrink-0 text-warning" />
-        <h2 className="text-sm font-semibold sm:text-base">
+    <div className={cn("rounded-2xl border-2 border-warning/50 bg-cream p-3 text-ink shadow-card sm:p-4", className)}>
+      <div className="mb-3 flex items-center gap-2.5">
+        {beacon ? (
+          <span className="beacon shrink-0" aria-hidden="true" />
+        ) : (
+          <BellRing className="h-5 w-5 shrink-0 text-warning" />
+        )}
+        <h2 className="text-sm font-extrabold sm:text-base">
           {t("khata.dueSoonCount", { count: reminders.length })}
         </h2>
       </div>

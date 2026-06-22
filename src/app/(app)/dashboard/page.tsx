@@ -108,6 +108,7 @@ export default function DashboardPage() {
       {/* Payments due soon — pinned at the very top so it's seen first. */}
       {isSuperAdmin && (
         <DueSoonStrip
+          beacon
           onOpen={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
           onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
         />
@@ -120,6 +121,7 @@ export default function DashboardPage() {
             label={t("dashboard.revenueThisMonth")}
             value={money(finance.data?.revenueThisMonth)}
             icon={Wallet}
+            icon3d="wallet"
             tone="success"
             href="/orders"
           />
@@ -127,6 +129,7 @@ export default function DashboardPage() {
             label={t("dashboard.ordersThisMonth")}
             value={num(finance.data?.ordersThisMonth)}
             icon={ShoppingCart}
+            icon3d="cart-plus"
             tone="primary"
             href="/orders"
           />
@@ -134,6 +137,7 @@ export default function DashboardPage() {
             label={t("dashboard.outstanding")}
             value={money(finance.data?.outstanding)}
             icon={BookUser}
+            icon3d="receipt"
             tone="warning"
             href="/khata"
           />
@@ -141,6 +145,7 @@ export default function DashboardPage() {
             label={t("dashboard.customers")}
             value={num(finance.data?.customers)}
             icon={Users}
+            icon3d="users"
             tone="brand"
             href="/customers"
           />
@@ -148,6 +153,7 @@ export default function DashboardPage() {
             label={t("dashboard.suppliers")}
             value={num(finance.data?.suppliers)}
             icon={Truck}
+            icon3d="truck"
             tone="primary"
             href="/suppliers"
           />
@@ -155,6 +161,7 @@ export default function DashboardPage() {
             label={t("dashboard.products")}
             value={num(catalog.data?.products)}
             icon={Tag}
+            icon3d="boxes"
             tone="brand"
             href="/warehouse"
           />
@@ -168,6 +175,7 @@ export default function DashboardPage() {
             label={t("dashboard.products")}
             value={num(catalog.data?.products)}
             icon={Tag}
+            icon3d="boxes"
             tone="brand"
             href="/warehouse"
           />
@@ -220,7 +228,7 @@ export default function DashboardPage() {
       {isSuperAdmin && (
         <div>
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">{t("khata.reminders")}</h2>
+            <h2 className="text-lg font-bold text-white">{t("khata.reminders")}</h2>
             <Button variant="outline" size="sm" onClick={() => openDialog(DialogKey.ReminderForm, null)}>
               <BellPlus className="me-1 h-4 w-4" />
               {t("khata.newReminder")}

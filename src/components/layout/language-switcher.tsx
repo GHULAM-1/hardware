@@ -17,9 +17,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       aria-label="Toggle language"
       onClick={() => setLanguage(next)}
       className={cn(
-        "inline-flex h-10 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm font-medium",
-        "transition-colors hover:bg-accent hover:text-accent-foreground",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "inline-flex h-10 items-center gap-2 rounded-lg border-2 border-white/25 bg-white/15 px-3 text-sm font-bold text-white backdrop-blur-sm",
+        "transition-colors hover:bg-white/25",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
         className,
       )}
     >
