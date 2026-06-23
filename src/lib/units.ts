@@ -32,17 +32,35 @@ export const BASE_UNIT: Record<MeasurementType, string> = {
   [MeasurementType.Length]: "mm",
 };
 
-/** Selectable primary (bulk) units the admin can pick per measurement type. */
+/** Selectable primary (stored) units the admin can pick per measurement type. */
 export const PRIMARY_UNITS: Record<MeasurementType, readonly string[]> = {
   [MeasurementType.Count]: ["piece", "box", "dozen", "carton"],
-  [MeasurementType.Weight]: ["gram", "kg", "ton"],
-  [MeasurementType.Length]: ["mm", "cm", "inch", "foot", "meter"],
+  // Weight tab also offers liter (volume) — stored standalone, see deriveUnitModel.
+  [MeasurementType.Weight]: ["kg", "ton", "liter"],
+  [MeasurementType.Length]: ["inch", "foot", "meter"],
 };
 
 /** Base units (grams) in one of each weight primary unit. */
 const WEIGHT_FACTOR: Record<string, number> = { gram: 1, kg: 1000, ton: 1_000_000 };
 /** Base units (mm) in one of each length primary unit. Exact physical constants. */
 const LENGTH_FACTOR: Record<string, number> = { mm: 1, cm: 10, inch: 25.4, foot: 304.8, meter: 1000 };
+
+/**
+ * Units that can be sold interchangeably for an order line, with their per-base
+ * factors. An item is sold only within the group of its stored primary unit:
+ *   mass   kg/ton (base gram)   ·   volume liter (standalone)   ·   length inch/foot/meter (base mm)
+ * Count is handled separately (bulk + piece via base_per_primary).
+ */
+const SALE_GROUPS: { units: readonly string[]; factor: Record<string, number> }[] = [
+  { units: ["kg", "ton"], factor: WEIGHT_FACTOR },
+  { units: ["liter"], factor: { liter: 1 } },
+  { units: ["inch", "foot", "meter"], factor: LENGTH_FACTOR },
+];
+
+/** The convertible group a primary unit belongs to (null = not a grouped unit). */
+function groupOf(primaryUnit: string): { units: readonly string[]; factor: Record<string, number> } | null {
+  return SALE_GROUPS.find((g) => g.units.includes(primaryUnit)) ?? null;
+}
 
 /** A count primary unit that is itself the base piece (no bulk packing). */
 export function isCountBaseUnit(primaryUnit: string): boolean {
@@ -60,6 +78,8 @@ export function deriveUnitModel(
   countFactor: number | null | undefined,
 ): { base_unit: string; base_per_primary: number } {
   if (measurementType === MeasurementType.Weight) {
+    // Liter is a standalone volume unit (no fixed weight) — store it as its own base.
+    if (primaryUnit === "liter") return { base_unit: "liter", base_per_primary: 1 };
     return { base_unit: "gram", base_per_primary: WEIGHT_FACTOR[primaryUnit] ?? 1 };
   }
   if (measurementType === MeasurementType.Length) {
@@ -111,17 +131,37 @@ type PricedItem = UnitItem & { selling_price: number };
 export type SaleUnitOption = { unit: string; price: number };
 
 /**
- * Units this item can be sold in, with the selling price for each. The primary
- * unit always (price = item.selling_price); count packs add the base/piece unit
- * (price = selling_price ÷ pieces-per-pack). Weight/length sell in the primary
- * unit only (raw amount).
+ * Units this item can be sold in, with the selling price for each.
+ *  - Count: the primary unit, plus the base "piece" for bulk packs (price = selling_price ÷ pieces).
+ *  - Weight/Length: every unit in the primary unit's convertible group (kg/ton, inch/foot/meter),
+ *    priced proportionally from the per-base price. Liter is a group of one (sold only in liters).
+ * The primary unit always keeps exactly item.selling_price (listed first, no rounding drift).
  */
 export function saleUnitOptions(item: PricedItem): SaleUnitOption[] {
-  const options: SaleUnitOption[] = [{ unit: item.primary_unit, price: item.selling_price }];
-  if (hasSubUnit(item)) {
-    options.push({ unit: item.base_unit, price: round2(item.selling_price / item.base_per_primary) });
+  if (item.measurement_type === MeasurementType.Count) {
+    const options: SaleUnitOption[] = [{ unit: item.primary_unit, price: item.selling_price }];
+    // Whenever the admin picked a bulk unit (box/dozen/carton), also allow selling
+    // by the piece — price per piece = bulk price ÷ pieces-per-pack. Use the canonical
+    // "piece" base (not item.base_unit, which can be mis-stored as the bulk unit).
+    const pieceUnit = BASE_UNIT[MeasurementType.Count];
+    if (!isCountBaseUnit(item.primary_unit) && pieceUnit !== item.primary_unit) {
+      options.push({
+        unit: pieceUnit,
+        price: round2(item.selling_price / (item.base_per_primary || 1)),
+      });
+    }
+    return options;
   }
-  return options;
+
+  const group = groupOf(item.primary_unit);
+  if (!group) return [{ unit: item.primary_unit, price: item.selling_price }];
+
+  const perBase = item.selling_price / (item.base_per_primary || 1);
+  const ordered = [item.primary_unit, ...group.units.filter((u) => u !== item.primary_unit)];
+  return ordered.map((u) => ({
+    unit: u,
+    price: u === item.primary_unit ? item.selling_price : round2(perBase * (group.factor[u] ?? 1)),
+  }));
 }
 
 /** Prefill selling price for a chosen sale unit (per-unit price). */

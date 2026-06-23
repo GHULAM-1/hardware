@@ -15,7 +15,7 @@ import { DialogKey } from "@/lib/dialog-keys";
 import { KhataStatus } from "@/lib/enums";
 import { khataMeta } from "@/lib/status-meta";
 import { displayName } from "@/lib/display";
-import { formatDate, todayISO } from "@/lib/format";
+import { formatDate, formatDateTime, todayISO } from "@/lib/format";
 import { Money } from "@/components/common/money";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
@@ -93,6 +93,9 @@ export function CustomerKhataDialog({ payload, onClose }: DialogComponentProps<C
             </div>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {t("fields.dueDate")}: {formatDate(k.due_date)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("fields.addedOn")}: {formatDateTime(k.created_at)}
             </p>
             {k.description ? <p className="mt-1 text-sm">{k.description}</p> : null}
           </div>

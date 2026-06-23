@@ -9,6 +9,14 @@ import { VoiceInputButton } from "@/components/common/voice-input-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { saleUnitOptions } from "@/lib/units";
 import type { SupplierOrderLineDraft } from "@/components/supplier-orders/supplier-order-form-types";
 
 /** One supplier-order line: item + its supplier + quantity (+ unit) + optional note. No prices. */
@@ -24,6 +32,11 @@ export function SupplierOrderLineRow({
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
+
+  // Compatible units for the chosen item (kg/ton, inch/foot/meter, box/piece…).
+  // Prices are irrelevant for purchasing, so feed a 0 selling price.
+  const unitOptions = line.item ? saleUnitOptions({ ...line.item, selling_price: 0 }) : [];
+  const canChooseUnit = unitOptions.length > 1;
 
   return (
     <div className="min-w-0 space-y-3 rounded-lg border border-border bg-card p-4">
@@ -46,7 +59,12 @@ export function SupplierOrderLineRow({
           <ItemCombobox
             value={line.itemId}
             onSelect={(item) =>
-              onChange({ ...line, itemId: item?.id ?? null, unit: item?.primary_unit ?? line.unit })
+              onChange({
+                ...line,
+                itemId: item?.id ?? null,
+                item: item ?? null,
+                unit: item?.primary_unit ?? line.unit,
+              })
             }
           />
         </div>
@@ -63,10 +81,25 @@ export function SupplierOrderLineRow({
               // Whole units only — you order whole bags/boxes, not fractions.
               onChange={(e) => onChange({ ...line, quantity: e.target.value.replace(/\D/g, "") })}
             />
-            {line.unit && (
-              <span className="whitespace-nowrap text-sm text-muted-foreground">
-                {t(`units.${line.unit}`)}
-              </span>
+            {canChooseUnit ? (
+              <Select value={line.unit || undefined} onValueChange={(u) => onChange({ ...line, unit: u })}>
+                <SelectTrigger className="w-28 shrink-0">
+                  <SelectValue placeholder={t("fields.selectUnit")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {unitOptions.map((o) => (
+                    <SelectItem key={o.unit} value={o.unit}>
+                      {t(`units.${o.unit}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              line.unit && (
+                <span className="whitespace-nowrap text-sm text-muted-foreground">
+                  {t(`units.${line.unit}`)}
+                </span>
+              )
             )}
           </div>
         </div>

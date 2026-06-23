@@ -45,8 +45,12 @@ export type AttendanceRow = {
 export type StaffSalaryRow = {
   staff: Staff;
   daysInMonth: number;
+  /** Days owed this month after the join date (full month for existing staff). */
+  payableDays: number;
   absentDays: number;
   perDay: number;
+  /** Prorated salary base = perDay × payableDays (equals monthly salary when full). */
+  earnedSalary: number;
   absenceDeduction: number;
   advancesTotal: number;
   /** Suggested net to pay (salary − absence deduction − advances); may be negative. */
@@ -147,6 +151,14 @@ export type SupplierOrderDetailView = Pick<
   "id" | "order_no" | "created_at" | "status" | "received_at" | "note" | "bill_url"
 > & {
   lines: SupplierOrderLineView[];
+};
+
+/** A full order loaded for editing — line items carry the FULL item (for unit/price options). */
+export type OrderEditView = Pick<
+  Order,
+  "id" | "customer_id" | "payment_type" | "amount_paid" | "due_date" | "internal_note" | "total"
+> & {
+  lines: { item: Item | null; quantity: number; unit: string; selling_price: number }[];
 };
 
 /** A full order rendered as a printable receipt. */

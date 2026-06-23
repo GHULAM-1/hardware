@@ -28,6 +28,7 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
       phone: customer?.phone ?? "",
       address: customer?.address ?? "",
       is_blacklisted: customer?.is_blacklisted ?? false,
+      notes: customer?.notes ?? "",
     },
   });
 
@@ -58,6 +59,14 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
           <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
           <TextField control={form.control} name="phone" label={t("fields.phone")} dir="ltr" optional />
           <TextareaField control={form.control} name="address" label={t("fields.address")} optional />
+          <TextareaField
+            control={form.control}
+            name="notes"
+            label={t("customers.internalNote")}
+            placeholder={t("customers.internalNotePlaceholder")}
+            optional
+            voice
+          />
           <SwitchField
             control={form.control}
             name="is_blacklisted"

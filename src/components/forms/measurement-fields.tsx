@@ -49,8 +49,11 @@ export function MeasurementFields() {
   const countFactor = useWatch({ control, name: "base_per_primary" });
 
   const isCount = measurementType === MeasurementType.Count;
-  const showFactor = isCount && !isCountBaseUnit(primaryUnit);
+  // Only ask pieces-per-pack once a real bulk unit is chosen (avoids a broken
+  // "...in one units.?" label when no unit is selected yet).
+  const showFactor = isCount && !!primaryUnit && !isCountBaseUnit(primaryUnit);
   const unitLabel = (key: string) => t(`units.${key}`);
+  const primaryLabel = primaryUnit ? unitLabel(primaryUnit) : "";
 
   // Keep base_unit / unit (and base_per_primary for non-count) in sync with the
   // chosen type + primary unit. For count packs the factor is user-entered.
@@ -138,14 +141,14 @@ export function MeasurementFields() {
         <NumberField
           control={control}
           name="selling_price"
-          label={`${t("fields.sellingPrice")} (PKR / ${unitLabel(primaryUnit)})`}
+          label={primaryLabel ? `${t("fields.sellingPrice")} (PKR / ${primaryLabel})` : `${t("fields.sellingPrice")} (PKR)`}
           hint={t("items.sellingPriceHint")}
           step="0.01"
         />
         <NumberField
           control={control}
           name="low_stock_threshold"
-          label={t("items.lowStockAlert", { unit: unitLabel(primaryUnit) })}
+          label={primaryLabel ? t("items.lowStockAlert", { unit: primaryLabel }) : t("items.lowStockAlertNoUnit")}
           hint={t("items.lowStockHint")}
           step="0.01"
           optional

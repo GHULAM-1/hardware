@@ -11,7 +11,7 @@ import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { SupplierOrderStatus } from "@/lib/enums";
 import { displayName } from "@/lib/display";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
@@ -47,13 +47,6 @@ export default function SupplierOrdersPage() {
       header: "#",
       headerClassName: "w-12",
       cell: (_o, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
-    },
-    {
-      key: "date",
-      header: t("fields.date"),
-      cell: (o) => formatDate(o.created_at),
-      className: "hidden md:table-cell",
-      headerClassName: "hidden md:table-cell",
     },
     {
       key: "supplier",
@@ -92,12 +85,20 @@ export default function SupplierOrdersPage() {
       cell: (o) => <StatusBadge tone={STATUS_TONE[o.status]} label={t(STATUS_LABEL[o.status])} />,
     },
     {
+      key: "date",
+      header: t("fields.addedOn"),
+      cell: (o) => <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(o.created_at)}</span>,
+      className: "hidden md:table-cell",
+      headerClassName: "hidden md:table-cell",
+    },
+    {
       key: "actions",
       header: "",
       headerClassName: "w-px",
       cell: (o) => (
         <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
           <RowActions
+            onEdit={() => openDialog(DialogKey.SupplierOrderForm, { id: o.id })}
             onDelete={() =>
               confirmDelete({
                 title: t("common.delete"),

@@ -98,6 +98,7 @@ export const customerSchema = z.object({
   phone: optionalText,
   address: optionalText,
   is_blacklisted: z.boolean().default(false),
+  notes: optionalText,
 });
 export type CustomerValues = z.output<typeof customerSchema>;
 

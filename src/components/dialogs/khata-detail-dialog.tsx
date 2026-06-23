@@ -14,7 +14,7 @@ import { DialogKey } from "@/lib/dialog-keys";
 import { KhataStatus } from "@/lib/enums";
 import { khataMeta } from "@/lib/status-meta";
 import { displayName } from "@/lib/display";
-import { formatDate, todayISO } from "@/lib/format";
+import { formatDate, formatDateTime, todayISO } from "@/lib/format";
 import { Money } from "@/components/common/money";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
@@ -85,7 +85,7 @@ export function KhataDetailDialog({ payload, onClose }: DialogComponentProps<Kha
           {khata.description ? (
             <Field label={t("fields.note")}>{khata.description}</Field>
           ) : null}
-          <Field label={t("khata.createdOn")}>{formatDate(khata.created_at)}</Field>
+          <Field label={t("khata.createdOn")}>{formatDateTime(khata.created_at)}</Field>
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">

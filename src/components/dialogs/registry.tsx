@@ -13,12 +13,14 @@ import { CustomerFormDialog } from "@/components/forms/customer-form-dialog";
 import { CustomerProfileDialog } from "@/components/dialogs/customer-profile-dialog";
 import { OrderFormDialog } from "@/components/dialogs/order-form-dialog";
 import { ReceiptDialog } from "@/components/dialogs/receipt-dialog";
+import { OrderDetailDialog } from "@/components/dialogs/order-detail-dialog";
 import { OrderEditDialog } from "@/components/dialogs/order-edit-dialog";
 import { KhataFormDialog } from "@/components/forms/khata-form-dialog";
 import { KhataDetailDialog } from "@/components/dialogs/khata-detail-dialog";
 import { CustomerKhataDialog } from "@/components/dialogs/customer-khata-dialog";
 import { SupplierOrderFormDialog } from "@/components/dialogs/supplier-order-form-dialog";
 import { SupplierOrderDetailDialog } from "@/components/dialogs/supplier-order-detail-dialog";
+import { SupplierOrderTallyDialog } from "@/components/dialogs/supplier-order-tally-dialog";
 import { StaffFormDialog } from "@/components/forms/staff-form-dialog";
 import { StaffDetailDialog } from "@/components/dialogs/staff-detail-dialog";
 import { SalaryAdvanceFormDialog } from "@/components/forms/salary-advance-form-dialog";
@@ -45,12 +47,14 @@ export const dialogRegistry: DialogRegistry = {
   [DialogKey.CustomerProfile]: CustomerProfileDialog,
   [DialogKey.OrderForm]: OrderFormDialog,
   [DialogKey.Receipt]: ReceiptDialog,
+  [DialogKey.OrderDetail]: OrderDetailDialog,
   [DialogKey.OrderEdit]: OrderEditDialog,
   [DialogKey.KhataForm]: KhataFormDialog,
   [DialogKey.KhataDetail]: KhataDetailDialog,
   [DialogKey.CustomerKhata]: CustomerKhataDialog,
   [DialogKey.SupplierOrderForm]: SupplierOrderFormDialog,
   [DialogKey.SupplierOrderDetail]: SupplierOrderDetailDialog,
+  [DialogKey.SupplierOrderTally]: SupplierOrderTallyDialog,
   [DialogKey.StaffForm]: StaffFormDialog,
   [DialogKey.StaffDetail]: StaffDetailDialog,
   [DialogKey.SalaryAdvanceForm]: SalaryAdvanceFormDialog,

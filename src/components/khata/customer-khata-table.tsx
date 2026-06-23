@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { KhataStatus } from "@/lib/enums";
 import { khataMeta } from "@/lib/status-meta";
 import { displayName } from "@/lib/display";
-import { formatDate, todayISO } from "@/lib/format";
+import { formatDate, formatDateTime, todayISO } from "@/lib/format";
 import { useLanguage } from "@/providers/i18n-provider";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { Money } from "@/components/common/money";
@@ -34,6 +34,12 @@ export function CustomerKhataTable({
   const today = todayISO();
 
   const columns: Column<CustomerKhataGroup>[] = [
+    {
+      key: "row_no",
+      header: "#",
+      headerClassName: "w-12",
+      cell: (_g, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
+    },
     {
       key: "customer",
       header: t("fields.customer"),
@@ -73,6 +79,17 @@ export function CustomerKhataTable({
       cell: (g) => <Money value={g.totalOutstanding} className="font-bold" />,
       className: "text-end",
       headerClassName: "text-end",
+    },
+    {
+      key: "added",
+      header: t("fields.addedOn"),
+      cell: (g) => (
+        <span className="whitespace-nowrap text-sm text-muted-foreground">
+          {formatDateTime(g.latestCreatedAt)}
+        </span>
+      ),
+      className: "hidden lg:table-cell",
+      headerClassName: "hidden lg:table-cell",
     },
   ];
 

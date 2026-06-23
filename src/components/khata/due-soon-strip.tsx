@@ -102,7 +102,7 @@ export function DueSoonStrip({
                     {badge.text}
                   </span>
                   <div className="flex min-w-0 flex-col">
-                    <span className="truncate font-medium">{title}</span>
+                    <span className="truncate font-semibold text-[#e11d1d]">{title}</span>
                     <span className="text-xs text-muted-foreground">
                       {t("fields.dueDate")}: {formatDate(k.due_date)}
                     </span>
@@ -138,9 +138,13 @@ export function DueSoonStrip({
                       {k.customer.phone}
                     </a>
                   )}
-                  {/* Money only when there's actually an amount (reminders are Rs 0). */}
+                  {/* Money only when there's actually an amount (reminders are Rs 0).
+                      Pending dues are shown in red to flag them at a glance. */}
                   {k.amount > 0 && (
-                    <Money value={k.amount} className="shrink-0 whitespace-nowrap font-semibold" />
+                    <Money
+                      value={k.amount}
+                      className="shrink-0 whitespace-nowrap text-base font-extrabold text-[#e11d1d]"
+                    />
                   )}
                 </div>
               </div>

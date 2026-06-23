@@ -12,6 +12,7 @@ import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
+import { formatDateTime } from "@/lib/format";
 import { stockMeta } from "@/lib/status-meta";
 import { formatQuantity, thresholdBase } from "@/lib/units";
 import { PageHeader } from "@/components/layout/page-header";
@@ -110,6 +111,13 @@ export default function WarehousePage() {
       cell: (row) => <Money value={row.selling_price} />,
       className: "text-end",
       headerClassName: "text-end",
+    },
+    {
+      key: "added",
+      header: t("fields.addedOn"),
+      cell: (row) => <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(row.created_at)}</span>,
+      className: "hidden lg:table-cell",
+      headerClassName: "hidden lg:table-cell",
     },
     {
       key: "actions",

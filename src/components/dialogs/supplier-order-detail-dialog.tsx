@@ -1,23 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { Check, Download, Loader2, Pencil, Printer } from "lucide-react";
+import { ClipboardCheck, Download, Loader2, Printer } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { DialogKey } from "@/lib/dialog-keys";
-import {
-  useSupplierOrder,
-  useSaveSupplierOrderTally,
-  useUpdateSupplierOrderBill,
-} from "@/hooks/use-supplier-orders";
+import { useSupplierOrder, useUpdateSupplierOrderBill } from "@/hooks/use-supplier-orders";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { useLanguage } from "@/providers/i18n-provider";
 import { Language, SupplierOrderStatus } from "@/lib/enums";
-import { displayName } from "@/lib/display";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { printElement, downloadElementPdf } from "@/lib/print-export";
 import { isPdfUrl } from "@/lib/storage";
 import { SupplierOrderSheet } from "@/components/supplier-orders/supplier-order-sheet";
@@ -25,7 +20,6 @@ import { ZoomableImage } from "@/components/common/zoomable-image";
 import { DocumentUpload } from "@/components/common/document-upload";
 import { StatusBadge, type StatusTone } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -34,7 +28,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { SupplierOrderLineView } from "@/types/models";
 
 export type SupplierOrderDetailPayload = { id: string };
 
@@ -58,40 +51,10 @@ export function SupplierOrderDetailDialog({
   const { openDialog } = useDialogManager();
   const isSuperAdmin = useIsSuperAdmin();
   const { data: order, isLoading } = useSupplierOrder(payload.id);
-  const saveTally = useSaveSupplierOrderTally();
   const updateBill = useUpdateSupplierOrderBill();
 
   const sheetRef = React.useRef<HTMLDivElement | null>(null);
   const [pdfBusy, setPdfBusy] = React.useState(false);
-
-  // Per-line received-quantity inputs ("" = not tallied yet). Seeded from the
-  // saved order and re-seeded whenever it changes (e.g. after a tally save
-  // refetches) — done during render via a seed key, not an effect, so local
-  // edits aren't clobbered while the underlying order is unchanged.
-  const [recv, setRecv] = React.useState<Record<string, string>>({});
-  const [seededFor, setSeededFor] = React.useState<string | null>(null);
-  const seedKey = order
-    ? `${order.id}|${order.lines.map((l) => `${l.id}:${l.received_quantity ?? ""}`).join(",")}`
-    : null;
-  if (order && seedKey !== seededFor) {
-    setSeededFor(seedKey);
-    setRecv(
-      Object.fromEntries(
-        order.lines.map((l) => [l.id, l.received_quantity == null ? "" : String(l.received_quantity)]),
-      ),
-    );
-  }
-
-  // Lines grouped by their supplier (one item ↔ one supplier).
-  const groups = React.useMemo(() => {
-    const m = new Map<string, { name: string | null; lines: SupplierOrderLineView[] }>();
-    for (const l of order?.lines ?? []) {
-      const key = l.supplier?.id ?? "__none__";
-      if (!m.has(key)) m.set(key, { name: l.supplier?.name ?? null, lines: [] });
-      m.get(key)!.lines.push(l);
-    }
-    return Array.from(m.values());
-  }, [order]);
 
   async function onDownloadPdf() {
     if (!sheetRef.current || !order) return;
@@ -108,25 +71,6 @@ export function SupplierOrderDetailDialog({
   function onPrint() {
     if (!sheetRef.current || !order) return;
     printElement(sheetRef.current, { title: order.order_no, rtl: language === Language.Urdu });
-  }
-
-  function markAllReceived() {
-    if (!order) return;
-    setRecv(Object.fromEntries(order.lines.map((l) => [l.id, String(l.quantity)])));
-  }
-
-  async function onSaveTally() {
-    if (!order) return;
-    const entries = order.lines.map((l) => ({
-      id: l.id,
-      received_quantity: recv[l.id] === "" || recv[l.id] == null ? null : Number(recv[l.id]),
-    }));
-    try {
-      await saveTally.mutateAsync({ id: payload.id, values: { entries, bill_url: null } });
-      toast.success(t("supplierOrders.tallySaved"));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("toast.error"));
-    }
   }
 
   async function onBillChange(url: string | null) {
@@ -149,7 +93,7 @@ export function SupplierOrderDetailDialog({
             {order && <StatusBadge tone={STATUS_TONE[status]} label={t(STATUS_LABEL[status])} />}
           </DialogTitle>
           <DialogDescription>
-            {order ? formatDate(order.created_at) : t("common.loading")}
+            {order ? formatDateTime(order.created_at) : t("common.loading")}
           </DialogDescription>
         </DialogHeader>
 
@@ -169,10 +113,10 @@ export function SupplierOrderDetailDialog({
               {isSuperAdmin && (
                 <Button
                   variant="outline"
-                  onClick={() => openDialog(DialogKey.SupplierOrderForm, { id: payload.id })}
+                  onClick={() => openDialog(DialogKey.SupplierOrderTally, { id: payload.id })}
                 >
-                  <Pencil className="me-1 h-4 w-4" />
-                  {t("common.edit")}
+                  <ClipboardCheck className="me-1 h-4 w-4" />
+                  {t("supplierOrders.tally")}
                 </Button>
               )}
               <Button variant="outline" onClick={onPrint}>
@@ -188,98 +132,6 @@ export function SupplierOrderDetailDialog({
                 {t("supplierOrders.downloadPdf")}
               </Button>
             </div>
-
-            {/* Tally — mark what actually arrived, per item, grouped by supplier. */}
-            {isSuperAdmin && (
-              <div className="space-y-4 rounded-lg border border-border bg-card p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <Label className="text-base font-semibold">{t("supplierOrders.tally")}</Label>
-                  <Button type="button" variant="ghost" size="sm" onClick={markAllReceived}>
-                    <Check className="me-1 h-4 w-4" />
-                    {t("supplierOrders.markAllReceived")}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">{t("supplierOrders.manualStockHint")}</p>
-
-                {groups.map((g, gi) => (
-                  <div key={gi} className="space-y-2">
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {g.name ?? t("supplierOrders.noSupplier")}
-                    </div>
-                    {g.lines.map((l) => {
-                      const v = recv[l.id] ?? "";
-                      const tallied = v !== "";
-                      const complete = tallied && Number(v) >= Number(l.quantity);
-                      return (
-                        <div
-                          key={l.id}
-                          className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-border bg-background p-2"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium">
-                              {l.item ? displayName(l.item, language) : "—"}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {t("supplierOrders.ordered")}: {l.quantity} {t(`units.${l.unit}`)}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5">
-                              <Input
-                                type="number"
-                                min={0}
-                                inputMode="numeric"
-                                dir="ltr"
-                                className="w-24"
-                                value={v}
-                                placeholder="0"
-                                aria-label={t("supplierOrders.received")}
-                                onChange={(e) =>
-                                  setRecv((r) => ({ ...r, [l.id]: e.target.value.replace(/\D/g, "") }))
-                                }
-                              />
-                              <span className="whitespace-nowrap text-xs text-muted-foreground">
-                                {t(`units.${l.unit}`)}
-                              </span>
-                            </div>
-                            {/* Per-row shortcut: fills the ordered quantity so the user
-                                doesn't have to retype it when it all arrived. */}
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant={complete ? "secondary" : "outline"}
-                              onClick={() => setRecv((r) => ({ ...r, [l.id]: String(l.quantity) }))}
-                              title={t("supplierOrders.markReceived")}
-                            >
-                              <Check className="me-1 h-4 w-4" />
-                              {t("supplierOrders.markReceived")}
-                            </Button>
-                            <span className="w-10 shrink-0 text-center">
-                              {complete ? (
-                                <Check className="mx-auto h-4 w-4 text-success" />
-                              ) : tallied ? (
-                                <span className="text-xs font-semibold text-destructive">
-                                  {t("supplierOrders.short")}
-                                </span>
-                              ) : null}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-
-                <Button onClick={onSaveTally} disabled={saveTally.isPending} className="w-full sm:w-auto">
-                  {saveTally.isPending ? (
-                    <Loader2 className="me-1 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Check className="me-1 h-4 w-4" />
-                  )}
-                  {t("supplierOrders.saveTally")}
-                </Button>
-              </div>
-            )}
 
             {/* Supplier's bill (image/PDF) — attach / replace / remove anytime. */}
             {isSuperAdmin && (

@@ -92,6 +92,20 @@ export const PayslipSheet = React.forwardRef<
         <span style={ltr}>{formatPKR(detail.staff.monthly_salary)}</span>
       </div>
 
+      {/* Mid-month joiner: prorated base for the days from their join date. */}
+      {detail.payableDays < detail.daysInMonth ? (
+        <div style={{ ...line, fontWeight: 600 }}>
+          <span>
+            {t("staff.proratedFor", {
+              date: formatDate(detail.staff.joined_on),
+              days: detail.payableDays,
+              total: detail.daysInMonth,
+            })}
+          </span>
+          <span style={ltr}>{formatPKR(detail.earnedSalary)}</span>
+        </div>
+      ) : null}
+
       <div style={line}>
         <span>
           {t("staff.absenceDeduction")}{" "}

@@ -12,6 +12,8 @@ export type CustomerKhataGroup = {
   totalOutstanding: number;
   /** Earliest due date among pending entries (drives the row's due badge); null if none. */
   soonestDueDate: string | null;
+  /** Most recent entry's created_at — the row's "Added on" (latest udhaar activity). */
+  latestCreatedAt: string | null;
 };
 
 function byDueAsc(a: KhataListView, b: KhataListView): number {
@@ -32,10 +34,20 @@ export function groupCustomerKhatas(rows: KhataListView[]): CustomerKhataGroup[]
     const id = k.customer.id;
     let g = map.get(id);
     if (!g) {
-      g = { customer: k.customer, entries: [], pendingCount: 0, totalOutstanding: 0, soonestDueDate: null };
+      g = {
+        customer: k.customer,
+        entries: [],
+        pendingCount: 0,
+        totalOutstanding: 0,
+        soonestDueDate: null,
+        latestCreatedAt: null,
+      };
       map.set(id, g);
     }
     g.entries.push(k);
+    if (g.latestCreatedAt === null || k.created_at > g.latestCreatedAt) {
+      g.latestCreatedAt = k.created_at;
+    }
     if (k.status === KhataStatus.Pending) {
       g.pendingCount += 1;
       g.totalOutstanding += k.amount;

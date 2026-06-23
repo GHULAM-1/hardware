@@ -10,7 +10,7 @@ import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { SupplierOrderStatus } from "@/lib/enums";
 import { displayName } from "@/lib/display";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import {
   useFrequentItemsForSupplier,
   useSupplierOrdersBySupplier,
@@ -61,6 +61,7 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
             {supplier.phone ? <span dir="ltr">{supplier.phone}</span> : "—"}
           </Field>
           <Field label={t("suppliers.location")}>{supplier.address ?? "—"}</Field>
+          <Field label={t("fields.addedOn")}>{formatDateTime(supplier.created_at)}</Field>
         </div>
 
         {/* What we usually order from this supplier. */}

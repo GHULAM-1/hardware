@@ -6,7 +6,7 @@ import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useCustomerOrders, useLastPurchase } from "@/hooks/use-customers";
 import { useLanguage } from "@/providers/i18n-provider";
 import { displayName } from "@/lib/display";
-import { formatDate, formatPKR } from "@/lib/format";
+import { formatDate, formatDateTime, formatPKR } from "@/lib/format";
 import { paymentMeta } from "@/lib/status-meta";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { Money } from "@/components/common/money";
@@ -63,10 +63,25 @@ export function CustomerProfileDialog({ payload, onClose }: DialogComponentProps
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-4xl overflow-y-auto overflow-x-hidden sm:max-w-4xl">
         <DialogHeader className="min-w-0">
           <DialogTitle className="truncate pe-6">{displayName(customer, language)}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             {customer.phone ? <span dir="ltr">{customer.phone}</span> : null}
+            {customer.phone ? <span aria-hidden>·</span> : null}
+            <span>
+              {t("fields.addedOn")}: {formatDateTime(customer.created_at)}
+            </span>
           </DialogDescription>
         </DialogHeader>
+
+        {customer.is_blacklisted && (
+          <StatusBadge tone="danger" label={t("customers.blacklisted")} className="self-start" />
+        )}
+
+        {customer.notes && (
+          <div className="min-w-0 space-y-1 rounded-lg border border-border bg-secondary/40 p-3">
+            <p className="text-xs font-semibold text-muted-foreground">{t("customers.internalNote")}</p>
+            <p className="whitespace-pre-wrap break-words text-sm">{customer.notes}</p>
+          </div>
+        )}
 
         {last ? (
           <p className="min-w-0 break-words rounded-md bg-secondary px-3 py-2 text-sm">

@@ -111,8 +111,10 @@ export function KhataFormDialog({ payload, onClose }: DialogComponentProps<Khata
             )}
           />
 
-          {/* Optionally attach one of this customer's existing orders. */}
-          {customerId && orders.length > 0 && (
+          {/* Optionally attach one of this customer's existing orders. Only when
+              creating — an existing khata stays tied to its order (editing the
+              amount/date below flows back into that order). */}
+          {!isEdit && customerId && orders.length > 0 && (
             <FormField
               control={form.control}
               name="order_id"

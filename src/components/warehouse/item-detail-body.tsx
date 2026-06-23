@@ -8,7 +8,7 @@ import { useItemSuppliers } from "@/hooks/use-suppliers";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { StockEntryType } from "@/lib/enums";
 import { DialogKey } from "@/lib/dialog-keys";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
 import { Money } from "@/components/common/money";
 import { ZoomableImage } from "@/components/common/zoomable-image";
@@ -96,6 +96,7 @@ export function ItemDetailBody({ item }: { item: Item }) {
         <Field label={t("fields.sellingPrice")}>
           <Money value={item.selling_price} />
         </Field>
+        <Field label={t("fields.addedOn")}>{formatDateTime(item.created_at)}</Field>
       </div>
 
       {/* Suppliers that have sourced this item */}

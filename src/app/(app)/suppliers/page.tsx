@@ -8,6 +8,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { DialogKey } from "@/lib/dialog-keys";
+import { formatDateTime } from "@/lib/format";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
@@ -56,6 +57,13 @@ export default function SuppliersPage() {
       cell: (row) => row.address ?? "—",
       className: "hidden md:table-cell",
       headerClassName: "hidden md:table-cell",
+    },
+    {
+      key: "added",
+      header: t("fields.addedOn"),
+      cell: (row) => <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(row.created_at)}</span>,
+      className: "hidden lg:table-cell",
+      headerClassName: "hidden lg:table-cell",
     },
     {
       key: "actions",

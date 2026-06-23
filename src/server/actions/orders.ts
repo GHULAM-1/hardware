@@ -4,7 +4,7 @@ import { createActionClient } from "@/lib/supabase/server";
 import { orderPaymentSchema, orderSchema, type OrderPaymentValues, type OrderValues } from "@/lib/schemas";
 import { PaymentType, StockEntryType } from "@/lib/enums";
 import type { Json } from "@/types/database";
-import type { Order, OrderListView, OrderReceiptView } from "@/types/models";
+import type { Order, OrderEditView, OrderListView, OrderReceiptView } from "@/types/models";
 
 export async function listOrders(accessToken: string, search = ""): Promise<OrderListView[]> {
   const client = createActionClient(accessToken);
@@ -15,7 +15,22 @@ export async function listOrders(accessToken: string, search = ""): Promise<Orde
     )
     .order("created_at", { ascending: false })
     .limit(50);
-  if (search.trim()) q = q.ilike("order_no", `%${search.trim().replace(/[%,]/g, "")}%`);
+
+  // Search matches the order number OR the customer (the name shown in the list).
+  // customers is a separate table, so resolve matching customer ids first, then
+  // filter orders by order_no OR customer_id — `ilike` on order_no alone never
+  // matched the customer name the user sees and types.
+  const s = search.trim().replace(/[%,()]/g, "");
+  if (s) {
+    const { data: matches } = await client
+      .from("customers")
+      .select("id")
+      .or(`name_en.ilike.%${s}%,name_ur.ilike.%${s}%,phone.ilike.%${s}%`);
+    const ids = (matches ?? []).map((c) => c.id);
+    const ors = [`order_no.ilike.%${s}%`];
+    if (ids.length) ors.push(`customer_id.in.(${ids.join(",")})`);
+    q = q.or(ors.join(","));
+  }
 
   const { data, error } = await q;
   if (error) throw new Error(error.message);
@@ -46,6 +61,57 @@ export async function createOrder(accessToken: string, values: OrderValues): Pro
     p_due_date: (data.payment_type === PaymentType.Cash ? null : (data.due_date ?? null)) as unknown as string,
     p_lines: data.lines as unknown as Json,
     // Staff-only memo; the RPC trims/blanks it to null.
+    p_internal_note: (data.internal_note ?? undefined) as unknown as string,
+  });
+  if (error) throw new Error(error.message);
+  return order as unknown as Order;
+}
+
+/** Full order with its line items' FULL item rows, for the edit dialog. */
+export async function getOrderForEdit(accessToken: string, orderId: string): Promise<OrderEditView> {
+  const client = createActionClient(accessToken);
+  const { data, error } = await client
+    .from("orders")
+    .select(
+      "id, customer_id, payment_type, amount_paid, due_date, internal_note, total, order_items(quantity, unit, selling_price, items(*))",
+    )
+    .eq("id", orderId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  return {
+    id: data.id,
+    customer_id: data.customer_id,
+    payment_type: data.payment_type,
+    amount_paid: data.amount_paid,
+    due_date: data.due_date,
+    internal_note: data.internal_note,
+    total: data.total,
+    lines: (data.order_items ?? []).map((li) => ({
+      item: li.items ?? null,
+      quantity: li.quantity,
+      unit: li.unit,
+      selling_price: li.selling_price,
+    })),
+  };
+}
+
+/** Edit a whole order atomically (lines + payment + note), reconciling the khata. */
+export async function updateOrder(
+  accessToken: string,
+  orderId: string,
+  values: OrderValues,
+): Promise<Order> {
+  const data = orderSchema.parse(values);
+  const client = createActionClient(accessToken);
+
+  const { data: order, error } = await client.rpc("update_order", {
+    p_order_id: orderId,
+    p_customer_id: data.customer_id,
+    p_payment_type: data.payment_type,
+    p_amount_paid: data.payment_type === PaymentType.Partial ? data.amount_paid : 0,
+    p_due_date: (data.payment_type === PaymentType.Cash ? null : (data.due_date ?? null)) as unknown as string,
+    p_lines: data.lines as unknown as Json,
     p_internal_note: (data.internal_note ?? undefined) as unknown as string,
   });
   if (error) throw new Error(error.message);

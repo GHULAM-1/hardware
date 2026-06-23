@@ -35,7 +35,11 @@ export function useKhataReminders() {
 
 function useInvalidateKhata() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: ["khatas"] });
+  return () => {
+    void qc.invalidateQueries({ queryKey: ["khatas"] });
+    // A khata's due-date edit also updates the linked order's udhaar date.
+    void qc.invalidateQueries({ queryKey: ["orders"] });
+  };
 }
 
 export function useCreateKhata() {

@@ -10,6 +10,7 @@ import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
+import { formatDateTime } from "@/lib/format";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
@@ -31,6 +32,12 @@ export default function CustomersPage() {
 
   const columns: Column<Customer>[] = [
     {
+      key: "row_no",
+      header: "#",
+      headerClassName: "w-12",
+      cell: (_row, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
+    },
+    {
       key: "name",
       header: t("fields.name"),
       cell: (row) => (
@@ -44,6 +51,13 @@ export default function CustomersPage() {
     },
     { key: "phone", header: t("fields.phone"), cell: (row) => (row.phone ? <span dir="ltr">{row.phone}</span> : "—") },
     { key: "address", header: t("fields.address"), cell: (row) => row.address ?? "—" },
+    {
+      key: "added",
+      header: t("fields.addedOn"),
+      cell: (row) => <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(row.created_at)}</span>,
+      className: "hidden md:table-cell",
+      headerClassName: "hidden md:table-cell",
+    },
     {
       key: "actions",
       header: "",

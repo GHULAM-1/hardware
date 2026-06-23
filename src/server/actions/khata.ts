@@ -94,9 +94,36 @@ export async function updateKhata(
   values: KhataUpdateValues,
 ): Promise<Khata> {
   const data = khataUpdateSchema.parse(values);
-  return runQuery(accessToken, (c) =>
-    c.from("khatas").update(data).eq("id", id).select("*").single(),
-  );
+  const client = createActionClient(accessToken);
+
+  const { data: row, error } = await client
+    .from("khatas")
+    .update(data)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+
+  // The order's udhaar and its khata are stored separately — keep the linked
+  // order in sync when an order-backed khata is edited: the due date mirrors
+  // across, and the khata amount (outstanding) maps to the order's amount_paid
+  // (paid = total − outstanding).
+  if (row.order_id) {
+    const { data: ord, error: oErr } = await client
+      .from("orders")
+      .select("total")
+      .eq("id", row.order_id)
+      .single();
+    if (oErr) throw new Error(oErr.message);
+
+    const paid = Math.max(0, Math.round((Number(ord.total) - Number(data.amount)) * 100) / 100);
+    const { error: e2 } = await client
+      .from("orders")
+      .update({ due_date: data.due_date, amount_paid: paid })
+      .eq("id", row.order_id);
+    if (e2) throw new Error(e2.message);
+  }
+  return row;
 }
 
 export async function setKhataStatus(

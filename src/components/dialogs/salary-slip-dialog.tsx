@@ -125,6 +125,20 @@ export function SalarySlipDialog({ payload, onClose }: DialogComponentProps<Sala
                 <Money value={data.staff.monthly_salary} />
               </Row>
 
+              {/* Mid-month joiner: pay only for the days from their join date. */}
+              {data.payableDays < data.daysInMonth ? (
+                <Row
+                  label={t("staff.proratedFor", {
+                    date: formatDate(data.staff.joined_on),
+                    days: data.payableDays,
+                    total: data.daysInMonth,
+                  })}
+                  strong
+                >
+                  <Money value={data.earnedSalary} />
+                </Row>
+              ) : null}
+
               <Row
                 label={
                   <span className="break-words">

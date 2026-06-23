@@ -145,13 +145,23 @@ export function OrderLineRow({
             <div className="space-y-1 text-sm">
               {pricing?.lastCostAtSale != null && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("orders.costThen")}</span>
+                  <span className="text-muted-foreground">
+                    {t("orders.costThen")}
+                    {line.item && (
+                      <span className="text-xs"> ({t("orders.perUnit", { unit: t(`units.${line.item.primary_unit}`) })})</span>
+                    )}
+                  </span>
                   <Money value={pricing.lastCostAtSale} />
                 </div>
               )}
               {pricing?.currentCost != null && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("orders.currentCost")}</span>
+                  <span className="text-muted-foreground">
+                    {t("orders.currentCost")}
+                    {line.item && (
+                      <span className="text-xs"> ({t("orders.perUnit", { unit: t(`units.${line.item.primary_unit}`) })})</span>
+                    )}
+                  </span>
                   <Money value={pricing.currentCost} />
                 </div>
               )}

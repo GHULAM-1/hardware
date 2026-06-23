@@ -12,6 +12,7 @@ import { useLanguage } from "@/providers/i18n-provider";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
+import { formatDateTime } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
@@ -129,6 +130,13 @@ export default function ItemsPage() {
             />
           </div>
         ),
+    },
+    {
+      key: "added",
+      header: t("fields.addedOn"),
+      cell: (row) => <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(row.created_at)}</span>,
+      className: "hidden lg:table-cell",
+      headerClassName: "hidden lg:table-cell",
     },
     ...(isSuperAdmin
       ? [

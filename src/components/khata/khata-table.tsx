@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { KhataStatus } from "@/lib/enums";
 import { khataMeta } from "@/lib/status-meta";
 import { displayName } from "@/lib/display";
-import { formatDate, todayISO } from "@/lib/format";
+import { formatDate, formatDateTime, todayISO } from "@/lib/format";
 import { useLanguage } from "@/providers/i18n-provider";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DataTable, type Column } from "@/components/common/data-table";
@@ -41,6 +41,12 @@ export function KhataTable({
 
   const columns: Column<KhataListView>[] = [
     {
+      key: "row_no",
+      header: "#",
+      headerClassName: "w-12",
+      cell: (_k, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
+    },
+    {
       key: "customer",
       header: t("fields.customer"),
       cell: (k) => (k.customer ? <span className="font-medium">{displayName(k.customer, language)}</span> : "—"),
@@ -61,6 +67,13 @@ export function KhataTable({
       cell: (k) => <Money value={k.amount} />,
       className: "text-end",
       headerClassName: "text-end",
+    },
+    {
+      key: "added",
+      header: t("fields.addedOn"),
+      cell: (k) => <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(k.created_at)}</span>,
+      className: "hidden md:table-cell",
+      headerClassName: "hidden md:table-cell",
     },
     // Two fixed action columns so the buttons line up vertically across rows:
     // "Mark fulfilled" always in its own column, "View receipt" in the next.

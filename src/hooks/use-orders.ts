@@ -7,9 +7,11 @@ import { queryKeys } from "@/lib/query-keys";
 import type { OrderValues } from "@/lib/schemas";
 import {
   createOrder,
+  getOrderForEdit,
   getOrderReceipt,
   getSupplierBuyingPrice,
   listOrders,
+  updateOrder,
   updateOrderPayment,
 } from "@/server/actions/orders";
 import { getItemPricingForCustomer } from "@/server/actions/customers";
@@ -52,6 +54,27 @@ export function useCreateOrder() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (values: OrderValues) => createOrder(await getAccessToken(), values),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["orders"] });
+      void qc.invalidateQueries({ queryKey: ["khatas"] });
+    },
+  });
+}
+
+/** Full order for the edit dialog (line items carry full item rows). */
+export function useOrderForEdit(orderId: string | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.order(orderId ?? ""), "edit"],
+    queryFn: async () => getOrderForEdit(await getAccessToken(), orderId as string),
+    enabled: Boolean(orderId),
+  });
+}
+
+export function useUpdateOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { id: string; values: OrderValues }) =>
+      updateOrder(await getAccessToken(), args.id, args.values),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["orders"] });
       void qc.invalidateQueries({ queryKey: ["khatas"] });

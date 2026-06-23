@@ -8,14 +8,13 @@ import { Icon3D } from "@/components/ui/icon-3d";
 
 import { Button } from "@/components/ui/button";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
-import { PaymentType } from "@/lib/enums";
 import { useOrders } from "@/hooks/use-orders";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { paymentMeta } from "@/lib/status-meta";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
@@ -46,7 +45,6 @@ export default function OrdersPage() {
       header: t("fields.customer"),
       cell: (o) => (o.customer ? <span className="font-medium">{displayName(o.customer, language)}</span> : "—"),
     },
-    { key: "date", header: t("fields.date"), cell: (o) => formatDate(o.created_at) },
     {
       key: "payment",
       header: t("fields.paymentType"),
@@ -70,6 +68,13 @@ export default function OrdersPage() {
       headerClassName: "text-end",
     },
     {
+      key: "date",
+      header: t("fields.addedOn"),
+      cell: (o) => <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(o.created_at)}</span>,
+      className: "hidden md:table-cell",
+      headerClassName: "hidden md:table-cell",
+    },
+    {
       key: "actions",
       header: "",
       headerClassName: "w-px",
@@ -78,13 +83,13 @@ export default function OrdersPage() {
           className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap ps-2"
           onClick={(e) => e.stopPropagation()}
         >
-          {isSuperAdmin && o.payment_type !== PaymentType.Cash && (
+          {isSuperAdmin && (
             <button
               type="button"
               className="shrink-0 active:scale-95"
-              title={t("orders.editPayment")}
-              aria-label={t("orders.editPayment")}
-              onClick={() => openDialog(DialogKey.OrderEdit, { order: o })}
+              title={t("orders.editOrder")}
+              aria-label={t("orders.editOrder")}
+              onClick={() => openDialog(DialogKey.OrderForm, { orderId: o.id })}
             >
               <Icon3D name="pencil" size={34} alt="" />
             </button>
@@ -117,7 +122,7 @@ export default function OrdersPage() {
         rows={orders}
         getRowId={(r) => r.id}
         loading={isLoading}
-        onRowClick={(row) => openDialog(DialogKey.Receipt, { orderId: row.id })}
+        onRowClick={(row) => openDialog(DialogKey.OrderForm, { orderId: row.id })}
       />
     </div>
   );

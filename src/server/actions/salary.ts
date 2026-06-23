@@ -9,7 +9,7 @@ import {
   type SalaryPaymentValues,
 } from "@/lib/schemas";
 import { StaffAttendanceStatus } from "@/lib/enums";
-import { computeSalary, daysInMonthKey } from "@/lib/salary";
+import { computeSalary, daysInMonthKey, payableDaysForMonth, round2 } from "@/lib/salary";
 import type { SalaryAdvance, SalaryPayment, Staff, StaffSalaryDetail, StaffSalaryRow } from "@/types/models";
 
 /** [start, nextStart) date strings for a `YYYY-MM` month (date columns, no TZ). */
@@ -76,14 +76,19 @@ function buildRow(
   payment: SalaryPayment | null,
 ): StaffSalaryRow {
   const days = daysInMonthKey(month);
+  const payableDays = payableDaysForMonth(staff.joined_on, month);
   if (payment) {
     // Paid months render from their snapshot so later edits never rewrite them.
+    // earnedSalary isn't stored, but it's exactly what the net was built from:
+    // net = earned − absence − advances ⇒ earned = net + absence + advances.
     const perDay = days > 0 ? payment.monthly_salary / days : 0;
     return {
       staff,
       daysInMonth: days,
+      payableDays,
       absentDays,
-      perDay: Math.round(perDay * 100) / 100,
+      perDay: round2(perDay),
+      earnedSalary: round2(payment.computed_net + payment.absence_deduction + payment.advances_total),
       absenceDeduction: payment.absence_deduction,
       advancesTotal: payment.advances_total,
       netPayable: payment.computed_net,
@@ -96,14 +101,17 @@ function buildRow(
   const b = computeSalary({
     monthlySalary: staff.monthly_salary,
     daysInMonth: days,
+    payableDays,
     absentCount: absentDays,
     advancesTotal,
   });
   return {
     staff,
     daysInMonth: days,
+    payableDays,
     absentDays,
     perDay: b.perDay,
+    earnedSalary: b.earnedSalary,
     absenceDeduction: b.absenceDeduction,
     advancesTotal: b.advancesTotal,
     netPayable: b.netPayable,
@@ -151,7 +159,10 @@ export async function getStaffSalary(
   if (advRes.error) throw new Error(advRes.error.message);
   if (payRes.error) throw new Error(payRes.error.message);
 
-  const advances = advRes.data ?? [];
+  // Advances only count from the join date — a mid-month joiner's salary window
+  // starts when they joined, so anything dated before that isn't theirs to repay.
+  const joinedOn = staffRes.data.joined_on;
+  const advances = (advRes.data ?? []).filter((a) => a.advance_date >= joinedOn);
   const advancesTotal = advances.reduce((sum, a) => sum + Number(a.amount), 0);
   const attendance = attRes.data ?? [];
   const absentDays = attendance.filter((a) => a.status === StaffAttendanceStatus.Absent).length;
@@ -177,7 +188,7 @@ export async function listSalaryOverview(
       .lt("date", nextStart),
     client
       .from("salary_advances")
-      .select("staff_id, amount")
+      .select("staff_id, amount, advance_date")
       .gte("advance_date", start)
       .lt("advance_date", nextStart),
     client.from("salary_payments").select("*").eq("period_month", start),
@@ -187,13 +198,19 @@ export async function listSalaryOverview(
   if (advRes.error) throw new Error(advRes.error.message);
   if (payRes.error) throw new Error(payRes.error.message);
 
+  // Join date per staff — used to drop attendance/advances from before they joined.
+  const joinedByStaff = new Map((staffRes.data ?? []).map((s) => [s.id, s.joined_on]));
+
   const absentByStaff = new Map<string, number>();
   for (const r of attRes.data ?? [])
     absentByStaff.set(r.staff_id, (absentByStaff.get(r.staff_id) ?? 0) + 1);
 
   const advByStaff = new Map<string, number>();
-  for (const r of advRes.data ?? [])
+  for (const r of advRes.data ?? []) {
+    const joined = joinedByStaff.get(r.staff_id);
+    if (joined && r.advance_date < joined) continue; // advance predates the join date
     advByStaff.set(r.staff_id, (advByStaff.get(r.staff_id) ?? 0) + Number(r.amount));
+  }
 
   const payByStaff = new Map((payRes.data ?? []).map((p) => [p.staff_id, p]));
 
@@ -221,7 +238,7 @@ export async function paySalary(
   const { start, nextStart } = monthRange(data.period_month);
 
   const [staffRes, attRes, advRes] = await Promise.all([
-    client.from("staff").select("monthly_salary").eq("id", data.staff_id).single(),
+    client.from("staff").select("monthly_salary, joined_on").eq("id", data.staff_id).single(),
     client
       .from("staff_attendance")
       .select("id")
@@ -231,7 +248,7 @@ export async function paySalary(
       .lt("date", nextStart),
     client
       .from("salary_advances")
-      .select("amount")
+      .select("amount, advance_date")
       .eq("staff_id", data.staff_id)
       .gte("advance_date", start)
       .lt("advance_date", nextStart),
@@ -240,10 +257,15 @@ export async function paySalary(
   if (attRes.error) throw new Error(attRes.error.message);
   if (advRes.error) throw new Error(advRes.error.message);
 
-  const advancesTotal = (advRes.data ?? []).reduce((sum, a) => sum + Number(a.amount), 0);
+  // Only advances on/after the join date count toward this month's salary.
+  const joinedOn = staffRes.data.joined_on;
+  const advancesTotal = (advRes.data ?? [])
+    .filter((a) => a.advance_date >= joinedOn)
+    .reduce((sum, a) => sum + Number(a.amount), 0);
   const b = computeSalary({
     monthlySalary: staffRes.data.monthly_salary,
     daysInMonth: daysInMonthKey(data.period_month),
+    payableDays: payableDaysForMonth(joinedOn, data.period_month),
     absentCount: attRes.data?.length ?? 0,
     advancesTotal,
   });

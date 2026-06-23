@@ -97,7 +97,8 @@
     "balanceDue": "بقایا رقم",
     "customer": "گاہک",
     "item": "آئٹم",
-    "role": "کردار"
+    "role": "کردار",
+    "addedOn": "بنایا گیا"
   },
   "pricing": {
     "title": "قیمتیں",
@@ -117,6 +118,7 @@
     "notTracked": "گودام میں نہیں",
     "piecesPerPrimary": "ایک {{primary}} میں کتنے {{base}} ہیں؟",
     "lowStockAlert": "کم اسٹاک الرٹ ({{unit}})",
+    "lowStockAlertNoUnit": "کم اسٹاک الرٹ",
     "sellingPriceHint": "جو قیمت آپ گاہک سے لیتے ہیں",
     "buyingPriceHint": "جو قیمت آپ نے سپلائر کو دی",
     "lowStockHint": "اس سے کم ہونے پر ہم خبردار کریں گے",
@@ -155,7 +157,9 @@
     "customerInUse": "آرڈرز یا کھاتہ موجود — حذف نہیں ہو سکتا",
     "blacklist": "اس گاہک کو بلیک لسٹ کریں",
     "blacklistHint": "اس گاہک کا بل بناتے وقت خبردار کرے گا — فروخت نہیں روکے گا۔",
-    "blacklisted": "بلیک لسٹ"
+    "blacklisted": "بلیک لسٹ",
+    "internalNote": "اندرونی نوٹ",
+    "internalNotePlaceholder": "اس گاہک کے بارے میں صرف عملے کے لیے نوٹ…"
   },
   "orders": {
     "title": "آرڈرز",
@@ -168,6 +172,7 @@
     "lastSoldOn": "{{date}} کو",
     "costThen": "اُس وقت سپلائر سے خرید",
     "currentCost": "ابھی سپلائر سے خرید",
+    "perUnit": "فی {{unit}}",
     "dueDateRequired": "اُدھار کے لیے مقررہ تاریخ منتخب کریں",
     "amountPaidHint": "پورے اُدھار کے لیے 0 رہنے دیں (ابھی کچھ ادا نہیں ہوا)",
     "internalNote": "اندرونی نوٹ",
@@ -179,7 +184,8 @@
     "print": "رسید پرنٹ کریں",
     "selectCustomer": "براہ کرم گاہک منتخب کریں",
     "addAtLeastOneItem": "کم از کم ایک آئٹم مقدار اور قیمت کے ساتھ شامل کریں",
-    "editPayment": "ادائیگی میں ترمیم"
+    "editPayment": "ادائیگی میں ترمیم",
+    "editOrder": "آرڈر میں ترمیم"
   },
   "globalSearch": {
     "title": "تلاش",
@@ -436,6 +442,7 @@
     "staffName": "نام",
     "cnic": "شناختی کارڈ نمبر",
     "monthlySalary": "ماہانہ تنخواہ",
+    "proratedFor": "{{date}} کو شروع کیا · {{days}}/{{total}} دن",
     "joinedOn": "کام شروع کرنے کی تاریخ",
     "joinedOnHint": "حاضری اور تنخواہ اسی تاریخ سے گنی جائے گی۔",
     "photo": "تصویر",

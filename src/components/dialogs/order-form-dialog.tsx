@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { VoiceInputButton } from "@/components/common/voice-input-button";
 import { PaymentType } from "@/lib/enums";
 import { orderSchema } from "@/lib/schemas";
-import { useCreateOrder } from "@/hooks/use-orders";
+import { useCreateOrder, useOrderForEdit, useUpdateOrder } from "@/hooks/use-orders";
 import { useCustomer } from "@/hooks/use-customers";
 import { cn } from "@/lib/utils";
 import { newLine, orderTotal, type LineDraft } from "@/components/orders/order-form-types";
@@ -45,9 +45,15 @@ function BlacklistBanner({ customerId }: { customerId: string }) {
   );
 }
 
-export function OrderFormDialog({ onClose }: DialogComponentProps<null>) {
+export type OrderFormPayload = { orderId: string } | null;
+
+export function OrderFormDialog({ payload, onClose }: DialogComponentProps<OrderFormPayload>) {
   const { t } = useTranslation();
+  const orderId = payload?.orderId ?? null;
+  const isEdit = Boolean(orderId);
   const create = useCreateOrder();
+  const update = useUpdateOrder();
+  const { data: editData } = useOrderForEdit(orderId ?? undefined);
 
   const [customerId, setCustomerId] = React.useState<string | null>(null);
   const [lines, setLines] = React.useState<LineDraft[]>([newLine()]);
@@ -55,6 +61,29 @@ export function OrderFormDialog({ onClose }: DialogComponentProps<null>) {
   const [amountPaid, setAmountPaid] = React.useState("");
   const [dueDate, setDueDate] = React.useState("");
   const [internalNote, setInternalNote] = React.useState("");
+
+  // Edit mode: seed the form once the order loads. Done during render (guarded by
+  // a seed key) rather than in an effect, to avoid cascading-render lint and keep
+  // local edits from being clobbered on refetch.
+  const [seededFor, setSeededFor] = React.useState<string | null>(null);
+  if (isEdit && editData && seededFor !== editData.id) {
+    setSeededFor(editData.id);
+    setCustomerId(editData.customer_id);
+    setLines(
+      editData.lines.map((l, i) => ({
+        key: `e${i}`,
+        item: l.item,
+        quantity: String(l.quantity),
+        unit: l.unit,
+        selling_price: String(l.selling_price),
+      })),
+    );
+    setPayMode(editData.payment_type === PaymentType.Cash ? "cash" : "udhaar");
+    setAmountPaid(editData.payment_type === PaymentType.Partial ? String(editData.amount_paid) : "");
+    setDueDate(editData.due_date ?? "");
+    setInternalNote(editData.internal_note ?? "");
+  }
+  const ready = !isEdit || seededFor !== null;
 
   const total = orderTotal(lines);
   // Cash → fully paid. Udhaar → nothing entered means credit (paid 0); a part
@@ -115,8 +144,13 @@ export function OrderFormDialog({ onClose }: DialogComponentProps<null>) {
       return;
     }
     try {
-      await create.mutateAsync(parsed.data);
-      toast.success(t("toast.created"));
+      if (isEdit && orderId) {
+        await update.mutateAsync({ id: orderId, values: parsed.data });
+        toast.success(t("toast.saved"));
+      } else {
+        await create.mutateAsync(parsed.data);
+        toast.success(t("toast.created"));
+      }
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("toast.error"));
@@ -125,14 +159,17 @@ export function OrderFormDialog({ onClose }: DialogComponentProps<null>) {
 
   return (
     <FormDialog
-      title={t("orders.newOrder")}
+      title={isEdit ? t("orders.editOrder") : t("orders.newOrder")}
       onClose={onClose}
       onSubmit={onSubmit}
-      submitting={create.isPending}
-      submitLabel={t("common.create")}
+      submitting={create.isPending || update.isPending}
+      submitLabel={isEdit ? t("common.save") : t("common.create")}
       dirty={Boolean(customerId) || lines.some((l) => l.item) || internalNote.trim() !== ""}
       widthClassName="w-[calc(100%-2rem)] sm:max-w-3xl"
     >
+      {!ready ? (
+        <p className="py-10 text-center text-muted-foreground">{t("common.loading")}</p>
+      ) : (
       <div className="space-y-5">
         {/* Customer */}
         <div className="space-y-2">
@@ -230,6 +267,7 @@ export function OrderFormDialog({ onClose }: DialogComponentProps<null>) {
           </div>
         </div>
       </div>
+      )}
     </FormDialog>
   );
 }

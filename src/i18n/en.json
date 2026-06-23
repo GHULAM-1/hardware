@@ -97,7 +97,8 @@
     "balanceDue": "Balance due",
     "customer": "Customer",
     "item": "Item",
-    "role": "Role"
+    "role": "Role",
+    "addedOn": "Added on"
   },
   "pricing": {
     "title": "Pricing",
@@ -117,6 +118,7 @@
     "notTracked": "Not tracked",
     "piecesPerPrimary": "How many {{base}} in one {{primary}}?",
     "lowStockAlert": "Low-stock alert ({{unit}})",
+    "lowStockAlertNoUnit": "Low-stock alert",
     "sellingPriceHint": "What you charge customers",
     "buyingPriceHint": "What you paid the supplier",
     "lowStockHint": "We'll warn you below this level",
@@ -155,7 +157,9 @@
     "customerInUse": "Has orders or khata — can't be deleted",
     "blacklist": "Blacklist this customer",
     "blacklistHint": "Shows a warning when this customer is billed — does not block sales.",
-    "blacklisted": "Blacklisted"
+    "blacklisted": "Blacklisted",
+    "internalNote": "Internal note",
+    "internalNotePlaceholder": "Staff-only memo about this customer…"
   },
   "orders": {
     "title": "Orders",
@@ -168,6 +172,7 @@
     "lastSoldOn": "on {{date}}",
     "costThen": "Cost from supplier then",
     "currentCost": "Cost from supplier now",
+    "perUnit": "per {{unit}}",
     "dueDateRequired": "Please pick a due date for the udhaar",
     "amountPaidHint": "Leave at 0 for full udhaar (nothing paid yet)",
     "internalNote": "Internal note",
@@ -179,7 +184,8 @@
     "print": "Print receipt",
     "selectCustomer": "Please select a customer",
     "addAtLeastOneItem": "Add at least one item with quantity and price",
-    "editPayment": "Edit payment"
+    "editPayment": "Edit payment",
+    "editOrder": "Edit order"
   },
   "globalSearch": {
     "title": "Search",
@@ -436,6 +442,7 @@
     "staffName": "Name",
     "cnic": "CNIC",
     "monthlySalary": "Monthly salary",
+    "proratedFor": "Joined {{date}} · {{days}}/{{total}} days",
     "joinedOn": "Joining date",
     "joinedOnHint": "Attendance and salary are counted only from this date.",
     "photo": "Photo",

@@ -91,6 +91,7 @@ export type Database = {
           is_blacklisted: boolean
           name_en: string
           name_ur: string | null
+          notes: string | null
           phone: string | null
           updated_at: string
         }
@@ -103,6 +104,7 @@ export type Database = {
           is_blacklisted?: boolean
           name_en: string
           name_ur?: string | null
+          notes?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -115,6 +117,7 @@ export type Database = {
           is_blacklisted?: boolean
           name_en?: string
           name_ur?: string | null
+          notes?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -947,6 +950,18 @@ export type Database = {
           p_internal_note?: string
           p_lines: Json
           p_payment_type: Database["public"]["Enums"]["payment_type"]
+        }
+        Returns: Json
+      }
+      update_order: {
+        Args: {
+          p_order_id: string
+          p_customer_id: string
+          p_payment_type: Database["public"]["Enums"]["payment_type"]
+          p_amount_paid: number
+          p_due_date: string
+          p_lines: Json
+          p_internal_note?: string
         }
         Returns: Json
       }

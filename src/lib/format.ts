@@ -77,3 +77,17 @@ export function formatDate(value: string | Date | null | undefined): string {
     year: "numeric",
   }).format(d);
 }
+
+const clockFmt = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" });
+
+/**
+ * Date + 12-hour clock, e.g. "23 Jun 2026, 3:45 PM". Meant for the DB creation
+ * timestamp (created_at) so a row shows exactly when it was added. Renders in the
+ * viewer's local time (PKT for the shop).
+ */
+export function formatDateTime(value: string | Date | null | undefined): string {
+  if (!value) return "—";
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${formatDate(d)}, ${clockFmt.format(d)}`;
+}
