@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { VoiceInputButton } from "@/components/common/voice-input-button";
 import { ImageUpload } from "@/components/common/image-upload";
 import { MultiImageUpload } from "@/components/common/multi-image-upload";
@@ -161,10 +163,11 @@ export function NumberField<T extends FieldValues>({
   label,
   placeholder,
   optional,
+  hint,
   step = 1,
   min = 0,
   integer = false,
-}: BaseProps<T> & { step?: number | string; min?: number; integer?: boolean }) {
+}: BaseProps<T> & { step?: number | string; min?: number; integer?: boolean; hint?: string }) {
   return (
     <FormField
       control={control}
@@ -194,7 +197,39 @@ export function NumberField<T extends FieldValues>({
               value={(field.value as string | number | null) ?? ""}
             />
           </FormControl>
+          {hint ? <FormDescription>{hint}</FormDescription> : null}
           <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+/** RHF-wired on/off toggle: label (+ optional hint) on the left, shadcn Switch on the right. */
+export function SwitchField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  hint,
+}: {
+  control: Control<T>;
+  name: FieldPath<T>;
+  label: string;
+  hint?: string;
+}) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="flex flex-row items-center justify-between gap-3 rounded-lg border border-border p-3">
+          <div className="space-y-0.5">
+            <FormLabel>{label}</FormLabel>
+            {hint ? <FormDescription>{hint}</FormDescription> : null}
+          </div>
+          <FormControl>
+            <Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} />
+          </FormControl>
         </FormItem>
       )}
     />

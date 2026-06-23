@@ -16,6 +16,7 @@ export const DialogKey = {
   Receipt: "receipt",
   KhataForm: "khata-form",
   KhataDetail: "khata-detail",
+  CustomerKhata: "customer-khata",
   SupplierOrderForm: "supplier-order-form",
   SupplierOrderDetail: "supplier-order-detail",
   StaffForm: "staff-form",

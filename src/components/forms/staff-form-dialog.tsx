@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { FormDialog } from "@/components/dialogs/form-dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import {
   CnicField,
@@ -17,7 +17,9 @@ import {
   TextField,
   TextareaField,
 } from "@/components/forms/fields";
+import { DatePicker } from "@/components/common/date-picker";
 import { staffSchema, type StaffValues } from "@/lib/schemas";
+import { todayLocalISO } from "@/lib/format";
 import { useCreateStaff, useUpdateStaff } from "@/hooks/use-staff";
 import { DUPLICATE_CNIC, DUPLICATE_PHONE } from "@/lib/errors";
 import type { Staff } from "@/types/models";
@@ -38,6 +40,7 @@ export function StaffFormDialog({ payload, onClose }: DialogComponentProps<Staff
       address: staff?.address ?? "",
       image_url: staff?.image_url ?? null,
       monthly_salary: staff?.monthly_salary ?? ("" as unknown as number),
+      joined_on: staff?.joined_on ?? todayLocalISO(),
       is_active: staff?.is_active ?? true,
     },
   });
@@ -77,6 +80,20 @@ export function StaffFormDialog({ payload, onClose }: DialogComponentProps<Staff
             name="monthly_salary"
             label={t("staff.monthlySalary")}
             integer
+          />
+          <FormField
+            control={form.control}
+            name="joined_on"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("staff.joinedOn")}</FormLabel>
+                <FormControl>
+                  <DatePicker value={field.value} onChange={field.onChange} />
+                </FormControl>
+                <p className="text-xs text-muted-foreground">{t("staff.joinedOnHint")}</p>
+                <FormMessage />
+              </FormItem>
+            )}
           />
           <TextareaField control={form.control} name="address" label={t("fields.address")} optional />
           <ImageField control={form.control} name="image_url" label={t("staff.photo")} folder="staff" />

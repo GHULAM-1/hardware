@@ -11,7 +11,7 @@ import { StockEntryType } from "@/lib/enums";
 import { stockEntrySchema } from "@/lib/schemas";
 import { todayISO } from "@/lib/format";
 import { toBase } from "@/lib/units";
-import { useCreateStockEntry } from "@/hooks/use-warehouse";
+import { useCreateStockEntry, useSetLatestBuyingPrice } from "@/hooks/use-warehouse";
 
 /**
  * Optional "record a purchase" section shared by the create + edit item dialogs:
@@ -30,6 +30,7 @@ export function useStockIn(seed?: StockSeed) {
   const [buyingPrice, setBuyingPrice] = React.useState(seed?.buyingPrice ?? "");
   const [date, setDate] = React.useState(todayISO());
   const createStock = useCreateStockEntry();
+  const setPrice = useSetLatestBuyingPrice();
 
   // Seed supplier + price + current quantity from the item's stock (edit mode).
   // Seeds once, when the data first arrives, and tracks the baseline so prefilled
@@ -72,29 +73,61 @@ export function useStockIn(seed?: StockSeed) {
   );
 
   /**
-   * Edit-mode: SET stock to the entered quantity. Writes one balancing adjustment
-   * entry equal to (target − current) — in if higher, out if lower — so the derived
-   * total becomes exactly what was typed, without losing history.
+   * Edit-mode: SET stock to the entered quantity, and keep the buying price current.
+   *  - Increase → one stock-in for the delta carrying the (new) price + supplier,
+   *    which also becomes the latest buying price.
+   *  - Decrease → a balancing stock-out (no price).
+   *  - Either way, if the price/supplier was edited but the quantity didn't move
+   *    (delta ≤ 0), update the latest stock-in's price so "current cost" sticks —
+   *    otherwise a price-only edit would be silently dropped.
    */
   const commitSet = React.useCallback(
     async (itemId: string, basePerPrimary: number, currentBase: number) => {
-      if (qty.trim() === "") return;
-      const target = toBase(Number(qty), basePerPrimary);
-      const delta = round2(target - currentBase);
-      if (delta === 0) return;
-      const increase = delta > 0;
-      const entry = stockEntrySchema.parse({
-        item_id: itemId,
-        type: increase ? StockEntryType.In : StockEntryType.Out,
-        quantity: Math.abs(delta),
-        supplier_id: increase ? supplierId : null,
-        buying_price: increase && buyingPrice !== "" ? Number(buyingPrice) : null,
-        note: null,
-        entry_date: date,
-      });
-      await createStock.mutateAsync(entry);
+      const priceChanged = buyingPrice !== baseline.buyingPrice;
+      const supplierChanged = supplierId !== baseline.supplierId;
+
+      let delta = 0;
+      if (qty.trim() !== "") {
+        const target = toBase(Number(qty), basePerPrimary);
+        delta = round2(target - currentBase);
+      }
+
+      if (delta > 0) {
+        // New stock-in carries the latest price + supplier.
+        await createStock.mutateAsync(
+          stockEntrySchema.parse({
+            item_id: itemId,
+            type: StockEntryType.In,
+            quantity: delta,
+            supplier_id: supplierId,
+            buying_price: buyingPrice === "" ? null : Number(buyingPrice),
+            note: null,
+            entry_date: date,
+          }),
+        );
+        return;
+      }
+
+      if (delta < 0) {
+        await createStock.mutateAsync(
+          stockEntrySchema.parse({
+            item_id: itemId,
+            type: StockEntryType.Out,
+            quantity: Math.abs(delta),
+            supplier_id: null,
+            buying_price: null,
+            note: null,
+            entry_date: date,
+          }),
+        );
+      }
+
+      // Quantity unchanged (or just decreased): persist a price/supplier edit.
+      if ((priceChanged || supplierChanged) && buyingPrice !== "") {
+        await setPrice.mutateAsync({ itemId, buyingPrice: Number(buyingPrice), supplierId });
+      }
     },
-    [qty, supplierId, buyingPrice, date, createStock],
+    [qty, supplierId, buyingPrice, baseline, date, createStock, setPrice],
   );
 
   return {
@@ -108,7 +141,7 @@ export function useStockIn(seed?: StockSeed) {
     setDate,
     dirty,
     hasStock,
-    committing: createStock.isPending,
+    committing: createStock.isPending || setPrice.isPending,
     commitAdd,
     commitSet,
   };
@@ -166,6 +199,7 @@ export function StockInFields({
             value={stock.buyingPrice}
             onChange={(e) => stock.setBuyingPrice(e.target.value)}
           />
+          <p className="text-xs text-muted-foreground">{t("items.buyingPriceHint")}</p>
         </div>
       </div>
       <div className="space-y-1.5">

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Form } from "@/components/ui/form";
-import { BilingualNameFields, TextField, TextareaField } from "@/components/forms/fields";
+import { BilingualNameFields, SwitchField, TextField, TextareaField } from "@/components/forms/fields";
 import { customerSchema, type CustomerValues } from "@/lib/schemas";
 import { useCreateCustomer, useUpdateCustomer } from "@/hooks/use-customers";
 import type { Customer } from "@/types/models";
@@ -27,6 +27,7 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
       name_ur: customer?.name_ur ?? "",
       phone: customer?.phone ?? "",
       address: customer?.address ?? "",
+      is_blacklisted: customer?.is_blacklisted ?? false,
     },
   });
 
@@ -57,6 +58,12 @@ export function CustomerFormDialog({ payload, onClose }: DialogComponentProps<Cu
           <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
           <TextField control={form.control} name="phone" label={t("fields.phone")} dir="ltr" optional />
           <TextareaField control={form.control} name="address" label={t("fields.address")} optional />
+          <SwitchField
+            control={form.control}
+            name="is_blacklisted"
+            label={t("customers.blacklist")}
+            hint={t("customers.blacklistHint")}
+          />
         </div>
       </FormDialog>
     </Form>

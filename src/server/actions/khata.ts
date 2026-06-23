@@ -114,3 +114,15 @@ export async function deleteKhata(accessToken: string, id: string): Promise<null
     c.from("khatas").delete().eq("id", id).then((r) => ({ data: null, error: r.error })),
   );
 }
+
+/** Mark several khatas fulfilled at once (the "Settle all" action). No-op on []. */
+export async function fulfillKhatas(accessToken: string, ids: string[]): Promise<null> {
+  if (ids.length === 0) return null;
+  return runQuery(accessToken, (c) =>
+    c
+      .from("khatas")
+      .update({ status: KhataStatus.Fulfilled })
+      .in("id", ids)
+      .then((r) => ({ data: null, error: r.error })),
+  );
+}

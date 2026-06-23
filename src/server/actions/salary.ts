@@ -127,11 +127,11 @@ export async function getStaffSalary(
     client.from("staff").select("*").eq("id", staffId).single(),
     client
       .from("staff_attendance")
-      .select("id")
+      .select("date, status, entry_time, exit_time")
       .eq("staff_id", staffId)
-      .eq("status", StaffAttendanceStatus.Absent)
       .gte("date", start)
-      .lt("date", nextStart),
+      .lt("date", nextStart)
+      .order("date", { ascending: true }),
     client
       .from("salary_advances")
       .select("*")
@@ -153,8 +153,10 @@ export async function getStaffSalary(
 
   const advances = advRes.data ?? [];
   const advancesTotal = advances.reduce((sum, a) => sum + Number(a.amount), 0);
-  const row = buildRow(staffRes.data, month, attRes.data?.length ?? 0, advancesTotal, payRes.data);
-  return { ...row, advances };
+  const attendance = attRes.data ?? [];
+  const absentDays = attendance.filter((a) => a.status === StaffAttendanceStatus.Absent).length;
+  const row = buildRow(staffRes.data, month, absentDays, advancesTotal, payRes.data);
+  return { ...row, advances, attendance };
 }
 
 /** Every active staff (plus anyone paid that month) with their salary picture. */
@@ -196,7 +198,12 @@ export async function listSalaryOverview(
   const payByStaff = new Map((payRes.data ?? []).map((p) => [p.staff_id, p]));
 
   // Active staff, plus inactive staff who were paid that month (so history shows).
-  const rows = (staffRes.data ?? []).filter((s) => s.is_active || payByStaff.has(s.id));
+  // Exclude anyone who joined AFTER this month — they never worked it, so they must
+  // not show up owed a full salary (or fines) for months before they were hired.
+  // joined_on < nextStart ⇒ joined on or before this month's end (ISO date compare).
+  const rows = (staffRes.data ?? []).filter(
+    (s) => (s.is_active || payByStaff.has(s.id)) && s.joined_on < nextStart,
+  );
   return rows.map((s) =>
     buildRow(s, month, absentByStaff.get(s.id) ?? 0, advByStaff.get(s.id) ?? 0, payByStaff.get(s.id) ?? null),
   );

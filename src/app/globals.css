@@ -30,7 +30,10 @@
   --cream: #fbf6ea;
   --cream-border: #e0d8c4;
   --tile: #f0f3f8;
-  --row-alt: #e9eff9;
+  /* Row hover: a soft lavender tint from the purple table-header family (was a
+     cold blue #e9eff9 that clashed). Selected stays warm gold so the two states
+     read distinctly. Drives hover on every table (ui/table.tsx). */
+  --row-alt: #f3eefc;
   --row-selected: #fff6d6;
   --input-border: #d4dcea;
   /* The whole-CRM background image (public/bg.png) under a deep-blue scrim — the

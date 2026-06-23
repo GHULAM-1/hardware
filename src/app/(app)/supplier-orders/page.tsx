@@ -16,8 +16,19 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
-import { StatusBadge } from "@/components/common/status-badge";
+import { StatusBadge, type StatusTone } from "@/components/common/status-badge";
 import type { SupplierOrderListView } from "@/types/models";
+
+const STATUS_TONE: Record<string, StatusTone> = {
+  [SupplierOrderStatus.Pending]: "warning",
+  [SupplierOrderStatus.Partial]: "info",
+  [SupplierOrderStatus.Received]: "success",
+};
+const STATUS_LABEL: Record<string, string> = {
+  [SupplierOrderStatus.Pending]: "supplierOrders.pending",
+  [SupplierOrderStatus.Partial]: "supplierOrders.partial",
+  [SupplierOrderStatus.Received]: "supplierOrders.received",
+};
 
 export default function SupplierOrdersPage() {
   const { t } = useTranslation();
@@ -47,7 +58,17 @@ export default function SupplierOrdersPage() {
     {
       key: "supplier",
       header: t("fields.supplier"),
-      cell: (o) => o.supplier?.name ?? "—",
+      cell: (o) => {
+        if (!o.suppliers.length) return <span className="text-muted-foreground">—</span>;
+        const shown = o.suppliers.slice(0, 2).join(", ");
+        const extra = o.suppliers.length - 2;
+        return (
+          <span className="text-sm">
+            {shown}
+            {extra > 0 && <span className="text-muted-foreground"> +{extra}</span>}
+          </span>
+        );
+      },
     },
     {
       key: "items",
@@ -68,12 +89,7 @@ export default function SupplierOrdersPage() {
     {
       key: "status",
       header: t("fields.status"),
-      cell: (o) => (
-        <StatusBadge
-          tone={o.status === SupplierOrderStatus.Received ? "success" : "warning"}
-          label={t(o.status === SupplierOrderStatus.Received ? "supplierOrders.received" : "supplierOrders.pending")}
-        />
-      ),
+      cell: (o) => <StatusBadge tone={STATUS_TONE[o.status]} label={t(STATUS_LABEL[o.status])} />,
     },
     {
       key: "actions",
@@ -85,7 +101,7 @@ export default function SupplierOrdersPage() {
             onDelete={() =>
               confirmDelete({
                 title: t("common.delete"),
-                description: o.supplier?.name ?? o.order_no,
+                description: o.order_no,
                 onConfirm: () => deleteOrder.mutateAsync(o.id),
               })
             }

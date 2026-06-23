@@ -4,8 +4,8 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 
 import { useLanguage } from "@/providers/i18n-provider";
-import { Language } from "@/lib/enums";
-import { formatDate, formatPKR } from "@/lib/format";
+import { Language, StaffAttendanceStatus } from "@/lib/enums";
+import { formatDate, formatPKR, formatTime } from "@/lib/format";
 import { shopHeaderHtml } from "@/lib/shop-header";
 import type { StaffSalaryDetail } from "@/types/models";
 
@@ -42,6 +42,11 @@ export const PayslipSheet = React.forwardRef<
     borderBottom: `1px solid ${C.border}`,
   };
   const muted: React.CSSProperties = { color: C.muted };
+
+  // Present days that have a recorded in/out time — the attendance timing log.
+  const timingRows = detail.attendance.filter(
+    (a) => a.status === StaffAttendanceStatus.Present && (a.entry_time || a.exit_time),
+  );
 
   return (
     <div
@@ -137,6 +142,24 @@ export const PayslipSheet = React.forwardRef<
         <span>{detail.paid ? t("staff.net") : t("staff.suggestedNet")}</span>
         <span style={ltr}>{formatPKR(detail.netPayable)}</span>
       </div>
+
+      {/* Attendance timing log (present days with recorded in/out times) */}
+      {timingRows.length > 0 ? (
+        <div style={{ marginTop: 10, borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
+          <div style={{ ...muted, marginBottom: 4 }}>{t("staff.attendanceTimes")}</div>
+          {timingRows.map((a) => (
+            <div
+              key={a.date}
+              style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0" }}
+            >
+              <span style={ltr}>{formatDate(a.date)}</span>
+              <span style={{ ...ltr, ...muted }}>
+                {formatTime(a.entry_time)} – {formatTime(a.exit_time)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {/* Paid stamp */}
       {detail.paid ? (

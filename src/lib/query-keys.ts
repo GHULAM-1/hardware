@@ -35,12 +35,14 @@ export const queryKeys = {
   staff: (search?: string) => ["staff", { search: search ?? "" }] as const,
   staffMember: (id: string) => ["staff", id] as const,
   attendance: (date: string) => ["attendance", date] as const,
+  staffAbsentDates: (staffId: string, month: string) =>
+    ["attendance", "absent-dates", staffId, month] as const,
   salaryOverview: (month: string) => ["salary", "overview", month] as const,
   staffSalary: (staffId: string, month: string) => ["salary", staffId, month] as const,
   advances: (staffId: string, month?: string) =>
     ["advances", staffId, { month: month ?? "" }] as const,
 
-  /** Most recent selling price charged to a customer for a specific item. */
-  lastSellingPrice: (customerId: string, itemId: string) =>
-    ["last-selling-price", customerId, itemId] as const,
+  /** Pricing context (last sold price + cost then + current cost) for a customer + item. */
+  itemPricing: (customerId: string, itemId: string) =>
+    ["item-pricing", customerId, itemId] as const,
 } as const;

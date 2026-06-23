@@ -4,13 +4,14 @@ import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ItemCombobox } from "@/components/common/item-combobox";
+import { SupplierCombobox } from "@/components/common/supplier-combobox";
 import { VoiceInputButton } from "@/components/common/voice-input-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { SupplierOrderLineDraft } from "@/components/supplier-orders/supplier-order-form-types";
 
-/** One supplier-order line: item + quantity (+ unit) + optional note. No prices. */
+/** One supplier-order line: item + its supplier + quantity (+ unit) + optional note. No prices. */
 export function SupplierOrderLineRow({
   line,
   index,
@@ -43,9 +44,9 @@ export function SupplierOrderLineRow({
         <div className="space-y-1.5">
           <Label>{t("fields.item")}</Label>
           <ItemCombobox
-            value={line.item?.id ?? null}
+            value={line.itemId}
             onSelect={(item) =>
-              onChange({ ...line, item, unit: item?.primary_unit ?? line.unit })
+              onChange({ ...line, itemId: item?.id ?? null, unit: item?.primary_unit ?? line.unit })
             }
           />
         </div>
@@ -69,6 +70,18 @@ export function SupplierOrderLineRow({
             )}
           </div>
         </div>
+      </div>
+
+      {/* Each line has its OWN supplier — one item ↔ one supplier. */}
+      <div className="space-y-1.5">
+        <Label>
+          {t("fields.supplier")}
+          <span className="ms-1 text-muted-foreground">({t("common.optional")})</span>
+        </Label>
+        <SupplierCombobox
+          value={line.supplierId}
+          onChange={(v) => onChange({ ...line, supplierId: v })}
+        />
       </div>
 
       <div className="space-y-1.5">

@@ -102,12 +102,14 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
                       </span>
                     </span>
                     <StatusBadge
-                      tone={o.status === SupplierOrderStatus.Received ? "success" : "warning"}
-                      label={t(
+                      tone={
                         o.status === SupplierOrderStatus.Received
-                          ? "supplierOrders.received"
-                          : "supplierOrders.pending",
-                      )}
+                          ? "success"
+                          : o.status === SupplierOrderStatus.Partial
+                            ? "info"
+                            : "warning"
+                      }
+                      label={t(`supplierOrders.${o.status}`)}
                     />
                   </button>
                 </li>

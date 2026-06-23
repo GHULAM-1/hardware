@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useTranslation } from "react-i18next";
 
 import { useKhatas, useFulfillKhata } from "@/hooks/use-khata";
@@ -7,7 +8,9 @@ import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
+import { groupCustomerKhatas } from "@/lib/khata-groups";
 import { PageHeader } from "@/components/layout/page-header";
+import { CustomerKhataTable } from "@/components/khata/customer-khata-table";
 import { KhataTable } from "@/components/khata/khata-table";
 import { DueSoonStrip } from "@/components/khata/due-soon-strip";
 import { Button } from "@/components/ui/button";
@@ -21,9 +24,14 @@ export default function KhataPage() {
   const { data: khatas = [], isLoading } = useKhatas();
   const { fulfill, pendingId } = useFulfillKhata();
 
-  // The table's inline "Mark fulfilled" button is a one-way status change, so it
-  // gets the same confirm as the one inside the khata detail dialog. This button
-  // lives on the page (not inside a dialog), so the shared confirm is safe here.
+  // One cumulative row per customer who still owes; manual reminders (no customer)
+  // are kept in their own section below, unchanged.
+  const customerGroups = React.useMemo(() => groupCustomerKhatas(khatas), [khatas]);
+  const reminders = React.useMemo(() => khatas.filter((k) => !k.customer), [khatas]);
+
+  // The reminders table's inline "Mark fulfilled" is a one-way status change, so
+  // it gets the same confirm. This button lives on the page (not inside a dialog),
+  // so the shared confirm is safe here.
   const confirmFulfill = (id: string) =>
     confirmDelete({
       title: t("khata.markFulfilledTitle"),
@@ -57,14 +65,26 @@ export default function KhataPage() {
         onOpen={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
         onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
       />
-      <KhataTable
-        rows={khatas}
+
+      <CustomerKhataTable
+        groups={customerGroups}
         loading={isLoading}
-        onMarkFulfilled={confirmFulfill}
-        markingId={pendingId}
-        onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
-        onRowClick={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+        emptyText={t("khata.noOutstanding")}
+        onRowClick={(group) => openDialog(DialogKey.CustomerKhata, { customerId: group.customer.id })}
       />
+
+      {reminders.length > 0 ? (
+        <section className="mt-8">
+          <h2 className="mb-3 text-sm font-semibold text-muted-foreground">{t("khata.reminders")}</h2>
+          <KhataTable
+            rows={reminders}
+            loading={isLoading}
+            onMarkFulfilled={confirmFulfill}
+            markingId={pendingId}
+            onRowClick={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+          />
+        </section>
+      ) : null}
     </div>
   );
 }

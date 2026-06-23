@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       app_settings: {
@@ -63,6 +88,7 @@ export type Database = {
           email: string | null
           id: string
           image_url: string | null
+          is_blacklisted: boolean
           name_en: string
           name_ur: string | null
           phone: string | null
@@ -74,6 +100,7 @@ export type Database = {
           email?: string | null
           id?: string
           image_url?: string | null
+          is_blacklisted?: boolean
           name_en: string
           name_ur?: string | null
           phone?: string | null
@@ -85,6 +112,7 @@ export type Database = {
           email?: string | null
           id?: string
           image_url?: string | null
+          is_blacklisted?: boolean
           name_en?: string
           name_ur?: string | null
           phone?: string | null
@@ -161,6 +189,7 @@ export type Database = {
           name_en: string
           name_ur?: string | null
           primary_unit?: string
+          search_norm?: string | null
           selling_price?: number
           sku?: string
           track_in_warehouse?: boolean
@@ -179,6 +208,7 @@ export type Database = {
           name_en?: string
           name_ur?: string | null
           primary_unit?: string
+          search_norm?: string | null
           selling_price?: number
           sku?: string
           track_in_warehouse?: boolean
@@ -305,6 +335,7 @@ export type Database = {
       }
       order_items: {
         Row: {
+          cost_at_sale: number | null
           created_at: string
           id: string
           item_id: string
@@ -315,6 +346,7 @@ export type Database = {
           unit: string
         }
         Insert: {
+          cost_at_sale?: number | null
           created_at?: string
           id?: string
           item_id: string
@@ -325,6 +357,7 @@ export type Database = {
           unit?: string
         }
         Update: {
+          cost_at_sale?: number | null
           created_at?: string
           id?: string
           item_id?: string
@@ -367,6 +400,7 @@ export type Database = {
           customer_id: string
           due_date: string | null
           id: string
+          internal_note: string | null
           order_no: string
           payment_type: Database["public"]["Enums"]["payment_type"]
           status: Database["public"]["Enums"]["order_status"]
@@ -381,6 +415,7 @@ export type Database = {
           customer_id: string
           due_date?: string | null
           id?: string
+          internal_note?: string | null
           order_no?: string
           payment_type?: Database["public"]["Enums"]["payment_type"]
           status?: Database["public"]["Enums"]["order_status"]
@@ -395,6 +430,7 @@ export type Database = {
           customer_id?: string
           due_date?: string | null
           id?: string
+          internal_note?: string | null
           order_no?: string
           payment_type?: Database["public"]["Enums"]["payment_type"]
           status?: Database["public"]["Enums"]["order_status"]
@@ -414,112 +450,6 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      supplier_order_items: {
-        Row: {
-          created_at: string
-          id: string
-          item_id: string
-          note: string | null
-          quantity: number
-          supplier_order_id: string
-          unit: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          item_id: string
-          note?: string | null
-          quantity: number
-          supplier_order_id: string
-          unit?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          item_id?: string
-          note?: string | null
-          quantity?: number
-          supplier_order_id?: string
-          unit?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "supplier_order_items_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supplier_order_items_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "warehouse_stock"
-            referencedColumns: ["item_id"]
-          },
-          {
-            foreignKeyName: "supplier_order_items_supplier_order_id_fkey"
-            columns: ["supplier_order_id"]
-            isOneToOne: false
-            referencedRelation: "supplier_orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      supplier_orders: {
-        Row: {
-          bill_url: string | null
-          created_at: string
-          created_by: string | null
-          id: string
-          note: string | null
-          order_no: string
-          received_at: string | null
-          status: Database["public"]["Enums"]["supplier_order_status"]
-          supplier_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          bill_url?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string | null
-          order_no?: string
-          received_at?: string | null
-          status?: Database["public"]["Enums"]["supplier_order_status"]
-          supplier_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          bill_url?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string | null
-          order_no?: string
-          received_at?: string | null
-          status?: Database["public"]["Enums"]["supplier_order_status"]
-          supplier_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "supplier_orders_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supplier_orders_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -553,6 +483,221 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      salary_advances: {
+        Row: {
+          advance_date: string
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          advance_date: string
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          advance_date?: string
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_advances_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_advances_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salary_payments: {
+        Row: {
+          absence_deduction: number
+          advances_total: number
+          amount_paid: number
+          computed_net: number
+          created_at: string
+          created_by: string | null
+          id: string
+          monthly_salary: number
+          note: string | null
+          paid_on: string
+          period_month: string
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          absence_deduction?: number
+          advances_total?: number
+          amount_paid: number
+          computed_net: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          monthly_salary: number
+          note?: string | null
+          paid_on: string
+          period_month: string
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          absence_deduction?: number
+          advances_total?: number
+          amount_paid?: number
+          computed_net?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          monthly_salary?: number
+          note?: string | null
+          paid_on?: string
+          period_month?: string
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_payments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff: {
+        Row: {
+          address: string | null
+          cnic: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          joined_on: string
+          monthly_salary: number
+          name: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          cnic?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          joined_on?: string
+          monthly_salary: number
+          name: string
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          cnic?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          joined_on?: string
+          monthly_salary?: number
+          name?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_attendance: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date: string
+          entry_time: string | null
+          exit_time: string | null
+          id: string
+          staff_id: string
+          status: Database["public"]["Enums"]["staff_attendance_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date: string
+          entry_time?: string | null
+          exit_time?: string | null
+          id?: string
+          staff_id: string
+          status: Database["public"]["Enums"]["staff_attendance_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          entry_time?: string | null
+          exit_time?: string | null
+          id?: string
+          staff_id?: string
+          status?: Database["public"]["Enums"]["staff_attendance_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_attendance_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_attendance_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stock_entries: {
         Row: {
@@ -625,6 +770,125 @@ export type Database = {
           },
         ]
       }
+      supplier_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          note: string | null
+          quantity: number
+          received_quantity: number | null
+          supplier_id: string | null
+          supplier_order_id: string
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          note?: string | null
+          quantity: number
+          received_quantity?: number | null
+          supplier_id?: string | null
+          supplier_order_id: string
+          unit?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          note?: string | null
+          quantity?: number
+          received_quantity?: number | null
+          supplier_id?: string | null
+          supplier_order_id?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "warehouse_stock"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "supplier_order_items_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_order_items_supplier_order_id_fkey"
+            columns: ["supplier_order_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_orders: {
+        Row: {
+          bill_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          order_no: string
+          received_at: string | null
+          status: Database["public"]["Enums"]["supplier_order_status"]
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bill_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_no?: string
+          received_at?: string | null
+          status?: Database["public"]["Enums"]["supplier_order_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bill_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_no?: string
+          received_at?: string | null
+          status?: Database["public"]["Enums"]["supplier_order_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -661,191 +925,6 @@ export type Database = {
         }
         Relationships: []
       }
-      staff: {
-        Row: {
-          address: string | null
-          cnic: string | null
-          created_at: string
-          created_by: string | null
-          id: string
-          image_url: string | null
-          is_active: boolean
-          monthly_salary: number
-          name: string
-          phone: string
-          updated_at: string
-        }
-        Insert: {
-          address?: string | null
-          cnic?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          monthly_salary: number
-          name: string
-          phone: string
-          updated_at?: string
-        }
-        Update: {
-          address?: string | null
-          cnic?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          monthly_salary?: number
-          name?: string
-          phone?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "staff_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      staff_attendance: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          date: string
-          id: string
-          staff_id: string
-          status: Database["public"]["Enums"]["staff_attendance_status"]
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          date: string
-          id?: string
-          staff_id: string
-          status: Database["public"]["Enums"]["staff_attendance_status"]
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          date?: string
-          id?: string
-          staff_id?: string
-          status?: Database["public"]["Enums"]["staff_attendance_status"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "staff_attendance_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      salary_advances: {
-        Row: {
-          advance_date: string
-          amount: number
-          created_at: string
-          created_by: string | null
-          id: string
-          note: string | null
-          staff_id: string
-          updated_at: string
-        }
-        Insert: {
-          advance_date: string
-          amount: number
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string | null
-          staff_id: string
-          updated_at?: string
-        }
-        Update: {
-          advance_date?: string
-          amount?: number
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string | null
-          staff_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "salary_advances_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      salary_payments: {
-        Row: {
-          absence_deduction: number
-          advances_total: number
-          amount_paid: number
-          computed_net: number
-          created_at: string
-          created_by: string | null
-          id: string
-          monthly_salary: number
-          note: string | null
-          paid_on: string
-          period_month: string
-          staff_id: string
-          updated_at: string
-        }
-        Insert: {
-          absence_deduction?: number
-          advances_total?: number
-          amount_paid: number
-          computed_net: number
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          monthly_salary: number
-          note?: string | null
-          paid_on: string
-          period_month: string
-          staff_id: string
-          updated_at?: string
-        }
-        Update: {
-          absence_deduction?: number
-          advances_total?: number
-          amount_paid?: number
-          computed_net?: number
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          monthly_salary?: number
-          note?: string | null
-          paid_on?: string
-          period_month?: string
-          staff_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "salary_payments_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       warehouse_stock: {
@@ -865,6 +944,7 @@ export type Database = {
           p_amount_paid: number
           p_customer_id: string
           p_due_date: string
+          p_internal_note?: string
           p_lines: Json
           p_payment_type: Database["public"]["Enums"]["payment_type"]
         }
@@ -893,7 +973,7 @@ export type Database = {
       payment_type: "cash" | "partial" | "credit"
       staff_attendance_status: "present" | "absent"
       stock_entry_type: "in" | "out"
-      supplier_order_status: "pending" | "received"
+      supplier_order_status: "pending" | "received" | "partial"
       user_role: "super_admin" | "admin"
     }
     CompositeTypes: {
@@ -1020,6 +1100,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       khata_status: ["pending", "fulfilled"],
@@ -1028,7 +1111,7 @@ export const Constants = {
       payment_type: ["cash", "partial", "credit"],
       staff_attendance_status: ["present", "absent"],
       stock_entry_type: ["in", "out"],
-      supplier_order_status: ["pending", "received"],
+      supplier_order_status: ["pending", "received", "partial"],
       user_role: ["super_admin", "admin"],
     },
   },

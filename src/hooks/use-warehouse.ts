@@ -11,6 +11,7 @@ import {
   getItemStock,
   listItemsWithStock,
   listStockEntries,
+  setLatestBuyingPrice,
   updateStockEntry,
 } from "@/server/actions/warehouse";
 
@@ -43,6 +44,8 @@ function useInvalidateStock() {
   return () => {
     void qc.invalidateQueries({ queryKey: ["stock-entries"] });
     void qc.invalidateQueries({ queryKey: ["warehouse-stock"] });
+    // Buying-cost changes affect the order-form pricing panel.
+    void qc.invalidateQueries({ queryKey: ["item-pricing"] });
   };
 }
 
@@ -67,6 +70,16 @@ export function useDeleteStockEntry() {
   const invalidate = useInvalidateStock();
   return useMutation({
     mutationFn: async (id: string) => deleteStockEntry(await getAccessToken(), id),
+    onSuccess: invalidate,
+  });
+}
+
+/** Correct the current supplier buying price (latest stock-in) without a stock movement. */
+export function useSetLatestBuyingPrice() {
+  const invalidate = useInvalidateStock();
+  return useMutation({
+    mutationFn: async (args: { itemId: string; buyingPrice: number; supplierId: string | null }) =>
+      setLatestBuyingPrice(await getAccessToken(), args.itemId, args.buyingPrice, args.supplierId),
     onSuccess: invalidate,
   });
 }

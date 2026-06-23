@@ -15,8 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Money } from "@/components/common/money";
-import { useLastItemPrice } from "@/hooks/use-orders";
-import { formatPKR } from "@/lib/format";
+import { useItemPricing } from "@/hooks/use-orders";
+import { useIsSuperAdmin } from "@/providers/auth-provider";
+import { formatDate, formatPKR } from "@/lib/format";
 import { saleUnitOptions, unitSellingPrice } from "@/lib/units";
 import { lineTotal, type LineDraft } from "@/components/orders/order-form-types";
 
@@ -34,7 +35,12 @@ export function OrderLineRow({
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
-  const { data: lastPrice } = useLastItemPrice(customerId, line.item?.id ?? null);
+  const isSuperAdmin = useIsSuperAdmin();
+  const { data: pricing } = useItemPricing(customerId, line.item?.id ?? null);
+
+  const lastPrice = pricing?.lastSoldPrice ?? null;
+  // Supplier purchase cost, super-admin only: what it cost when last sold + now.
+  const showCostRows = isSuperAdmin && pricing != null && (pricing.lastCostAtSale != null || pricing.currentCost != null);
 
   // Units this item can be sold in (box vs piece for count packs; primary only otherwise).
   const unitOptions = line.item ? saleUnitOptions(line.item) : [];
@@ -114,16 +120,44 @@ export function OrderLineRow({
         </div>
       </div>
 
-      {lastPrice != null && (
-        <button
-          type="button"
-          onClick={() => onChange({ ...line, selling_price: String(lastPrice) })}
-          title={t("orders.useLastPrice")}
-          className="inline-flex items-center gap-2 rounded-lg border border-brand/30 bg-brand/10 px-3 py-2 text-start text-sm font-semibold text-brand transition-colors hover:bg-brand/20"
-        >
-          <History className="h-4 w-4 shrink-0" />
-          <span>{t("orders.lastSoldToCustomer", { price: formatPKR(lastPrice) })}</span>
-        </button>
+      {(lastPrice != null || showCostRows) && (
+        <div className="space-y-2 rounded-lg border border-brand/30 bg-brand/5 p-3">
+          {lastPrice != null && (
+            <button
+              type="button"
+              onClick={() => onChange({ ...line, selling_price: String(lastPrice) })}
+              title={t("orders.useLastPrice")}
+              className="flex w-full items-center gap-2 text-start text-sm font-semibold text-brand transition-colors hover:underline"
+            >
+              <History className="h-4 w-4 shrink-0" />
+              <span>
+                {t("orders.lastSoldToCustomer", { price: formatPKR(lastPrice) })}
+                {pricing?.lastSoldAt && (
+                  <span className="font-normal text-muted-foreground">
+                    {" "}
+                    {t("orders.lastSoldOn", { date: formatDate(pricing.lastSoldAt) })}
+                  </span>
+                )}
+              </span>
+            </button>
+          )}
+          {showCostRows && (
+            <div className="space-y-1 text-sm">
+              {pricing?.lastCostAtSale != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("orders.costThen")}</span>
+                  <Money value={pricing.lastCostAtSale} />
+                </div>
+              )}
+              {pricing?.currentCost != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("orders.currentCost")}</span>
+                  <Money value={pricing.currentCost} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       <div className="flex justify-end border-t border-border pt-2 text-sm">

@@ -45,6 +45,8 @@ export async function createOrder(accessToken: string, values: OrderValues): Pro
     // p_due_date is nullable in Postgres (null for cash); the generated type is strict.
     p_due_date: (data.payment_type === PaymentType.Cash ? null : (data.due_date ?? null)) as unknown as string,
     p_lines: data.lines as unknown as Json,
+    // Staff-only memo; the RPC trims/blanks it to null.
+    p_internal_note: (data.internal_note ?? undefined) as unknown as string,
   });
   if (error) throw new Error(error.message);
   return order as unknown as Order;
@@ -94,7 +96,7 @@ export async function getOrderReceipt(
   const { data, error } = await client
     .from("orders")
     .select(
-      "id, order_no, created_at, total, amount_paid, balance_due, payment_type, due_date, customers(name_en, name_ur, phone), order_items(quantity, unit, selling_price, items(name_en, name_ur))",
+      "id, order_no, created_at, total, amount_paid, balance_due, payment_type, due_date, internal_note, customers(name_en, name_ur, phone), order_items(quantity, unit, selling_price, items(name_en, name_ur))",
     )
     .eq("id", orderId)
     .single();
@@ -109,6 +111,7 @@ export async function getOrderReceipt(
     balance_due: data.balance_due,
     payment_type: data.payment_type,
     due_date: data.due_date,
+    internal_note: data.internal_note,
     customer: data.customers ?? null,
     lines: (data.order_items ?? []).map((li) => ({
       quantity: li.quantity,

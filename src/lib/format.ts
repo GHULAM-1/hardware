@@ -58,6 +58,16 @@ export function formatCnic(raw: string | null | undefined): string {
   return `${d.slice(0, 5)}-${d.slice(5, 12)}-${d.slice(12)}`;
 }
 
+/** Format a Postgres `time` ("HH:MM" or "HH:MM:SS") as a friendly 12-hour clock. */
+export function formatTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const [h, m] = value.split(":").map(Number);
+  if (Number.isNaN(h)) return "—";
+  const d = new Date();
+  d.setHours(h, m || 0, 0, 0);
+  return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(d);
+}
+
 export function formatDate(value: string | Date | null | undefined): string {
   if (!value) return "—";
   const d = typeof value === "string" ? new Date(value) : value;

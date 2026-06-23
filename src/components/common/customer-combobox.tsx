@@ -41,6 +41,7 @@ export function CustomerCombobox({
           name_ur: null,
           phone: null,
           address: null,
+          is_blacklisted: false,
         });
         return { value: c.id, label: c.name_en };
       }}

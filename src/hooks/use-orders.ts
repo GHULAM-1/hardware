@@ -12,7 +12,7 @@ import {
   listOrders,
   updateOrderPayment,
 } from "@/server/actions/orders";
-import { getLastItemPriceForCustomer } from "@/server/actions/customers";
+import { getItemPricingForCustomer } from "@/server/actions/customers";
 import type { OrderPaymentValues } from "@/lib/schemas";
 
 export function useOrders(search = "") {
@@ -30,11 +30,11 @@ export function useOrderReceipt(orderId: string | undefined) {
   });
 }
 
-/** Last price this customer was charged for this item (read-only order-line hint). */
-export function useLastItemPrice(customerId: string | null, itemId: string | null) {
+/** Pricing context for this customer + item (last sold price, cost then, current cost). */
+export function useItemPricing(customerId: string | null, itemId: string | null) {
   return useQuery({
-    queryKey: queryKeys.lastSellingPrice(customerId ?? "", itemId ?? ""),
-    queryFn: async () => getLastItemPriceForCustomer(await getAccessToken(), customerId as string, itemId as string),
+    queryKey: queryKeys.itemPricing(customerId ?? "", itemId ?? ""),
+    queryFn: async () => getItemPricingForCustomer(await getAccessToken(), customerId as string, itemId as string),
     enabled: Boolean(customerId && itemId),
   });
 }

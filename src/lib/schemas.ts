@@ -97,6 +97,7 @@ export const customerSchema = z.object({
   name_ur: optionalText,
   phone: optionalText,
   address: optionalText,
+  is_blacklisted: z.boolean().default(false),
 });
 export type CustomerValues = z.output<typeof customerSchema>;
 
@@ -189,6 +190,7 @@ export const orderSchema = z
     payment_type: z.enum([PaymentType.Cash, PaymentType.Partial, PaymentType.Credit]),
     amount_paid: z.coerce.number().min(0).default(0),
     due_date: z.string().nullable().optional().default(null),
+    internal_note: optionalText,
     lines: z.array(orderLineSchema).min(1),
   })
   .refine(
@@ -197,26 +199,43 @@ export const orderSchema = z
   );
 export type OrderValues = z.output<typeof orderSchema>;
 
-// Supplier order: a material REQUEST list (no prices). Supplier is optional.
+// Supplier order: a material REQUEST list (no prices). Each line carries its OWN
+// supplier (one item ↔ one supplier), so one order can mix several suppliers.
 const supplierOrderLineSchema = z.object({
+  // Present only when editing an existing line — lets the server preserve the
+  // line's already-tallied received_quantity instead of recreating the row.
+  id: z.string().uuid().optional(),
   item_id: z.string().uuid(),
+  supplier_id: z.string().uuid().nullable().optional().default(null),
   quantity: z.coerce.number().positive(),
   unit: z.string().trim().min(1),
   note: optionalText,
 });
 
 export const supplierOrderSchema = z.object({
-  supplier_id: z.string().uuid().nullable().optional().default(null),
   note: optionalText,
   lines: z.array(supplierOrderLineSchema).min(1),
 });
 export type SupplierOrderValues = z.output<typeof supplierOrderSchema>;
 
-/** Marking a supplier order received, optionally attaching the supplier's bill. */
-export const supplierOrderReceiveSchema = z.object({
+/**
+ * The manual receiving "tally": per-line received quantity (null = not tallied
+ * yet, 0 = nothing arrived), plus an optional attached supplier bill. The order's
+ * status (pending → partial → received) is derived from these on the server.
+ * Stock stays manual — the owner adds received quantities into the warehouse.
+ */
+export const supplierOrderTallySchema = z.object({
   bill_url: z.string().url().nullable().optional().default(null),
+  entries: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        received_quantity: z.coerce.number().min(0).nullable(),
+      }),
+    )
+    .min(1),
 });
-export type SupplierOrderReceiveValues = z.output<typeof supplierOrderReceiveSchema>;
+export type SupplierOrderTallyValues = z.output<typeof supplierOrderTallySchema>;
 
 // ── Staff management ─────────────────────────────────────────────────────────
 
@@ -230,6 +249,9 @@ export const staffSchema = z.object({
   image_url: z.string().url().nullable().optional().default(null),
   // Required: a real, positive WHOLE amount (0/blank/decimals rejected).
   monthly_salary: z.coerce.number().int("validation.noDecimals").positive("validation.required"),
+  // The date the employee started. Attendance/salary only count from here, so a
+  // newly-added employee never accrues phantom absences for months before joining.
+  joined_on: z.string().min(1),
   is_active: z.boolean().default(true),
 });
 export type StaffValues = z.output<typeof staffSchema>;
@@ -238,6 +260,9 @@ export type StaffValues = z.output<typeof staffSchema>;
 export const attendanceEntrySchema = z.object({
   staff_id: z.string().uuid(),
   status: z.enum([StaffAttendanceStatus.Present, StaffAttendanceStatus.Absent]),
+  // Optional check-in / check-out time ("HH:MM"), only set when present.
+  entry_time: z.string().nullable().optional().default(null),
+  exit_time: z.string().nullable().optional().default(null),
 });
 
 // A whole day's attendance, saved in one batch (the daily checklist).

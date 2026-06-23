@@ -83,7 +83,7 @@ export default function SalaryPage() {
 
   return (
     <div>
-      <Button asChild variant="ghost" size="sm" className="-ms-2 mb-2 text-white/80 hover:text-white">
+      <Button asChild variant="ghost" size="sm" className="-ms-2 mb-2 text-white/80 hover:bg-white/15 hover:text-white">
         <Link href="/staff">
           <ArrowLeft className="me-1 h-4 w-4 rtl:rotate-180" />
           {t("staff.title")}

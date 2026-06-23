@@ -37,6 +37,9 @@ export type KhataStatus = (typeof KhataStatus)[keyof typeof KhataStatus];
 
 export const SupplierOrderStatus = {
   Pending: "pending",
+  /** Some lines tallied/received, but not all received in full. */
+  Partial: "partial",
+  /** Every line received in full. */
   Received: "received",
 } as const;
 export type SupplierOrderStatus = (typeof SupplierOrderStatus)[keyof typeof SupplierOrderStatus];

@@ -139,12 +139,14 @@ export function MeasurementFields() {
           control={control}
           name="selling_price"
           label={`${t("fields.sellingPrice")} (PKR / ${unitLabel(primaryUnit)})`}
+          hint={t("items.sellingPriceHint")}
           step="0.01"
         />
         <NumberField
           control={control}
           name="low_stock_threshold"
           label={t("items.lowStockAlert", { unit: unitLabel(primaryUnit) })}
+          hint={t("items.lowStockHint")}
           step="0.01"
           optional
         />

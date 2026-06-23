@@ -8,6 +8,7 @@ import type { CustomerValues } from "@/lib/schemas";
 import {
   createCustomer,
   deleteCustomer,
+  getCustomer,
   getCustomerOrders,
   getLastPurchase,
   listCustomers,
@@ -19,6 +20,15 @@ export function useCustomers(search = "") {
   return useQuery({
     queryKey: queryKeys.customers(search),
     queryFn: async () => listCustomers(await getAccessToken(), search),
+  });
+}
+
+/** One customer by id — used to surface the blacklist warning on the order form. */
+export function useCustomer(customerId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.customer(customerId ?? ""),
+    queryFn: async () => getCustomer(await getAccessToken(), customerId as string),
+    enabled: Boolean(customerId),
   });
 }
 

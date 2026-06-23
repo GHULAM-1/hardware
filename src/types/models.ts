@@ -33,7 +33,13 @@ export type SalaryAdvance = Row<"salary_advances">;
 export type SalaryPayment = Row<"salary_payments">;
 
 /** One staff member's mark for a given day (null = not yet marked → treated present). */
-export type AttendanceRow = { staff: Staff; status: StaffAttendanceStatus | null };
+export type AttendanceRow = {
+  staff: Staff;
+  status: StaffAttendanceStatus | null;
+  /** Check-in / check-out time ("HH:MM:SS"), only set for present days. */
+  entry_time: string | null;
+  exit_time: string | null;
+};
 
 /** A staff member's salary picture for one month — the breakdown + paid status. */
 export type StaffSalaryRow = {
@@ -53,8 +59,19 @@ export type StaffSalaryRow = {
   paymentNote: string | null;
 };
 
-/** A staff member's salary for one month, with that month's advances listed. */
-export type StaffSalaryDetail = StaffSalaryRow & { advances: SalaryAdvance[] };
+/** One marked attendance day in a month, with optional in/out times. */
+export type AttendanceLogRow = {
+  date: string;
+  status: StaffAttendanceStatus;
+  entry_time: string | null;
+  exit_time: string | null;
+};
+
+/** A staff member's salary for one month, with that month's advances + attendance. */
+export type StaffSalaryDetail = StaffSalaryRow & {
+  advances: SalaryAdvance[];
+  attendance: AttendanceLogRow[];
+};
 
 export type WarehouseStock = Views["warehouse_stock"]["Row"];
 
@@ -100,20 +117,27 @@ export type OrderListView = Pick<
   "id" | "order_no" | "created_at" | "total" | "amount_paid" | "balance_due" | "payment_type" | "status" | "due_date"
 > & { customer: { name_en: string; name_ur: string | null } | null };
 
-/** A supplier order row for the list, with supplier name + item names resolved. */
+/** A supplier order row for the list, with the distinct supplier names + item names. */
 export type SupplierOrderListView = Pick<
   SupplierOrder,
   "id" | "order_no" | "created_at" | "status" | "received_at"
-> & { supplier: { name: string } | null; item_count: number; items: ItemNamePair[] };
+> & { suppliers: string[]; item_count: number; items: ItemNamePair[] };
 
 /** An item aggregated across a supplier's orders — "what we usually buy here". */
 export type SupplierFrequentItem = { item: ItemNamePair; total: number };
 
-/** One line of a supplier order, flattened for display (with the item's cover image). */
+/**
+ * One line of a supplier order, flattened for display. Carries its own supplier
+ * and how much was received (null = not tallied yet) plus the item's cover image.
+ */
 export type SupplierOrderLineView = {
+  id: string;
+  item_id: string | null;
   quantity: number;
+  received_quantity: number | null;
   unit: string;
   note: string | null;
+  supplier: { id: string; name: string } | null;
   item: (ItemNamePair & { image_url: string | null }) | null;
 };
 
@@ -122,7 +146,6 @@ export type SupplierOrderDetailView = Pick<
   SupplierOrder,
   "id" | "order_no" | "created_at" | "status" | "received_at" | "note" | "bill_url"
 > & {
-  supplier: { name: string; phone: string | null; note: string | null } | null;
   lines: SupplierOrderLineView[];
 };
 
@@ -137,6 +160,7 @@ export type OrderReceiptView = Pick<
   | "balance_due"
   | "payment_type"
   | "due_date"
+  | "internal_note"
 > & {
   customer: { name_en: string; name_ur: string | null; phone: string | null } | null;
   lines: OrderLineView[];

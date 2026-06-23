@@ -12,6 +12,7 @@ import {
   createKhata,
   createReminder,
   deleteKhata,
+  fulfillKhatas,
   getKhataReminders,
   listKhatas,
   setKhataStatus,
@@ -102,6 +103,15 @@ export function useDeleteKhata() {
   const invalidate = useInvalidateKhata();
   return useMutation({
     mutationFn: async (id: string) => deleteKhata(await getAccessToken(), id),
+    onSuccess: invalidate,
+  });
+}
+
+/** Mark every pending entry of a customer fulfilled in one call ("Settle all"). */
+export function useSettleAllKhata() {
+  const invalidate = useInvalidateKhata();
+  return useMutation({
+    mutationFn: async (ids: string[]) => fulfillKhatas(await getAccessToken(), ids),
     onSuccess: invalidate,
   });
 }

@@ -119,6 +119,16 @@ export function ReceiptDialog({ payload, onClose }: DialogComponentProps<Receipt
               )}
             </div>
 
+            {/* Internal note — staff-only, never printed */}
+            {receipt.internal_note && (
+              <div className="no-print space-y-1 rounded-lg border border-border bg-secondary/40 p-3">
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {t("orders.internalNoteLabel")}
+                </p>
+                <p className="whitespace-pre-wrap text-sm">{receipt.internal_note}</p>
+              </div>
+            )}
+
             {/* Actions (hidden in print) */}
             <div className="no-print flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={onClose}>

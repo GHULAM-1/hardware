@@ -24,7 +24,10 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       className={cn(
-        "bg-game-purple text-white [&_tr]:border-0",
+        // Purple is set on the header CELLS (th) below — th paints above the row, so
+        // the body row's hover/selected tint can't bleed onto the header. Keep the
+        // header row transparent and immune to those states here.
+        "bg-game-purple text-white [&_tr]:border-0 [&_tr]:bg-transparent! [&_tr:hover]:bg-transparent!",
         className,
       )}
       {...props}
@@ -73,7 +76,8 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-11 px-3 text-start align-middle font-bold whitespace-nowrap text-white [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        // Solid purple on the cell itself so nothing (row hover/selected) can cover it.
+        "h-11 bg-[var(--purple)] px-3 text-start align-middle font-bold whitespace-nowrap text-white [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}

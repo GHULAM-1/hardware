@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
-import type { SupplierOrderReceiveValues, SupplierOrderValues } from "@/lib/schemas";
+import type { SupplierOrderTallyValues, SupplierOrderValues } from "@/lib/schemas";
 import {
   createSupplierOrder,
   deleteSupplierOrder,
@@ -12,7 +12,8 @@ import {
   getSupplierOrder,
   listSupplierOrders,
   listSupplierOrdersBySupplier,
-  markSupplierOrderReceived,
+  saveSupplierOrderTally,
+  updateSupplierOrder,
   updateSupplierOrderBill,
 } from "@/server/actions/supplier-orders";
 
@@ -56,11 +57,20 @@ export function useCreateSupplierOrder() {
   });
 }
 
-export function useMarkSupplierOrderReceived() {
+export function useUpdateSupplierOrder() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (args: { id: string; values: SupplierOrderReceiveValues }) =>
-      markSupplierOrderReceived(await getAccessToken(), args.id, args.values),
+    mutationFn: async (args: { id: string; values: SupplierOrderValues }) =>
+      updateSupplierOrder(await getAccessToken(), args.id, args.values),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["supplier-orders"] }),
+  });
+}
+
+export function useSaveSupplierOrderTally() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { id: string; values: SupplierOrderTallyValues }) =>
+      saveSupplierOrderTally(await getAccessToken(), args.id, args.values),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["supplier-orders"] }),
   });
 }

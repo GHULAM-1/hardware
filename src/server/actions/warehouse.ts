@@ -2,6 +2,7 @@
 
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
+import { StockEntryType } from "@/lib/enums";
 import { stockEntrySchema, type StockEntryValues } from "@/lib/schemas";
 import { searchTokens } from "@/lib/search";
 import type { ItemWithStock, StockEntry, StockEntryWithSupplier } from "@/types/models";
@@ -72,6 +73,37 @@ export async function updateStockEntry(
   return runQuery(accessToken, (c) =>
     c.from("stock_entries").update(data).eq("id", id).select("*").single(),
   );
+}
+
+/**
+ * Update the buying price (and supplier) on the item's most recent stock-in
+ * entry. Lets the admin correct the current supplier cost from the edit-item
+ * dialog without recording a stock movement. No-op if the item has no stock-in.
+ */
+export async function setLatestBuyingPrice(
+  accessToken: string,
+  itemId: string,
+  buyingPrice: number,
+  supplierId: string | null,
+): Promise<void> {
+  const client = createActionClient(accessToken);
+  const { data: latest, error } = await client
+    .from("stock_entries")
+    .select("id")
+    .eq("item_id", itemId)
+    .eq("type", StockEntryType.In)
+    .order("entry_date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  const id = latest?.[0]?.id;
+  if (!id) return;
+
+  const { error: e2 } = await client
+    .from("stock_entries")
+    .update({ buying_price: buyingPrice, supplier_id: supplierId })
+    .eq("id", id);
+  if (e2) throw new Error(e2.message);
 }
 
 export async function deleteStockEntry(accessToken: string, id: string): Promise<null> {

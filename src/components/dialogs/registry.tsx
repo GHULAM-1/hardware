@@ -16,6 +16,7 @@ import { ReceiptDialog } from "@/components/dialogs/receipt-dialog";
 import { OrderEditDialog } from "@/components/dialogs/order-edit-dialog";
 import { KhataFormDialog } from "@/components/forms/khata-form-dialog";
 import { KhataDetailDialog } from "@/components/dialogs/khata-detail-dialog";
+import { CustomerKhataDialog } from "@/components/dialogs/customer-khata-dialog";
 import { SupplierOrderFormDialog } from "@/components/dialogs/supplier-order-form-dialog";
 import { SupplierOrderDetailDialog } from "@/components/dialogs/supplier-order-detail-dialog";
 import { StaffFormDialog } from "@/components/forms/staff-form-dialog";
@@ -47,6 +48,7 @@ export const dialogRegistry: DialogRegistry = {
   [DialogKey.OrderEdit]: OrderEditDialog,
   [DialogKey.KhataForm]: KhataFormDialog,
   [DialogKey.KhataDetail]: KhataDetailDialog,
+  [DialogKey.CustomerKhata]: CustomerKhataDialog,
   [DialogKey.SupplierOrderForm]: SupplierOrderFormDialog,
   [DialogKey.SupplierOrderDetail]: SupplierOrderDetailDialog,
   [DialogKey.StaffForm]: StaffFormDialog,

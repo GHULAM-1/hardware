@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
+import { StatusBadge } from "@/components/common/status-badge";
 import type { Customer } from "@/types/models";
 
 export default function CustomersPage() {
@@ -33,9 +34,12 @@ export default function CustomersPage() {
       key: "name",
       header: t("fields.name"),
       cell: (row) => (
-        <span className="font-medium text-primary underline-offset-2 hover:underline">
-          {displayName(row, language)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-primary underline-offset-2 hover:underline">
+            {displayName(row, language)}
+          </span>
+          {row.is_blacklisted && <StatusBadge tone="danger" label={t("customers.blacklisted")} />}
+        </div>
       ),
     },
     { key: "phone", header: t("fields.phone"), cell: (row) => (row.phone ? <span dir="ltr">{row.phone}</span> : "—") },
