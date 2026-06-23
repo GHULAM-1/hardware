@@ -4,6 +4,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "items": "Items",
     "pricing": "Pricing",
     "warehouse": "Warehouse",
     "customers": "Customers",
@@ -30,6 +31,9 @@
     "delete": "Delete",
     "save": "Save",
     "cancel": "Cancel",
+    "discard": "Discard",
+    "discardTitle": "Discard changes?",
+    "discardDescription": "You have unsaved changes. If you close now, they'll be lost.",
     "create": "Create",
     "search": "Search",
     "searchPlaceholder": "Search…",
@@ -71,6 +75,8 @@
     "sku": "SKU",
     "unit": "Unit",
     "selectUnit": "Select unit",
+    "measurementType": "Measured by",
+    "primaryUnit": "Unit",
     "category": "Category",
     "sellingPrice": "Selling price",
     "buyingPrice": "Buying price",
@@ -102,9 +108,29 @@
     "itemInUse": "Used in orders — can't be deleted",
     "itemDetail": "Item details"
   },
+  "items": {
+    "title": "Items",
+    "subtitle": "All products and their selling prices (PKR)",
+    "trackInWarehouse": "Track in warehouse",
+    "trackInWarehouseHint": "Turn on to manage stock in/out for this item in the Warehouse screen.",
+    "tracked": "In warehouse",
+    "notTracked": "Not tracked",
+    "piecesPerPrimary": "How many {{base}} in one {{primary}}?",
+    "lowStockAlert": "Low-stock alert ({{unit}})",
+    "initialStock": "Initial stock (optional)",
+    "initialStockHint": "Record your first purchase. Adding a quantity turns on warehouse tracking.",
+    "addStockHint": "Your last supplier and price are prefilled — enter a quantity to record a new purchase. Adding a quantity turns on warehouse tracking.",
+    "currentStockHint": "Change the quantity to set the item's current stock. Supplier and last buying price are prefilled."
+  },
+  "measurement": {
+    "count": "Count",
+    "weight": "Weight",
+    "length": "Length"
+  },
   "warehouse": {
     "title": "Warehouse",
-    "subtitle": "Products, stock levels and prices",
+    "subtitle": "Stock in/out for tracked items",
+    "emptyTracked": "No items are tracked here yet. On the Items screen, turn on \"Track in warehouse\" for the items you want to manage stock for.",
     "currentStock": "Current stock",
     "stockIn": "Stock in",
     "stockOut": "Stock out",
@@ -190,6 +216,7 @@
   "khata": {
     "title": "Khata",
     "newEntry": "New khata",
+    "editEntry": "Edit khata",
     "newReminder": "New reminder",
     "reminderNote": "Reminder",
     "markFulfilled": "Mark fulfilled",
@@ -284,7 +311,9 @@
   },
   "units": {
     "pcs": "Pieces (pcs)",
+    "piece": "Piece",
     "dozen": "Dozen",
+    "carton": "Carton",
     "pair": "Pair",
     "set": "Set",
     "box": "Box",
@@ -295,12 +324,17 @@
     "sheet": "Sheet",
     "kg": "Kilogram (kg)",
     "g": "Gram (g)",
+    "gram": "Gram (g)",
+    "ton": "Ton",
     "liter": "Liter (L)",
     "ml": "Milliliter (ml)",
     "meter": "Meter (m)",
     "cm": "Centimeter (cm)",
+    "mm": "Millimeter (mm)",
     "ft": "Foot (ft)",
-    "in": "Inch (in)"
+    "foot": "Foot (ft)",
+    "in": "Inch (in)",
+    "inch": "Inch (in)"
   },
   "settings": {
     "title": "Settings",

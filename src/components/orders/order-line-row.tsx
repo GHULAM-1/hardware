@@ -7,9 +7,17 @@ import { ItemCombobox } from "@/components/common/item-combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Money } from "@/components/common/money";
 import { useLastItemPrice } from "@/hooks/use-orders";
 import { formatPKR } from "@/lib/format";
+import { saleUnitOptions, unitSellingPrice } from "@/lib/units";
 import { lineTotal, type LineDraft } from "@/components/orders/order-form-types";
 
 export function OrderLineRow({
@@ -28,6 +36,16 @@ export function OrderLineRow({
   const { t } = useTranslation();
   const { data: lastPrice } = useLastItemPrice(customerId, line.item?.id ?? null);
 
+  // Units this item can be sold in (box vs piece for count packs; primary only otherwise).
+  const unitOptions = line.item ? saleUnitOptions(line.item) : [];
+  const canChooseUnit = unitOptions.length > 1;
+
+  function pickUnit(unit: string) {
+    if (!line.item) return;
+    // Switching sale unit re-prefills its price (admin can still override below).
+    onChange({ ...line, unit, selling_price: String(unitSellingPrice(line.item, unit)) });
+  }
+
   return (
     <div className="min-w-0 space-y-3 rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between">
@@ -37,21 +55,22 @@ export function OrderLineRow({
         </Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
-        <div className="min-w-0 space-y-1.5">
-          <Label>{t("fields.item")}</Label>
-          <ItemCombobox
-            value={line.item?.id ?? null}
-            onSelect={(item) =>
-              onChange({
-                ...line,
-                item,
-                unit: item?.unit ?? line.unit,
-                selling_price: item ? String(item.selling_price) : line.selling_price,
-              })
-            }
-          />
-        </div>
+      <div className="min-w-0 space-y-1.5">
+        <Label>{t("fields.item")}</Label>
+        <ItemCombobox
+          value={line.item?.id ?? null}
+          onSelect={(item) =>
+            onChange({
+              ...line,
+              item,
+              unit: item?.primary_unit ?? line.unit,
+              selling_price: item ? String(item.selling_price) : line.selling_price,
+            })
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label>{t("fields.quantity")}</Label>
           <Input
@@ -62,6 +81,25 @@ export function OrderLineRow({
             value={line.quantity}
             onChange={(e) => onChange({ ...line, quantity: e.target.value })}
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t("fields.unit")}</Label>
+          {canChooseUnit ? (
+            <Select value={line.unit || undefined} onValueChange={pickUnit}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t("fields.selectUnit")} />
+              </SelectTrigger>
+              <SelectContent>
+                {unitOptions.map((o) => (
+                  <SelectItem key={o.unit} value={o.unit}>
+                    {t(`units.${o.unit}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input value={line.unit ? t(`units.${line.unit}`) : ""} readOnly dir="auto" tabIndex={-1} />
+          )}
         </div>
         <div className="space-y-1.5">
           <Label>{t("fields.sellingPrice")}</Label>

@@ -18,5 +18,5 @@ export function newLine(): SupplierOrderLineDraft {
 
 /** Build a line from an item (used by the "add low-stock items" seed). */
 export function lineFromItem(item: Item): SupplierOrderLineDraft {
-  return { key: nextKey(), item, quantity: "1", unit: item.unit, note: "" };
+  return { key: nextKey(), item, quantity: "1", unit: item.primary_unit, note: "" };
 }

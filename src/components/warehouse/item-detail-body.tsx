@@ -8,7 +8,8 @@ import { useItemSuppliers } from "@/hooks/use-suppliers";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { StockEntryType } from "@/lib/enums";
 import { DialogKey } from "@/lib/dialog-keys";
-import { formatNumber, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { formatQuantity } from "@/lib/units";
 import { Money } from "@/components/common/money";
 import { ZoomableImage } from "@/components/common/zoomable-image";
 import { StatusBadge } from "@/components/common/status-badge";
@@ -88,10 +89,10 @@ export function ItemDetailBody({ item }: { item: Item }) {
           {stockLoading ? (
             <Skeleton className="h-4 w-16" />
           ) : (
-            `${formatNumber(stock ?? 0)} ${t(`units.${item.unit}`)}`
+            formatQuantity(item, stock ?? 0, (k) => t(`units.${k}`))
           )}
         </Field>
-        <Field label={t("fields.unit")}>{t(`units.${item.unit}`)}</Field>
+        <Field label={t("fields.unit")}>{t(`units.${item.primary_unit}`)}</Field>
         <Field label={t("fields.sellingPrice")}>
           <Money value={item.selling_price} />
         </Field>
@@ -138,7 +139,7 @@ export function ItemDetailBody({ item }: { item: Item }) {
                   />
                   <span dir="ltr" className="font-medium tabular-nums">
                     {e.type === StockEntryType.In ? "+" : "−"}
-                    {Number(e.quantity)}
+                    {formatQuantity(item, Number(e.quantity), (k) => t(`units.${k}`))}
                   </span>
                 </span>
               </li>

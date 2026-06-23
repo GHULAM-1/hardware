@@ -2,18 +2,17 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Boxes } from "lucide-react";
 
 import { useItemsWithStock } from "@/hooks/use-warehouse";
-import { useDeleteItem, useUsedItemIds } from "@/hooks/use-items";
+import { useDeleteItem, useSetWarehouseTracking, useUsedItemIds } from "@/hooks/use-items";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useLanguage } from "@/providers/i18n-provider";
+import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
-import { stockMeta } from "@/lib/status-meta";
-import { formatQuantity, thresholdBase } from "@/lib/units";
+import { formatQuantity } from "@/lib/units";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
@@ -21,32 +20,27 @@ import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Money } from "@/components/common/money";
-import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { ItemDetailBody } from "@/components/warehouse/item-detail-body";
 import type { ItemWithStock } from "@/types/models";
 
-export default function WarehousePage() {
+export default function ItemsPage() {
   const { t } = useTranslation();
   const { language } = useLanguage();
   const { openDialog } = useDialogManager();
   const confirmDelete = useConfirmDelete();
+  const isSuperAdmin = useIsSuperAdmin();
   const deleteItem = useDeleteItem();
+  const setTracking = useSetWarehouseTracking();
 
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
-  const { data: allItems = [], isLoading } = useItemsWithStock(debounced);
+  const { data: items = [], isLoading } = useItemsWithStock(debounced);
   const { data: usedItemIds } = useUsedItemIds();
 
-  // The warehouse only manages items opted-in via the Items screen. Untracked
-  // items keep their stock entries (and last quantity) but live in Items only.
-  const items = React.useMemo(
-    () => allItems.filter((i) => i.track_in_warehouse),
-    [allItems],
-  );
-
-  // Desktop shows a master-detail side panel; the first row is selected by default.
-  // Mobile keeps the tap-to-open detail dialog.
+  // Desktop shows a master-detail side panel (first row selected by default);
+  // mobile keeps the tap-to-open detail dialog. Mirrors the Warehouse screen.
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const selected = items.find((i) => i.id === selectedId) ?? items[0];
 
@@ -71,10 +65,18 @@ export default function WarehousePage() {
     {
       key: "name",
       header: t("fields.name"),
+      // Row click opens the edit dialog for super-admins (see onRowClick below) —
+      // no wrapping <button> here, since ImageThumb already renders its own button.
       cell: (row) => (
         <div className="flex items-center gap-3">
           <ImageThumb src={row.image_urls?.[0] ?? row.image_url} alt={row.name_en} />
-          <span className="font-medium text-primary underline-offset-2 hover:underline">
+          <span
+            className={
+              isSuperAdmin
+                ? "font-medium text-primary underline-offset-2 hover:underline"
+                : "font-medium"
+            }
+          >
             {displayName(row, language)}
           </span>
         </div>
@@ -95,14 +97,8 @@ export default function WarehousePage() {
           {formatQuantity(row, row.quantity, (k) => t(`units.${k}`))}
         </span>
       ),
-    },
-    {
-      key: "status",
-      header: t("fields.status"),
-      cell: (row) => {
-        const m = stockMeta(row.quantity, thresholdBase(row));
-        return <StatusBadge tone={m.tone} label={t(m.labelKey)} />;
-      },
+      className: "hidden sm:table-cell",
+      headerClassName: "hidden sm:table-cell",
     },
     {
       key: "price",
@@ -112,53 +108,68 @@ export default function WarehousePage() {
       headerClassName: "text-end",
     },
     {
-      key: "actions",
-      header: "",
-      headerClassName: "w-px",
-      cell: (row) => (
-        <div
-          className="flex shrink-0 items-center justify-end gap-1 whitespace-nowrap"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => openDialog(DialogKey.StockEntryForm, { item: row })}
-          >
-            <Boxes className="me-1 h-4 w-4" />
-            {t("warehouse.manageStock")}
-          </Button>
-          <RowActions
-            onEdit={() => openDialog(DialogKey.ItemForm, { item: row })}
-            deleteDisabled={usedItemIds?.has(row.id)}
-            deleteDisabledReason={t("pricing.itemInUse")}
-            onDelete={() =>
-              confirmDelete({
-                title: t("common.delete"),
-                description: displayName(row, language),
-                onConfirm: () => deleteItem.mutateAsync(row.id),
-              })
-            }
-          />
-        </div>
-      ),
+      key: "warehouse",
+      header: t("items.trackInWarehouse"),
+      headerClassName: "text-center",
+      cell: (row) =>
+        isSuperAdmin ? (
+          <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+            <Switch
+              checked={row.track_in_warehouse}
+              disabled={setTracking.isPending && setTracking.variables?.id === row.id}
+              onCheckedChange={(track) => setTracking.mutate({ id: row.id, track })}
+              aria-label={t("items.trackInWarehouse")}
+            />
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <StatusBadge
+              tone={row.track_in_warehouse ? "success" : "muted"}
+              label={t(row.track_in_warehouse ? "items.tracked" : "items.notTracked")}
+            />
+          </div>
+        ),
     },
+    ...(isSuperAdmin
+      ? [
+          {
+            key: "actions",
+            header: "",
+            headerClassName: "w-px",
+            cell: (row: ItemWithStock) => (
+              <div
+                className="flex shrink-0 items-center justify-end gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <RowActions
+                  onEdit={() => openDialog(DialogKey.ItemForm, { item: row })}
+                  deleteDisabled={usedItemIds?.has(row.id)}
+                  deleteDisabledReason={t("pricing.itemInUse")}
+                  onDelete={() =>
+                    confirmDelete({
+                      title: t("common.delete"),
+                      description: displayName(row, language),
+                      onConfirm: () => deleteItem.mutateAsync(row.id),
+                    })
+                  }
+                />
+              </div>
+            ),
+          } as Column<ItemWithStock>,
+        ]
+      : []),
   ];
 
   return (
     <div>
-      <PageHeader title={t("warehouse.title")} subtitle={t("warehouse.subtitle")} />
+      <PageHeader title={t("items.title")} subtitle={t("items.subtitle")} />
       <ListToolbar
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder={t("pricing.searchItems")}
+        onNew={isSuperAdmin ? () => openDialog(DialogKey.ItemCreate, null) : undefined}
+        newLabel={t("pricing.newItem")}
       />
-      {!isLoading && items.length === 0 && !debounced && (
-        <Card className="mb-4 p-6 text-center text-sm text-muted-foreground">
-          {t("warehouse.emptyTracked")}
-        </Card>
-      )}
       <div className="flex gap-4">
         <div className="min-w-0 flex-1">
           <DataTable

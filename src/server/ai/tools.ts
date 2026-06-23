@@ -24,7 +24,7 @@ import {
   getPaymentBreakdown,
 } from "@/server/actions/dashboard";
 import { KhataStatus } from "@/lib/enums";
-import { LOW_STOCK_THRESHOLD } from "@/lib/status-meta";
+import { fromBase, thresholdBase } from "@/lib/units";
 import { ASSISTANT_ROUTES } from "@/types/assistant";
 
 /**
@@ -99,7 +99,7 @@ export function buildTools(accessToken: string, isSuperAdmin: boolean) {
           sku: i.sku,
           name_en: i.name_en,
           name_ur: i.name_ur,
-          unit: i.unit,
+          unit: i.primary_unit,
           selling_price: i.selling_price,
         }));
       },
@@ -116,8 +116,11 @@ export function buildTools(accessToken: string, isSuperAdmin: boolean) {
           found: true,
           name_en: found.name_en,
           name_ur: found.name_ur,
-          unit: found.unit,
-          quantity: found.quantity,
+          // Report in the item's primary unit (quantity is stored in base units).
+          primary_unit: found.primary_unit,
+          quantity_primary: fromBase(found.quantity, found.base_per_primary),
+          base_unit: found.base_unit,
+          quantity_base: found.quantity,
         };
       },
     }),
@@ -207,13 +210,17 @@ export function buildTools(accessToken: string, isSuperAdmin: boolean) {
       execute: async () => {
         const items = await listItemsWithStock(accessToken);
         return items
-          .filter((i) => i.quantity <= LOW_STOCK_THRESHOLD)
+          .filter((i) => {
+            if (!i.track_in_warehouse) return false;
+            const tBase = thresholdBase(i);
+            return i.quantity <= 0 || (tBase != null && i.quantity <= tBase);
+          })
           .map((i) => ({
             id: i.id,
             name_en: i.name_en,
             name_ur: i.name_ur,
-            unit: i.unit,
-            quantity: i.quantity,
+            primary_unit: i.primary_unit,
+            quantity_primary: fromBase(i.quantity, i.base_per_primary),
             state: i.quantity <= 0 ? "out_of_stock" : "low_stock",
           }));
       },

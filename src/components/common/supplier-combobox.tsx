@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useSuppliers, useCreateSupplier } from "@/hooks/use-suppliers";
+import { useSuppliers, useItemSuppliers, useCreateSupplier } from "@/hooks/use-suppliers";
 import { DUPLICATE_PHONE } from "@/lib/errors";
 import { isPkPhone } from "@/lib/schemas";
 
@@ -35,23 +35,41 @@ export function SupplierCombobox({
   onChange,
   disabled,
   allowCreate = true,
+  itemId,
 }: {
   value: string | null;
   onChange: (value: string | null, option?: ComboboxOption) => void;
   disabled?: boolean;
   allowCreate?: boolean;
+  /**
+   * When set, the list is scoped to suppliers already associated with this item
+   * (its stock-in history) instead of all suppliers. Inline "+ add" still works —
+   * a new supplier is selectable immediately and associates on the next stock-in.
+   */
+  itemId?: string | null;
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
-  const { data = [], isLoading } = useSuppliers(debounced);
+  const scoped = itemId != null;
+  const allSuppliers = useSuppliers(debounced);
+  const itemSuppliers = useItemSuppliers(scoped ? itemId : null);
+  const source = scoped ? itemSuppliers : allSuppliers;
+  const data = source.data ?? [];
+  const isLoading = source.isLoading;
   const create = useCreateSupplier();
 
   // Inline create dialog state. `draftName` non-null = dialog open.
   const [draftName, setDraftName] = React.useState<string | null>(null);
   const [phone, setPhone] = React.useState("");
+  // Suppliers created inline this session — kept so they show + stay selectable
+  // even before they appear in the (scoped) item-supplier list.
+  const [created, setCreated] = React.useState<ComboboxOption[]>([]);
 
   const options: ComboboxOption[] = data.map((s) => ({ value: s.id, label: s.name }));
+  for (const c of created) {
+    if (!options.some((o) => o.value === c.value)) options.push(c);
+  }
 
   async function submitCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -72,6 +90,7 @@ export function SupplierCombobox({
         shop_name: null,
         address: null,
       });
+      setCreated((c) => [...c, { value: s.id, label: s.name }]);
       onChange(s.id, { value: s.id, label: s.name });
       setDraftName(null);
       setPhone("");
@@ -90,7 +109,7 @@ export function SupplierCombobox({
         options={options}
         value={value}
         onChange={onChange}
-        onSearchChange={setSearch}
+        onSearchChange={scoped ? undefined : setSearch}
         loading={isLoading}
         disabled={disabled}
         placeholder={t("fields.supplier")}

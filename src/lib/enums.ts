@@ -47,6 +47,18 @@ export const StaffAttendanceStatus = {
 } as const;
 export type StaffAttendanceStatus = (typeof StaffAttendanceStatus)[keyof typeof StaffAttendanceStatus];
 
+/**
+ * How an item is measured. Drives the unit model: each type stores quantity in a
+ * canonical base unit (piece / gram / mm) and converts to the admin's chosen
+ * primary unit for entry + display. See @/lib/units.
+ */
+export const MeasurementType = {
+  Count: "count",
+  Weight: "weight",
+  Length: "length",
+} as const;
+export type MeasurementType = (typeof MeasurementType)[keyof typeof MeasurementType];
+
 /** Supported UI languages (Module 7). */
 export const Language = {
   English: "en",

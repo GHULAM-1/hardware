@@ -1,0 +1,177 @@
+"use client";
+
+import * as React from "react";
+import { useTranslation } from "react-i18next";
+
+import { SupplierCombobox } from "@/components/common/supplier-combobox";
+import { DatePicker } from "@/components/common/date-picker";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { StockEntryType } from "@/lib/enums";
+import { stockEntrySchema } from "@/lib/schemas";
+import { todayISO } from "@/lib/format";
+import { toBase } from "@/lib/units";
+import { useCreateStockEntry } from "@/hooks/use-warehouse";
+
+/**
+ * Optional "record a purchase" section shared by the create + edit item dialogs:
+ * supplier (with inline "+ add new supplier") + quantity (primary unit) + buying
+ * price (per primary unit) + date. `useStockIn` owns the local state and commits a
+ * stock-in entry; `StockInFields` renders the inputs. Recording stock implies the
+ * item is warehouse-managed (see `hasStock`).
+ */
+type StockSeed = { supplierId: string | null; buyingPrice: string; qty: string };
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
+export function useStockIn(seed?: StockSeed) {
+  const [supplierId, setSupplierId] = React.useState<string | null>(seed?.supplierId ?? null);
+  const [qty, setQty] = React.useState(seed?.qty ?? "");
+  const [buyingPrice, setBuyingPrice] = React.useState(seed?.buyingPrice ?? "");
+  const [date, setDate] = React.useState(todayISO());
+  const createStock = useCreateStockEntry();
+
+  // Seed supplier + price + current quantity from the item's stock (edit mode).
+  // Seeds once, when the data first arrives, and tracks the baseline so prefilled
+  // values don't count as edits (no false discard prompt / no-op commit).
+  const [baseline, setBaseline] = React.useState<StockSeed>(
+    seed ?? { supplierId: null, buyingPrice: "", qty: "" },
+  );
+  const seeded = React.useRef(Boolean(seed));
+  React.useEffect(() => {
+    if (!seed || seeded.current) return;
+    seeded.current = true;
+    setBaseline(seed);
+    setSupplierId(seed.supplierId);
+    setBuyingPrice(seed.buyingPrice);
+    setQty(seed.qty);
+  }, [seed]);
+
+  const dirty =
+    supplierId !== baseline.supplierId ||
+    buyingPrice !== baseline.buyingPrice ||
+    qty !== baseline.qty;
+  const hasStock = Number(qty) > 0;
+
+  /** Create-mode: record a purchase that ADDS `qty` to stock. */
+  const commitAdd = React.useCallback(
+    async (itemId: string, basePerPrimary: number) => {
+      if (Number(qty) <= 0) return;
+      const entry = stockEntrySchema.parse({
+        item_id: itemId,
+        type: StockEntryType.In,
+        quantity: toBase(Number(qty), basePerPrimary),
+        supplier_id: supplierId,
+        buying_price: buyingPrice === "" ? null : Number(buyingPrice),
+        note: null,
+        entry_date: date,
+      });
+      await createStock.mutateAsync(entry);
+    },
+    [qty, supplierId, buyingPrice, date, createStock],
+  );
+
+  /**
+   * Edit-mode: SET stock to the entered quantity. Writes one balancing adjustment
+   * entry equal to (target − current) — in if higher, out if lower — so the derived
+   * total becomes exactly what was typed, without losing history.
+   */
+  const commitSet = React.useCallback(
+    async (itemId: string, basePerPrimary: number, currentBase: number) => {
+      if (qty.trim() === "") return;
+      const target = toBase(Number(qty), basePerPrimary);
+      const delta = round2(target - currentBase);
+      if (delta === 0) return;
+      const increase = delta > 0;
+      const entry = stockEntrySchema.parse({
+        item_id: itemId,
+        type: increase ? StockEntryType.In : StockEntryType.Out,
+        quantity: Math.abs(delta),
+        supplier_id: increase ? supplierId : null,
+        buying_price: increase && buyingPrice !== "" ? Number(buyingPrice) : null,
+        note: null,
+        entry_date: date,
+      });
+      await createStock.mutateAsync(entry);
+    },
+    [qty, supplierId, buyingPrice, date, createStock],
+  );
+
+  return {
+    supplierId,
+    setSupplierId,
+    qty,
+    setQty,
+    buyingPrice,
+    setBuyingPrice,
+    date,
+    setDate,
+    dirty,
+    hasStock,
+    committing: createStock.isPending,
+    commitAdd,
+    commitSet,
+  };
+}
+
+export type StockInController = ReturnType<typeof useStockIn>;
+
+export function StockInFields({
+  stock,
+  unitLabel,
+  title,
+  hint,
+}: {
+  stock: StockInController;
+  unitLabel: string;
+  title: string;
+  hint: string;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4">
+      <div className="space-y-0.5">
+        <Label>{title}</Label>
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">{t("fields.supplier")}</Label>
+        <SupplierCombobox value={stock.supplierId} onChange={(v) => stock.setSupplierId(v)} />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">
+            {t("fields.quantity")}
+            {unitLabel ? ` (${unitLabel})` : ""}
+          </Label>
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            dir="ltr"
+            value={stock.qty}
+            onChange={(e) => stock.setQty(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">
+            {t("fields.buyingPrice")}
+            {unitLabel ? ` (PKR / ${unitLabel})` : " (PKR)"}
+          </Label>
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            dir="ltr"
+            value={stock.buyingPrice}
+            onChange={(e) => stock.setBuyingPrice(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">{t("fields.date")}</Label>
+        <DatePicker value={stock.date} onChange={stock.setDate} />
+      </div>
+    </div>
+  );
+}

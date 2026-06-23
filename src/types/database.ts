@@ -130,43 +130,58 @@ export type Database = {
       }
       items: {
         Row: {
+          base_per_primary: number
+          base_unit: string
           category_id: string | null
           created_at: string
           id: string
           image_url: string | null
           image_urls: string[]
+          low_stock_threshold: number | null
+          measurement_type: Database["public"]["Enums"]["measurement_type"]
           name_en: string
           name_ur: string | null
+          primary_unit: string
           search_norm: string | null
           selling_price: number
           sku: string
-          unit: string
+          track_in_warehouse: boolean
           updated_at: string
         }
         Insert: {
+          base_per_primary?: number
+          base_unit?: string
           category_id?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
           image_urls?: string[]
+          low_stock_threshold?: number | null
+          measurement_type?: Database["public"]["Enums"]["measurement_type"]
           name_en: string
           name_ur?: string | null
+          primary_unit?: string
           selling_price?: number
           sku?: string
-          unit?: string
+          track_in_warehouse?: boolean
           updated_at?: string
         }
         Update: {
+          base_per_primary?: number
+          base_unit?: string
           category_id?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
           image_urls?: string[]
+          low_stock_threshold?: number | null
+          measurement_type?: Database["public"]["Enums"]["measurement_type"]
           name_en?: string
           name_ur?: string | null
+          primary_unit?: string
           selling_price?: number
           sku?: string
-          unit?: string
+          track_in_warehouse?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -873,6 +888,7 @@ export type Database = {
     }
     Enums: {
       khata_status: "pending" | "fulfilled"
+      measurement_type: "count" | "weight" | "length"
       order_status: "draft" | "completed" | "cancelled"
       payment_type: "cash" | "partial" | "credit"
       staff_attendance_status: "present" | "absent"
@@ -1007,6 +1023,7 @@ export const Constants = {
   public: {
     Enums: {
       khata_status: ["pending", "fulfilled"],
+      measurement_type: ["count", "weight", "length"],
       order_status: ["draft", "completed", "cancelled"],
       payment_type: ["cash", "partial", "credit"],
       staff_attendance_status: ["present", "absent"],

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Check, ImageIcon, Loader2, Receipt } from "lucide-react";
+import { Check, ImageIcon, Loader2, Pencil, Receipt } from "lucide-react";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
@@ -105,6 +105,16 @@ export function KhataDetailDialog({ payload, onClose }: DialogComponentProps<Kha
             >
               <Receipt className="me-1 h-4 w-4" />
               {t("khata.viewReceipt")}
+            </Button>
+          ) : null}
+          {isSuperAdmin ? (
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={() => openDialog(DialogKey.KhataForm, { khata })}
+            >
+              <Pencil className="me-1 h-4 w-4" />
+              {t("common.edit")}
             </Button>
           ) : null}
           {isSuperAdmin && isPendingKhata ? (

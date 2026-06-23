@@ -5,7 +5,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { ItemValues } from "@/lib/schemas";
-import { createItem, deleteItem, listItems, listUsedItemIds, updateItem } from "@/server/actions/items";
+import {
+  createItem,
+  deleteItem,
+  listItems,
+  listUsedItemIds,
+  setWarehouseTracking,
+  updateItem,
+} from "@/server/actions/items";
 
 export function useItems(search = "") {
   return useQuery({
@@ -53,6 +60,16 @@ export function useDeleteItem() {
   const invalidate = useInvalidateItems();
   return useMutation({
     mutationFn: async (id: string) => deleteItem(await getAccessToken(), id),
+    onSuccess: invalidate,
+  });
+}
+
+/** Toggle warehouse tracking for an item (Items ⇄ Warehouse). */
+export function useSetWarehouseTracking() {
+  const invalidate = useInvalidateItems();
+  return useMutation({
+    mutationFn: async (args: { id: string; track: boolean }) =>
+      setWarehouseTracking(await getAccessToken(), args.id, args.track),
     onSuccess: invalidate,
   });
 }

@@ -45,7 +45,7 @@ export function SupplierOrderLineRow({
           <ItemCombobox
             value={line.item?.id ?? null}
             onSelect={(item) =>
-              onChange({ ...line, item, unit: item?.unit ?? line.unit })
+              onChange({ ...line, item, unit: item?.primary_unit ?? line.unit })
             }
           />
         </div>

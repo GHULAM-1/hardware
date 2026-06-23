@@ -178,6 +178,14 @@ async function main() {
   console.log(`✅ ${sups.length} suppliers`);
 
   // ── Items ──
+  // Map a seed unit to the measurement model (single source of truth lives on the
+  // item). kg → weight (grams), meter → length (mm), everything else → count.
+  const measurementFor = (unit) => {
+    if (unit === "kg") return { measurement_type: "weight", primary_unit: "kg", base_unit: "gram", base_per_primary: 1000 };
+    if (unit === "meter") return { measurement_type: "length", primary_unit: "meter", base_unit: "mm", base_per_primary: 1000 };
+    return { measurement_type: "count", primary_unit: "piece", base_unit: "piece", base_per_primary: 1 };
+  };
+
   const { data: items, error: ie } = await admin
     .from("items")
     .insert(
@@ -185,8 +193,9 @@ async function main() {
         name_en,
         name_ur,
         category_id: catId.get(cat),
-        unit,
+        ...measurementFor(unit),
         selling_price,
+        track_in_warehouse: true,
       })),
     )
     .select("id, name_en");
@@ -196,7 +205,9 @@ async function main() {
   // ── Stock entries (purchases in, plus a few manual adjustments out) ──
   const stockIn = ITEMS.map((row, idx) => {
     const [, , , unit, , supIdx, buying] = row;
-    const qty = unit === "meter" || unit === "kg" ? 200 : 60;
+    const primaryQty = unit === "meter" || unit === "kg" ? 200 : 60;
+    // stock_entries.quantity is stored in BASE units.
+    const qty = primaryQty * measurementFor(unit).base_per_primary;
     return {
       item_id: items[idx].id,
       supplier_id: sups[supIdx].id,
@@ -216,7 +227,7 @@ async function main() {
     item_id: items[idx].id,
     supplier_id: null,
     type: "out",
-    quantity: qty,
+    quantity: qty * measurementFor(ITEMS[idx][3]).base_per_primary,
     buying_price: null,
     note,
     entry_date: daysFromNow(-7),
@@ -259,7 +270,7 @@ async function main() {
       return {
         item_id: items[itemIdx].id,
         quantity: qty,
-        unit,
+        unit: measurementFor(unit).primary_unit,
         selling_price: selling,
         suppliers: [{ supplier_id: sups[supIdx].id, quantity: qty, buying_price: buying }],
       };

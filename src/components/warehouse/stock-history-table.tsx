@@ -4,18 +4,21 @@ import { useTranslation } from "react-i18next";
 
 import { StockEntryType } from "@/lib/enums";
 import { formatDate } from "@/lib/format";
+import { formatQuantity } from "@/lib/units";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Money } from "@/components/common/money";
 import { RowActions } from "@/components/common/row-actions";
-import type { StockEntryWithSupplier } from "@/types/models";
+import type { ItemWithStock, StockEntryWithSupplier } from "@/types/models";
 
 export function StockHistoryTable({
+  item,
   entries,
   loading,
   onEdit,
   onDelete,
 }: {
+  item: ItemWithStock;
   entries: StockEntryWithSupplier[];
   loading: boolean;
   onEdit: (entry: StockEntryWithSupplier) => void;
@@ -42,7 +45,7 @@ export function StockHistoryTable({
       cell: (r) => (
         <span dir="ltr" className="tabular-nums">
           {r.type === StockEntryType.In ? "+" : "−"}
-          {Number(r.quantity)}
+          {formatQuantity(item, Number(r.quantity), (k) => t(`units.${k}`))}
         </span>
       ),
       className: "text-end",

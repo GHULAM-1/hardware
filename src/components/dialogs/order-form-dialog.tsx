@@ -103,6 +103,7 @@ export function OrderFormDialog({ onClose }: DialogComponentProps<null>) {
       onSubmit={onSubmit}
       submitting={create.isPending}
       submitLabel={t("common.create")}
+      dirty={Boolean(customerId) || lines.some((l) => l.item)}
       widthClassName="w-[calc(100%-2rem)] sm:max-w-3xl"
     >
       <div className="space-y-5">

@@ -26,38 +26,54 @@ import { NumberField, TextareaField } from "@/components/forms/fields";
 import { CustomerCombobox } from "@/components/common/customer-combobox";
 import { DatePicker } from "@/components/common/date-picker";
 import { ImageUpload } from "@/components/common/image-upload";
-import { khataSchema, type KhataValues } from "@/lib/schemas";
+import { khataSchema, khataUpdateSchema, type KhataUpdateValues } from "@/lib/schemas";
 import { todayISO, formatDate, formatPKR } from "@/lib/format";
 import { IMAGE_FOLDER } from "@/lib/storage";
-import { useCreateKhata } from "@/hooks/use-khata";
+import { useCreateKhata, useUpdateKhata } from "@/hooks/use-khata";
 import { useCustomerOrders } from "@/hooks/use-customers";
+import type { KhataListView } from "@/types/models";
 
 // Sentinel for the "no order attached" option (Select can't hold an empty value).
 const NO_ORDER = "__none__";
 
-export function KhataFormDialog({ onClose }: DialogComponentProps<null>) {
+export type KhataFormPayload = { khata?: KhataListView } | null;
+
+export function KhataFormDialog({ payload, onClose }: DialogComponentProps<KhataFormPayload>) {
   const { t } = useTranslation();
+  const khata = payload?.khata;
+  const isEdit = Boolean(khata);
+  // A reminder is a customer-less khata. Only those may submit without a customer;
+  // a real khata keeps the customer required (khataSchema).
+  const isReminder = Boolean(khata) && !khata?.customer;
+
   const create = useCreateKhata();
+  const update = useUpdateKhata();
+  const submitting = create.isPending || update.isPending;
 
   const form = useForm({
-    resolver: zodResolver(khataSchema),
+    resolver: zodResolver(isReminder ? khataUpdateSchema : khataSchema),
     defaultValues: {
-      customer_id: "",
-      amount: 0,
-      due_date: todayISO(),
-      description: "",
-      order_id: null as string | null,
-      proof_url: null as string | null,
+      customer_id: khata?.customer?.id ?? "",
+      amount: khata?.amount ?? 0,
+      due_date: khata?.due_date ?? todayISO(),
+      description: khata?.description ?? "",
+      order_id: (khata?.order_id ?? null) as string | null,
+      proof_url: (khata?.proof_url ?? null) as string | null,
     },
   });
 
   const customerId = useWatch({ control: form.control, name: "customer_id" });
   const { data: orders = [] } = useCustomerOrders(customerId || undefined);
 
-  async function onSubmit(values: KhataValues) {
+  async function onSubmit(values: KhataUpdateValues) {
     try {
-      await create.mutateAsync(values);
-      toast.success(t("toast.created"));
+      if (isEdit && khata) {
+        await update.mutateAsync({ id: khata.id, values });
+        toast.success(t("toast.saved"));
+      } else {
+        await create.mutateAsync(values as Parameters<typeof create.mutateAsync>[0]);
+        toast.success(t("toast.created"));
+      }
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("toast.error"));
@@ -67,11 +83,11 @@ export function KhataFormDialog({ onClose }: DialogComponentProps<null>) {
   return (
     <Form {...form}>
       <FormDialog
-        title={t("khata.newEntry")}
+        title={isEdit ? t("khata.editEntry") : t("khata.newEntry")}
         onClose={onClose}
         onSubmit={form.handleSubmit(onSubmit)}
-        submitting={create.isPending}
-        submitLabel={t("common.create")}
+        submitting={submitting}
+        submitLabel={isEdit ? t("common.save") : t("common.create")}
       >
         <div className="space-y-4">
           <FormField

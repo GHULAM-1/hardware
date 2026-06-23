@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { VoiceInputButton } from "@/components/common/voice-input-button";
 import { supplierOrderSchema } from "@/lib/schemas";
-import { LOW_STOCK_THRESHOLD } from "@/lib/status-meta";
+import { thresholdBase } from "@/lib/units";
 import { useCreateSupplierOrder } from "@/hooks/use-supplier-orders";
 import { useItemsWithStock } from "@/hooks/use-warehouse";
 import {
@@ -37,7 +37,12 @@ export function SupplierOrderFormDialog({ onClose }: DialogComponentProps<null>)
   }
 
   function addLowStock() {
-    const low = stockItems.filter((i) => i.quantity <= LOW_STOCK_THRESHOLD);
+    // Tracked items that are out of stock or at/below their own low-stock level.
+    const low = stockItems.filter((i) => {
+      if (!i.track_in_warehouse) return false;
+      const tBase = thresholdBase(i);
+      return i.quantity <= 0 || (tBase != null && i.quantity <= tBase);
+    });
     if (!low.length) {
       toast.info(t("supplierOrders.noLowStock"));
       return;
@@ -66,7 +71,7 @@ export function SupplierOrderFormDialog({ onClose }: DialogComponentProps<null>)
         .map((l) => ({
           item_id: l.item!.id,
           quantity: l.quantity,
-          unit: l.unit || l.item!.unit,
+          unit: l.unit || l.item!.primary_unit,
           note: l.note || null,
         })),
     };
@@ -92,6 +97,7 @@ export function SupplierOrderFormDialog({ onClose }: DialogComponentProps<null>)
       onSubmit={onSubmit}
       submitting={create.isPending}
       submitLabel={t("common.create")}
+      dirty={Boolean(supplierId) || lines.some((l) => l.item) || note.trim() !== ""}
       widthClassName="w-[calc(100%-2rem)] sm:max-w-3xl"
     >
       <div className="space-y-5">

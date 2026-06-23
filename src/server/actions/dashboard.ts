@@ -2,7 +2,7 @@
 
 import { createActionClient } from "@/lib/supabase/server";
 import { KhataStatus, OrderStatus } from "@/lib/enums";
-import { LOW_STOCK_THRESHOLD } from "@/lib/status-meta";
+import { thresholdBase } from "@/lib/units";
 
 export type DashboardStats = {
   items: number;
@@ -41,7 +41,7 @@ export async function getCatalogSummary(accessToken: string): Promise<CatalogSum
   const client = createActionClient(accessToken);
 
   const [{ data: items }, { data: stock }] = await Promise.all([
-    client.from("items").select("id"),
+    client.from("items").select("id, track_in_warehouse, low_stock_threshold, base_per_primary"),
     client.from("warehouse_stock").select("item_id, quantity"),
   ]);
 
@@ -50,11 +50,15 @@ export async function getCatalogSummary(accessToken: string): Promise<CatalogSum
   let lowStock = 0;
   let outOfStock = 0;
   let totalUnits = 0;
+  // Stock health only applies to warehouse-tracked items; untracked items have
+  // no managed stock. Low-stock uses each item's own threshold (null = no flag).
   for (const it of items ?? []) {
+    if (!it.track_in_warehouse) continue;
     const q = qty.get(it.id) ?? 0;
     totalUnits += q;
+    const tBase = thresholdBase(it);
     if (q <= 0) outOfStock += 1;
-    else if (q <= LOW_STOCK_THRESHOLD) lowStock += 1;
+    else if (tBase != null && q <= tBase) lowStock += 1;
   }
 
   return { products: (items ?? []).length, lowStock, outOfStock, totalUnits };

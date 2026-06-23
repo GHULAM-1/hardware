@@ -10,6 +10,7 @@ import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { useLanguage } from "@/providers/i18n-provider";
 import { displayName } from "@/lib/display";
+import { formatQuantity } from "@/lib/units";
 import { StockEntryForm } from "@/components/warehouse/stock-entry-form";
 import { StockHistoryTable } from "@/components/warehouse/stock-history-table";
 import {
@@ -40,8 +41,10 @@ export function StockDetailDialog({ payload, onClose }: DialogComponentProps<Sto
         <DialogHeader className="min-w-0">
           <DialogTitle className="truncate pe-6">{displayName(item, language)}</DialogTitle>
           <DialogDescription dir="ltr">
-            {t("warehouse.currentStock")}: <span className="font-semibold tabular-nums">{item.quantity}</span>{" "}
-            {item.unit}
+            {t("warehouse.currentStock")}:{" "}
+            <span className="font-semibold tabular-nums">
+              {formatQuantity(item, item.quantity, (k) => t(`units.${k}`))}
+            </span>
           </DialogDescription>
         </DialogHeader>
 
@@ -49,7 +52,7 @@ export function StockDetailDialog({ payload, onClose }: DialogComponentProps<Sto
           {isSuperAdmin && (
             <StockEntryForm
               key={editing?.id ?? "new"}
-              itemId={item.id}
+              item={item}
               editing={editing}
               onDone={() => setEditing(null)}
             />
@@ -60,6 +63,7 @@ export function StockDetailDialog({ payload, onClose }: DialogComponentProps<Sto
               {t("warehouse.history")}
             </h3>
             <StockHistoryTable
+              item={item}
               entries={entries}
               loading={isLoading}
               onEdit={(entry) => setEditing(entry)}

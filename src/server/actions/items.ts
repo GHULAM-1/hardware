@@ -35,6 +35,17 @@ export async function deleteItem(accessToken: string, id: string): Promise<null>
   return runQuery(accessToken, (c) => c.from("items").delete().eq("id", id).then((r) => ({ data: null, error: r.error })));
 }
 
+/** Toggle whether an item is managed in the warehouse (stock in/out). Never touches stock entries. */
+export async function setWarehouseTracking(
+  accessToken: string,
+  id: string,
+  track: boolean,
+): Promise<Item> {
+  return runQuery(accessToken, (c) =>
+    c.from("items").update({ track_in_warehouse: track }).eq("id", id).select("*").single(),
+  );
+}
+
 /** Item ids referenced by at least one order line — these can't be deleted (FK). */
 export async function listUsedItemIds(accessToken: string): Promise<string[]> {
   const rows = await runQuery<{ item_id: string }[]>(accessToken, (c) =>

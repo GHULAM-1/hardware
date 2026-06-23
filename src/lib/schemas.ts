@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { PaymentType, StaffAttendanceStatus, StockEntryType, UserRole } from "@/lib/enums";
+import { MeasurementType, PaymentType, StaffAttendanceStatus, StockEntryType, UserRole } from "@/lib/enums";
 
 /** Single source of truth for form/payload validation schemas. */
 
@@ -59,11 +59,25 @@ export type LoginValues = z.output<typeof loginSchema>;
 export const itemSchema = z.object({
   name_en: z.string().trim().min(1),
   name_ur: optionalText,
-  unit: z.string().trim().min(1),
+  // Measurement model (see @/lib/units). The form keeps base_unit/base_per_primary
+  // and `unit` in sync from these via deriveUnitModel before submit.
+  measurement_type: z.enum([MeasurementType.Count, MeasurementType.Weight, MeasurementType.Length]),
+  primary_unit: z.string().trim().min(1),
+  base_unit: z.string().trim().min(1),
+  base_per_primary: z.coerce.number().positive(),
+  // Selling price is per PRIMARY unit (PKR).
   selling_price: z.coerce.number().min(0),
+  // Reorder level in PRIMARY units; empty → null (no low-stock flag).
+  low_stock_threshold: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.coerce.number().min(0).nullable(),
+  ).default(null),
   category_id: z.string().uuid().nullable().optional().default(null),
   // Gallery of product images; first is the primary thumbnail used in lists.
   image_urls: z.array(z.string().url()).default([]),
+  // Opt-in to warehouse stock tracking (Items vs Warehouse split). Stock in/out
+  // is only available in the Warehouse screen once this is on.
+  track_in_warehouse: z.boolean().default(false),
 });
 export type ItemInput = z.input<typeof itemSchema>;
 export type ItemValues = z.output<typeof itemSchema>;
@@ -133,6 +147,13 @@ export const khataSchema = z.object({
   proof_url: z.string().url().nullable().optional().default(null),
 });
 export type KhataValues = z.output<typeof khataSchema>;
+
+// Edit path: same fields, but a customer-less reminder (customer_id null) is also
+// valid. The form re-imposes the "real khata must have a customer" rule client-side.
+export const khataUpdateSchema = khataSchema.extend({
+  customer_id: z.string().uuid().nullable(),
+});
+export type KhataUpdateValues = z.output<typeof khataUpdateSchema>;
 
 // A manual reminder: a note + a due date. Stored as a customer-less khata.
 export const reminderSchema = z.object({

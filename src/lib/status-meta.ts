@@ -14,13 +14,18 @@ export function paymentMeta(type: PaymentType): { tone: StatusTone; labelKey: st
   }
 }
 
-/** Quantity at/below which an item is flagged "low stock" (amber). */
-export const LOW_STOCK_THRESHOLD = 10;
-
-/** Warehouse stock badge: out (danger) → low (warning) → in stock (success). */
-export function stockMeta(quantity: number): { tone: StatusTone; labelKey: string } {
+/**
+ * Warehouse stock badge: out (danger) → low (warning) → in stock (success).
+ * `thresholdBase` is the item's low-stock level in BASE units (see units.thresholdBase);
+ * null means the item has no low-stock alert configured.
+ */
+export function stockMeta(
+  quantity: number,
+  thresholdBase: number | null,
+): { tone: StatusTone; labelKey: string } {
   if (quantity <= 0) return { tone: "danger", labelKey: "warehouse.outOfStock" };
-  if (quantity <= LOW_STOCK_THRESHOLD) return { tone: "warning", labelKey: "warehouse.lowStock" };
+  if (thresholdBase != null && quantity <= thresholdBase)
+    return { tone: "warning", labelKey: "warehouse.lowStock" };
   return { tone: "success", labelKey: "warehouse.inStock" };
 }
 

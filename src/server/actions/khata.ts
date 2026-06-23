@@ -3,7 +3,14 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { getReminderLeadDays } from "@/server/actions/settings";
-import { khataSchema, reminderSchema, type KhataValues, type ReminderValues } from "@/lib/schemas";
+import {
+  khataSchema,
+  khataUpdateSchema,
+  reminderSchema,
+  type KhataValues,
+  type KhataUpdateValues,
+  type ReminderValues,
+} from "@/lib/schemas";
 import { KhataStatus } from "@/lib/enums";
 import type { Khata, KhataListView } from "@/types/models";
 
@@ -78,6 +85,18 @@ export async function createReminder(accessToken: string, values: ReminderValues
     .single();
   if (error) throw new Error(error.message);
   return row;
+}
+
+/** Edit an existing khata or reminder (customer-less rows allowed — customer_id null). */
+export async function updateKhata(
+  accessToken: string,
+  id: string,
+  values: KhataUpdateValues,
+): Promise<Khata> {
+  const data = khataUpdateSchema.parse(values);
+  return runQuery(accessToken, (c) =>
+    c.from("khatas").update(data).eq("id", id).select("*").single(),
+  );
 }
 
 export async function setKhataStatus(

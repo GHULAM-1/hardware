@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import { KhataStatus } from "@/lib/enums";
-import type { KhataValues, ReminderValues } from "@/lib/schemas";
+import type { KhataValues, KhataUpdateValues, ReminderValues } from "@/lib/schemas";
 import {
   createKhata,
   createReminder,
@@ -15,6 +15,7 @@ import {
   getKhataReminders,
   listKhatas,
   setKhataStatus,
+  updateKhata,
 } from "@/server/actions/khata";
 
 export function useKhatas(status = "") {
@@ -40,6 +41,15 @@ export function useCreateKhata() {
   const invalidate = useInvalidateKhata();
   return useMutation({
     mutationFn: async (values: KhataValues) => createKhata(await getAccessToken(), values),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateKhata() {
+  const invalidate = useInvalidateKhata();
+  return useMutation({
+    mutationFn: async (args: { id: string; values: KhataUpdateValues }) =>
+      updateKhata(await getAccessToken(), args.id, args.values),
     onSuccess: invalidate,
   });
 }
