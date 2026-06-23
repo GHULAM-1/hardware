@@ -6,6 +6,7 @@ import { DialogKey } from "@/lib/dialog-keys";
 import { DueSoonStrip } from "@/components/khata/due-soon-strip";
 import { DashboardNavGrid } from "@/components/dashboard/dashboard-nav-grid";
 import { DashboardInfoCards } from "@/components/dashboard/dashboard-info-cards";
+import { DashboardDecor } from "@/components/dashboard/dashboard-decor";
 
 /**
  * The dashboard is the app's launcher. The StatBar (AppShell) stays pinned on
@@ -19,7 +20,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-6 sm:p-6">
+      <DashboardDecor />
+      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto p-4 pb-6 sm:p-6">
         <div className="mx-auto max-w-5xl space-y-6">
           <DashboardNavGrid />
           {isSuperAdmin && (
@@ -35,7 +37,7 @@ export default function DashboardPage() {
       {/* Pinned bottom cards (super-admin). The floating + button just hovers over
           the corner — no reserved gutter — so the cards get the full width. */}
       {isSuperAdmin && (
-        <div className="shrink-0 px-4 pb-3 sm:px-6 sm:pb-4">
+        <div className="relative z-10 shrink-0 px-4 pb-3 sm:px-6 sm:pb-4">
           <div className="mx-auto max-w-3xl">
             <DashboardInfoCards />
           </div>

@@ -79,15 +79,7 @@ export function SupplierOrderTallyDialog({ payload, onClose }: DialogComponentPr
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto overflow-x-hidden sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex flex-wrap items-center justify-between gap-2 pe-6">
-            <span>{t("supplierOrders.tally")}</span>
-            {order && (
-              <Button type="button" variant="ghost" size="sm" onClick={markAllReceived}>
-                <Check className="me-1 h-4 w-4" />
-                {t("supplierOrders.markAllReceived")}
-              </Button>
-            )}
-          </DialogTitle>
+          <DialogTitle className="pe-6">{t("supplierOrders.tally")}</DialogTitle>
           <DialogDescription>{t("supplierOrders.manualStockHint")}</DialogDescription>
         </DialogHeader>
 
@@ -95,6 +87,12 @@ export function SupplierOrderTallyDialog({ payload, onClose }: DialogComponentPr
           <p className="py-10 text-center text-muted-foreground">{t("common.loading")}</p>
         ) : (
           <div className="min-w-0 space-y-4">
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={markAllReceived}>
+                <Check className="me-1 h-4 w-4" />
+                {t("supplierOrders.markAllReceived")}
+              </Button>
+            </div>
             {groups.map((g, gi) => (
               <div key={gi} className="space-y-2">
                 <div className="text-sm font-medium text-muted-foreground">
@@ -104,58 +102,54 @@ export function SupplierOrderTallyDialog({ payload, onClose }: DialogComponentPr
                   const v = recv[l.id] ?? "";
                   const tallied = v !== "";
                   const complete = tallied && Number(v) >= Number(l.quantity);
+                  const short = tallied && !complete;
                   return (
                     <div
                       key={l.id}
-                      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-border bg-background p-2"
+                      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-border bg-background p-3"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">
+                        <div className="text-sm font-medium">
                           {l.item ? displayName(l.item, language) : "—"}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {t("supplierOrders.ordered")}: {l.quantity} {t(`units.${l.unit}`)}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <Input
-                            type="number"
-                            min={0}
-                            inputMode="numeric"
-                            dir="ltr"
-                            className="w-24"
-                            value={v}
-                            placeholder="0"
-                            aria-label={t("supplierOrders.received")}
-                            onChange={(e) =>
-                              setRecv((r) => ({ ...r, [l.id]: e.target.value.replace(/\D/g, "") }))
-                            }
-                          />
-                          <span className="whitespace-nowrap text-xs text-muted-foreground">
-                            {t(`units.${l.unit}`)}
-                          </span>
-                        </div>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={complete ? "secondary" : "outline"}
-                          onClick={() => setRecv((r) => ({ ...r, [l.id]: String(l.quantity) }))}
-                          title={t("supplierOrders.markReceived")}
-                        >
-                          <Check className="me-1 h-4 w-4" />
-                          {t("supplierOrders.markReceived")}
-                        </Button>
-                        <span className="w-10 shrink-0 text-center">
-                          {complete ? (
-                            <Check className="mx-auto h-4 w-4 text-success" />
-                          ) : tallied ? (
-                            <span className="text-xs font-semibold text-destructive">
+                          {short && (
+                            <span className="ms-2 font-semibold text-destructive">
                               {t("supplierOrders.short")}
                             </span>
-                          ) : null}
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Input
+                          type="number"
+                          min={0}
+                          inputMode="numeric"
+                          dir="ltr"
+                          className="w-20"
+                          value={v}
+                          placeholder="0"
+                          aria-label={t("supplierOrders.received")}
+                          onChange={(e) =>
+                            setRecv((r) => ({ ...r, [l.id]: e.target.value.replace(/\D/g, "") }))
+                          }
+                        />
+                        <span className="w-16 text-xs text-muted-foreground sm:w-24">
+                          {t(`units.${l.unit}`)}
                         </span>
                       </div>
+                      {/* Full-width on mobile (wraps below), inline on desktop. Green = received. */}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={complete ? "success" : "outline"}
+                        className="basis-full justify-center sm:w-44 sm:basis-auto"
+                        onClick={() => setRecv((r) => ({ ...r, [l.id]: String(l.quantity) }))}
+                      >
+                        <Check className="me-1 h-4 w-4" />
+                        {t("supplierOrders.markReceived")}
+                      </Button>
                     </div>
                   );
                 })}

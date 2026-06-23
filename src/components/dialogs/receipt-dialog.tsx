@@ -1,9 +1,11 @@
 "use client";
 
-import { Printer } from "lucide-react";
+import * as React from "react";
+import { Printer, Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
+import { OrderSharePdf } from "@/components/orders/order-share-pdf";
 import { useOrderReceipt } from "@/hooks/use-orders";
 import { useLanguage } from "@/providers/i18n-provider";
 import { PaymentType } from "@/lib/enums";
@@ -29,6 +31,7 @@ export function ReceiptDialog({ payload, onClose }: DialogComponentProps<Receipt
   const { t } = useTranslation();
   const { language } = useLanguage();
   const { data: receipt, isLoading } = useOrderReceipt(payload.orderId);
+  const [sharing, setSharing] = React.useState(false);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -134,6 +137,10 @@ export function ReceiptDialog({ payload, onClose }: DialogComponentProps<Receipt
               <Button variant="outline" onClick={onClose}>
                 {t("common.cancel")}
               </Button>
+              <Button variant="outline" onClick={() => setSharing(true)} disabled={sharing}>
+                <Share2 className="me-1 h-4 w-4" />
+                {t("common.share")}
+              </Button>
               <Button
                 onClick={() =>
                   printReceipt(receipt, language, {
@@ -157,6 +164,7 @@ export function ReceiptDialog({ payload, onClose }: DialogComponentProps<Receipt
             </div>
           </div>
         )}
+        {sharing && <OrderSharePdf orderId={payload.orderId} onDone={() => setSharing(false)} />}
       </DialogContent>
     </Dialog>
   );

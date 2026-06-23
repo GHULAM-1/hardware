@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Receipt } from "lucide-react";
+import { Receipt, Share2 } from "lucide-react";
 
 import { Icon3D } from "@/components/ui/icon-3d";
+import { OrderSharePdf } from "@/components/orders/order-share-pdf";
 
 import { Button } from "@/components/ui/button";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
@@ -32,6 +33,7 @@ export default function OrdersPage() {
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
   const { data: orders = [], isLoading } = useOrders(debounced);
+  const [shareId, setShareId] = React.useState<string | null>(null);
 
   const columns: Column<OrderListView>[] = [
     {
@@ -96,6 +98,16 @@ export default function OrdersPage() {
           )}
           <Button
             variant="outline"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            title={t("common.share")}
+            aria-label={t("common.share")}
+            onClick={() => setShareId(o.id)}
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
             size="sm"
             className="shrink-0"
             onClick={() => openDialog(DialogKey.Receipt, { orderId: o.id })}
@@ -124,6 +136,7 @@ export default function OrdersPage() {
         loading={isLoading}
         onRowClick={(row) => openDialog(DialogKey.OrderForm, { orderId: row.id })}
       />
+      {shareId && <OrderSharePdf orderId={shareId} onDone={() => setShareId(null)} />}
     </div>
   );
 }

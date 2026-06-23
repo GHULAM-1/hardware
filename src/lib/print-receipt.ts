@@ -24,20 +24,23 @@ function esc(s: string | null | undefined): string {
   );
 }
 
+const TH = "padding:6px 4px;border-bottom:1px solid #ddd;color:#555;font-weight:600;";
+const TD = "padding:6px 4px;border-bottom:1px solid #ddd;";
+const ROW = "display:flex;justify-content:space-between;padding:2px 0;";
+
 /**
- * Build a self-contained receipt HTML document (inline styles only) and print it
- * in a dedicated window. Reliable across browsers and friendly to thermal/POS rolls.
+ * The receipt body markup — fully inline-styled (hex colours only) so it's safe
+ * to print AND to render in-app for html2canvas (PDF / share). Reused by both.
  */
-export function printReceipt(receipt: OrderReceiptView, language: Language, labels: Labels) {
-  const rtl = language === Language.Urdu;
+export function receiptInnerHtml(receipt: OrderReceiptView, language: Language, labels: Labels): string {
   const rows = receipt.lines
     .map(
       (l) => `
       <tr>
-        <td>${esc(l.item ? displayName(l.item, language) : "—")}</td>
-        <td style="text-align:end">${l.quantity} ${esc(labels.unit(l.unit))}</td>
-        <td style="text-align:end">${esc(formatPKR(l.selling_price))}</td>
-        <td style="text-align:end">${esc(formatPKR(l.quantity * l.selling_price))}</td>
+        <td style="${TD}text-align:start">${esc(l.item ? displayName(l.item, language) : "—")}</td>
+        <td style="${TD}text-align:end">${l.quantity} ${esc(labels.unit(l.unit))}</td>
+        <td style="${TD}text-align:end">${esc(formatPKR(l.selling_price))}</td>
+        <td style="${TD}text-align:end">${esc(formatPKR(l.quantity * l.selling_price))}</td>
       </tr>`,
     )
     .join("");
@@ -45,10 +48,41 @@ export function printReceipt(receipt: OrderReceiptView, language: Language, labe
   const partial =
     receipt.payment_type !== PaymentType.Cash
       ? `
-      <div class="row"><span>${esc(labels.amountPaid)}</span><span>${esc(formatPKR(receipt.amount_paid))}</span></div>
-      <div class="row" style="font-weight:600"><span>${esc(labels.balanceDue)}</span><span>${esc(formatPKR(receipt.balance_due))}</span></div>
-      ${receipt.due_date ? `<div class="row"><span>${esc(labels.dueDate)}</span><span>${esc(formatDate(receipt.due_date))}</span></div>` : ""}`
+      <div style="${ROW}"><span>${esc(labels.amountPaid)}</span><span>${esc(formatPKR(receipt.amount_paid))}</span></div>
+      <div style="${ROW}font-weight:600"><span>${esc(labels.balanceDue)}</span><span>${esc(formatPKR(receipt.balance_due))}</span></div>
+      ${receipt.due_date ? `<div style="${ROW}"><span>${esc(labels.dueDate)}</span><span>${esc(formatDate(receipt.due_date))}</span></div>` : ""}`
       : "";
+
+  return `
+  ${shopHeaderHtml()}
+  <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px;">
+    <div><strong>${esc(receipt.order_no)}</strong><br/>${esc(formatDate(receipt.created_at))}</div>
+    <div style="text-align:end">${esc(receipt.customer ? displayName(receipt.customer, language) : "—")}${
+      receipt.customer?.phone ? `<br/><span dir="ltr">${esc(receipt.customer.phone)}</span>` : ""
+    }</div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead><tr>
+      <th style="${TH}text-align:start">${esc(labels.item)}</th>
+      <th style="${TH}text-align:end">${esc(labels.qty)}</th>
+      <th style="${TH}text-align:end">${esc(labels.price)}</th>
+      <th style="${TH}text-align:end">${esc(labels.total)}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div style="margin-top:12px;font-size:12px;">
+    <div style="${ROW}"><span>${esc(labels.paymentType)}</span><span>${esc(labels.payment)}</span></div>
+    ${partial}
+    <div style="${ROW}font-weight:700;font-size:14px;border-top:1px solid #000;padding-top:6px;margin-top:4px;"><span>${esc(labels.total)}</span><span dir="ltr">${esc(formatPKR(receipt.total))}</span></div>
+  </div>`;
+}
+
+/**
+ * Build a self-contained receipt HTML document (inline styles only) and print it
+ * in a dedicated window. Reliable across browsers and friendly to thermal/POS rolls.
+ */
+export function printReceipt(receipt: OrderReceiptView, language: Language, labels: Labels) {
+  const rtl = language === Language.Urdu;
 
   const html = `<!doctype html>
 <html lang="${language}" dir="${rtl ? "rtl" : "ltr"}">
@@ -58,40 +92,10 @@ export function printReceipt(receipt: OrderReceiptView, language: Language, labe
 <style>
   * { box-sizing: border-box; }
   body { font-family: ${rtl ? "'Noto Nastaliq Urdu', " : ""}-apple-system, Segoe UI, Roboto, sans-serif; color: #000; margin: 0; padding: 16px; }
-  h1 { font-size: 18px; text-align: center; margin: 0 0 2px; }
-  .sub { text-align: center; color: #555; font-size: 12px; margin-bottom: 12px; }
-  .meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 12px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th, td { padding: 6px 4px; border-bottom: 1px solid #ddd; text-align: start; }
-  th { color: #555; font-weight: 600; }
-  .totals { margin-top: 12px; font-size: 12px; }
-  .row { display: flex; justify-content: space-between; padding: 2px 0; }
-  .grand { font-weight: 700; font-size: 14px; border-top: 1px solid #000; padding-top: 6px; margin-top: 4px; }
+  @page { margin: 12mm; }
 </style>
 </head>
-<body>
-  ${shopHeaderHtml()}
-  <div class="meta">
-    <div><strong>${esc(receipt.order_no)}</strong><br/>${esc(formatDate(receipt.created_at))}</div>
-    <div style="text-align:end">${esc(receipt.customer ? displayName(receipt.customer, language) : "—")}${
-      receipt.customer?.phone ? `<br/><span dir="ltr">${esc(receipt.customer.phone)}</span>` : ""
-    }</div>
-  </div>
-  <table>
-    <thead><tr>
-      <th>${esc(labels.item)}</th>
-      <th style="text-align:end">${esc(labels.qty)}</th>
-      <th style="text-align:end">${esc(labels.price)}</th>
-      <th style="text-align:end">${esc(labels.total)}</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <div class="totals">
-    <div class="row"><span>${esc(labels.paymentType)}</span><span>${esc(labels.payment)}</span></div>
-    ${partial}
-    <div class="row grand"><span>${esc(labels.total)}</span><span dir="ltr">${esc(formatPKR(receipt.total))}</span></div>
-  </div>
-</body>
+<body>${receiptInnerHtml(receipt, language, labels)}</body>
 </html>`;
 
   // Print via a hidden iframe — no visible new tab/window; the dialog stays put.

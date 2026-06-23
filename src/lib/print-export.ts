@@ -56,8 +56,8 @@ export function printElement(node: HTMLElement, opts: { title: string; rtl: bool
   }, 300);
 }
 
-/** Rasterise a node and save it as an A4 PDF (paginated if tall). Urdu-safe. */
-export async function downloadElementPdf(node: HTMLElement, filename: string) {
+/** Rasterise a node into an A4 PDF (paginated if tall). Urdu-safe. Returns the jsPDF doc. */
+export async function pdfFromElement(node: HTMLElement) {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
     import("html2canvas"),
     import("jspdf"),
@@ -89,5 +89,17 @@ export async function downloadElementPdf(node: HTMLElement, filename: string) {
     }
   }
 
+  return pdf;
+}
+
+/** Rasterise a node and save it as an A4 PDF (paginated if tall). Urdu-safe. */
+export async function downloadElementPdf(node: HTMLElement, filename: string) {
+  const pdf = await pdfFromElement(node);
   pdf.save(filename);
+}
+
+/** Rasterise a node into a PDF Blob (for sharing). */
+export async function pdfBlobFromElement(node: HTMLElement): Promise<Blob> {
+  const pdf = await pdfFromElement(node);
+  return pdf.output("blob");
 }

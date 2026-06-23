@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { ClipboardCheck, Share2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { useSupplierOrders, useDeleteSupplierOrder } from "@/hooks/use-supplier-orders";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
@@ -17,6 +19,7 @@ import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
 import { StatusBadge, type StatusTone } from "@/components/common/status-badge";
+import { SupplierOrderSharePdf } from "@/components/supplier-orders/supplier-order-share-pdf";
 import type { SupplierOrderListView } from "@/types/models";
 
 const STATUS_TONE: Record<string, StatusTone> = {
@@ -40,6 +43,7 @@ export default function SupplierOrdersPage() {
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
   const { data: orders = [], isLoading } = useSupplierOrders(debounced);
+  const [shareId, setShareId] = React.useState<string | null>(null);
 
   const columns: Column<SupplierOrderListView>[] = [
     {
@@ -96,7 +100,27 @@ export default function SupplierOrdersPage() {
       header: "",
       headerClassName: "w-px",
       cell: (o) => (
-        <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            title={t("supplierOrders.tally")}
+            aria-label={t("supplierOrders.tally")}
+            onClick={() => openDialog(DialogKey.SupplierOrderTally, { id: o.id })}
+          >
+            <ClipboardCheck className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            title={t("common.share")}
+            aria-label={t("common.share")}
+            onClick={() => setShareId(o.id)}
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
           <RowActions
             onEdit={() => openDialog(DialogKey.SupplierOrderForm, { id: o.id })}
             onDelete={() =>
@@ -130,6 +154,7 @@ export default function SupplierOrdersPage() {
         emptyText={t("supplierOrders.empty")}
         onRowClick={(row) => openDialog(DialogKey.SupplierOrderDetail, { id: row.id })}
       />
+      {shareId && <SupplierOrderSharePdf orderId={shareId} onDone={() => setShareId(null)} />}
     </div>
   );
 }

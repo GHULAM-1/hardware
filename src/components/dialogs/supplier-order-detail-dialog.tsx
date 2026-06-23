@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { ClipboardCheck, Download, Loader2, Printer } from "lucide-react";
+import { ClipboardCheck, Download, Loader2, Printer, Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+
+import { shareElementPdf } from "@/lib/share-pdf";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
@@ -55,6 +57,23 @@ export function SupplierOrderDetailDialog({
 
   const sheetRef = React.useRef<HTMLDivElement | null>(null);
   const [pdfBusy, setPdfBusy] = React.useState(false);
+  const [shareBusy, setShareBusy] = React.useState(false);
+
+  async function onShare() {
+    if (!sheetRef.current || !order) return;
+    setShareBusy(true);
+    try {
+      const res = await shareElementPdf(sheetRef.current, `${order.order_no}.pdf`, {
+        title: t("app.name"),
+        text: order.order_no,
+      });
+      if (res === "downloaded") toast.success(t("toast.saved"));
+    } catch {
+      toast.error(t("toast.error"));
+    } finally {
+      setShareBusy(false);
+    }
+  }
 
   async function onDownloadPdf() {
     if (!sheetRef.current || !order) return;
@@ -119,6 +138,14 @@ export function SupplierOrderDetailDialog({
                   {t("supplierOrders.tally")}
                 </Button>
               )}
+              <Button variant="outline" onClick={onShare} disabled={shareBusy}>
+                {shareBusy ? (
+                  <Loader2 className="me-1 h-4 w-4 animate-spin" />
+                ) : (
+                  <Share2 className="me-1 h-4 w-4" />
+                )}
+                {t("common.share")}
+              </Button>
               <Button variant="outline" onClick={onPrint}>
                 <Printer className="me-1 h-4 w-4" />
                 {t("supplierOrders.print")}
