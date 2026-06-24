@@ -9,6 +9,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { KhataStatus } from "@/lib/enums";
 import type { KhataValues, KhataUpdateValues, ReminderValues } from "@/lib/schemas";
 import {
+  applyCustomerPayment,
   createKhata,
   createReminder,
   deleteKhata,
@@ -116,6 +117,19 @@ export function useSettleAllKhata() {
   const invalidate = useInvalidateKhata();
   return useMutation({
     mutationFn: async (ids: string[]) => fulfillKhatas(await getAccessToken(), ids),
+    onSuccess: invalidate,
+  });
+}
+
+/**
+ * Apply a lump-sum customer payment as a waterfall across their pending entries
+ * (oldest due first). Invalidates khata + orders so balances refresh everywhere.
+ */
+export function useApplyCustomerPayment() {
+  const invalidate = useInvalidateKhata();
+  return useMutation({
+    mutationFn: async (args: { customerId: string; amount: number }) =>
+      applyCustomerPayment(await getAccessToken(), args.customerId, args.amount),
     onSuccess: invalidate,
   });
 }

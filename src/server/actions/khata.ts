@@ -142,6 +142,81 @@ export async function deleteKhata(accessToken: string, id: string): Promise<null
   );
 }
 
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Sync an order-backed khata's order: amount_paid = total − the khata's outstanding. */
+async function syncOrderPaid(
+  client: ReturnType<typeof createActionClient>,
+  orderId: string,
+  outstanding: number,
+): Promise<void> {
+  const { data: ord, error } = await client
+    .from("orders")
+    .select("total")
+    .eq("id", orderId)
+    .single();
+  if (error) throw new Error(error.message);
+  const paid = Math.max(0, round2(Number(ord.total) - outstanding));
+  const { error: e2 } = await client.from("orders").update({ amount_paid: paid }).eq("id", orderId);
+  if (e2) throw new Error(e2.message);
+}
+
+/**
+ * Apply a lump-sum payment from a customer across their pending khatas as a
+ * waterfall: oldest DUE DATE first (ties → oldest created). Each entry the money
+ * fully covers is marked Fulfilled (its order's balance → 0); the first entry it
+ * can't fully cover has its outstanding reduced (stays Pending, order amount_paid
+ * bumped). Any excess beyond the total owed is ignored (no credit balance).
+ * Returns how many entries were fully settled and any unused remainder.
+ */
+export async function applyCustomerPayment(
+  accessToken: string,
+  customerId: string,
+  amount: number,
+): Promise<{ settled: number; partial: boolean; unused: number }> {
+  const client = createActionClient(accessToken);
+
+  const { data: rows, error } = await client
+    .from("khatas")
+    .select("id, amount, order_id")
+    .eq("customer_id", customerId)
+    .eq("status", KhataStatus.Pending)
+    .order("due_date", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+
+  let remaining = round2(Number(amount));
+  let settled = 0;
+  let partial = false;
+
+  for (const k of rows ?? []) {
+    if (remaining <= 0) break;
+    const owed = Number(k.amount);
+
+    if (remaining >= owed) {
+      // Fully settle this entry.
+      const { error: e1 } = await client
+        .from("khatas")
+        .update({ status: KhataStatus.Fulfilled, fulfilled_at: new Date().toISOString() })
+        .eq("id", k.id);
+      if (e1) throw new Error(e1.message);
+      if (k.order_id) await syncOrderPaid(client, k.order_id, 0);
+      remaining = round2(remaining - owed);
+      settled += 1;
+    } else {
+      // Partial: knock the paid amount off this entry's outstanding.
+      const newAmount = round2(owed - remaining);
+      const { error: e2 } = await client.from("khatas").update({ amount: newAmount }).eq("id", k.id);
+      if (e2) throw new Error(e2.message);
+      if (k.order_id) await syncOrderPaid(client, k.order_id, newAmount);
+      remaining = 0;
+      partial = true;
+    }
+  }
+
+  return { settled, partial, unused: Math.max(0, remaining) };
+}
+
 /** Mark several khatas fulfilled at once (the "Settle all" action). No-op on []. */
 export async function fulfillKhatas(accessToken: string, ids: string[]): Promise<null> {
   if (ids.length === 0) return null;

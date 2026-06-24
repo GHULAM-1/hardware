@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
-import { useKhatas, useFulfillKhata, useSettleAllKhata } from "@/hooks/use-khata";
+import { useKhatas, useFulfillKhata, useSettleAllKhata, useApplyCustomerPayment } from "@/hooks/use-khata";
 import { ConfirmAlert } from "@/components/common/confirm-alert";
 import { useLanguage } from "@/providers/i18n-provider";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
@@ -15,10 +15,11 @@ import { DialogKey } from "@/lib/dialog-keys";
 import { KhataStatus } from "@/lib/enums";
 import { khataMeta } from "@/lib/status-meta";
 import { displayName } from "@/lib/display";
-import { formatDate, formatDateTime, todayISO } from "@/lib/format";
+import { formatDate, formatDateTime, formatPKR, todayISO } from "@/lib/format";
 import { Money } from "@/components/common/money";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -32,8 +33,43 @@ import type { KhataListView } from "@/types/models";
 
 export type CustomerKhataPayload = { customerId: string };
 
-/** A pending confirm: either settling one entry or settling every pending entry. */
-type Pending = { mode: "all" } | { mode: "one"; id: string } | null;
+/** A pending confirm: settle one entry, settle every entry, or apply a lump sum. */
+type Pending = { mode: "all" } | { mode: "one"; id: string } | { mode: "pay"; amount: number } | null;
+
+/**
+ * Preview the waterfall allocation client-side (mirrors the server): walk pending
+ * entries oldest-due first, fully cover what the money reaches, partially cover
+ * the first it can't. `applied` is capped at the total owed (no credit).
+ */
+function previewPayment(
+  pending: KhataListView[],
+  amount: number,
+): { settled: number; applied: number; remainingOwed: number } {
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const sorted = [...pending].sort((a, b) =>
+    a.due_date < b.due_date
+      ? -1
+      : a.due_date > b.due_date
+        ? 1
+        : a.created_at < b.created_at
+          ? -1
+          : 1,
+  );
+  const total = pending.reduce((s, k) => s + k.amount, 0);
+  let remaining = round2(amount);
+  let settled = 0;
+  for (const k of sorted) {
+    if (remaining <= 0) break;
+    if (remaining >= k.amount) {
+      remaining = round2(remaining - k.amount);
+      settled += 1;
+    } else {
+      remaining = 0;
+    }
+  }
+  const applied = round2(Math.min(amount, total));
+  return { settled, applied, remainingOwed: round2(total - applied) };
+}
 
 /**
  * The full udhaar record for one customer. Reads the live khata list and filters
@@ -49,16 +85,26 @@ export function CustomerKhataDialog({ payload, onClose }: DialogComponentProps<C
   const { data: khatas = [] } = useKhatas();
   const { fulfill, pendingId } = useFulfillKhata();
   const settleAll = useSettleAllKhata();
+  const applyPayment = useApplyCustomerPayment();
   const today = todayISO();
 
   const [confirm, setConfirm] = React.useState<Pending>(null);
+  const [payAmount, setPayAmount] = React.useState("");
 
   const entries = khatas.filter((k) => k.customer?.id === payload.customerId);
   const pending = entries.filter((k) => k.status === KhataStatus.Pending);
   const fulfilled = entries.filter((k) => k.status === KhataStatus.Fulfilled);
   const customer = entries[0]?.customer ?? null;
   const total = pending.reduce((sum, k) => sum + k.amount, 0);
-  const busy = settleAll.isPending || Boolean(pendingId);
+  const busy = settleAll.isPending || applyPayment.isPending || Boolean(pendingId);
+
+  const payNum = Number(payAmount);
+  const payValid = payAmount.trim() !== "" && payNum > 0;
+
+  function startPay() {
+    if (!payValid) return;
+    setConfirm({ mode: "pay", amount: payNum });
+  }
 
   async function onConfirm() {
     if (!confirm) return;
@@ -66,6 +112,14 @@ export function CustomerKhataDialog({ payload, onClose }: DialogComponentProps<C
       try {
         await settleAll.mutateAsync(pending.map((k) => k.id));
         toast.success(t("khata.settledAll"));
+      } catch {
+        toast.error(t("khata.markFailed"));
+      }
+    } else if (confirm.mode === "pay") {
+      try {
+        await applyPayment.mutateAsync({ customerId: payload.customerId, amount: confirm.amount });
+        setPayAmount("");
+        toast.success(t("khata.paymentApplied"));
       } catch {
         toast.error(t("khata.markFailed"));
       }
@@ -146,6 +200,41 @@ export function CustomerKhataDialog({ payload, onClose }: DialogComponentProps<C
         </DialogHeader>
 
         <div className="min-w-0 space-y-4">
+          {isSuperAdmin && pending.length > 0 ? (
+            <div className="space-y-1.5 rounded-lg border border-brand/40 bg-brand/5 p-3">
+              <label htmlFor="khata-pay" className="text-sm font-semibold">
+                {t("khata.receivePayment")}
+              </label>
+              <p className="text-xs text-muted-foreground">{t("khata.receivePaymentHint")}</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="khata-pay"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  dir="ltr"
+                  placeholder="0"
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      startPay();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button onClick={startPay} disabled={!payValid || busy}>
+                  {applyPayment.isPending ? (
+                    <Loader2 className="me-1 h-4 w-4 animate-spin" />
+                  ) : null}
+                  {t("khata.applyPayment")}
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
           {pending.length > 0 ? (
             <ul className="space-y-2">{pending.map(renderEntry)}</ul>
           ) : (
@@ -179,13 +268,35 @@ export function CustomerKhataDialog({ payload, onClose }: DialogComponentProps<C
       <ConfirmAlert
         open={confirm !== null}
         onOpenChange={(next) => !next && setConfirm(null)}
-        title={confirm?.mode === "all" ? t("khata.settleAllTitle") : t("khata.markFulfilledTitle")}
+        title={
+          confirm?.mode === "all"
+            ? t("khata.settleAllTitle")
+            : confirm?.mode === "pay"
+              ? t("khata.applyPaymentTitle")
+              : t("khata.markFulfilledTitle")
+        }
         description={
           confirm?.mode === "all"
             ? t("khata.settleAllConfirm", { count: pending.length })
+            : confirm?.mode === "pay"
+              ? (() => {
+                  const p = previewPayment(pending, confirm.amount);
+                  return t("khata.applyPaymentConfirm", {
+                    amount: formatPKR(p.applied),
+                    settled: p.settled,
+                    count: pending.length,
+                    remaining: formatPKR(p.remainingOwed),
+                  });
+                })()
             : t("khata.markFulfilledConfirm")
         }
-        confirmLabel={confirm?.mode === "all" ? t("khata.settleAll") : t("khata.markFulfilled")}
+        confirmLabel={
+          confirm?.mode === "all"
+            ? t("khata.settleAll")
+            : confirm?.mode === "pay"
+              ? t("khata.applyPayment")
+              : t("khata.markFulfilled")
+        }
         destructive={false}
         onConfirm={onConfirm}
       />
