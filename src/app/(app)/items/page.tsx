@@ -192,7 +192,7 @@ export default function ItemsPage() {
         {/* Desktop master-detail panel; mobile uses the tap-to-open dialog instead. */}
         <aside className="hidden w-[360px] shrink-0 xl:block">
           {selected ? (
-            <Card className="sticky top-0 gap-4 p-5">
+            <Card className="sticky top-0 max-h-[calc(100vh-11rem)] gap-4 overflow-y-auto p-5">
               <div className="flex min-w-0 items-center gap-3">
                 <ImageThumb src={selected.image_urls?.[0] ?? selected.image_url} alt={selected.name_en} />
                 <span className="min-w-0 truncate text-lg font-extrabold text-ink">

@@ -107,7 +107,7 @@
     "newItem": "New item",
     "editItem": "Edit item",
     "searchItems": "Search items…",
-    "itemInUse": "Used in orders — can't be deleted",
+    "itemInUse": "Used in orders or supplier orders — can't be deleted",
     "itemDetail": "Item details"
   },
   "items": {
@@ -118,6 +118,7 @@
     "tracked": "In warehouse",
     "notTracked": "Not tracked",
     "piecesPerPrimary": "How many {{base}} in one {{primary}}?",
+    "packSize": "Pack size",
     "lowStockAlert": "Low-stock alert ({{unit}})",
     "lowStockAlertNoUnit": "Low-stock alert",
     "sellingPriceHint": "What you charge customers",
@@ -126,7 +127,9 @@
     "initialStock": "Initial stock (optional)",
     "initialStockHint": "Record your first purchase. Adding a quantity turns on warehouse tracking.",
     "addStockHint": "Your last supplier and price are prefilled — enter a quantity to record a new purchase. Adding a quantity turns on warehouse tracking.",
-    "currentStockHint": "Change the quantity to set the item's current stock. Supplier and last buying price are prefilled."
+    "currentStockHint": "Change the quantity to set the item's current stock. Supplier and last buying price are prefilled.",
+    "addSupplier": "Add another supplier",
+    "additionalSupplier": "Supplier {{n}}"
   },
   "measurement": {
     "count": "Count",
@@ -395,6 +398,7 @@
     "customers": "Customers",
     "pendingKhata": "Pending Khata",
     "dueSoon": "Due soon",
+    "paymentsDue": "Payments due soon",
     "revenueThisMonth": "Revenue this month",
     "salesToday": "Today's Sales",
     "ordersThisMonth": "Orders this month",

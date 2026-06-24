@@ -17,7 +17,12 @@ import {
 } from "@/components/ui/form";
 import { BilingualNameFields, ImagesField } from "@/components/forms/fields";
 import { MeasurementFields } from "@/components/forms/measurement-fields";
-import { StockInFields, useStockIn } from "@/components/forms/stock-in-section";
+import {
+  ExtraStockInsFields,
+  StockInFields,
+  useExtraStockIns,
+  useStockIn,
+} from "@/components/forms/stock-in-section";
 import { Switch } from "@/components/ui/switch";
 import { MeasurementType, StockEntryType } from "@/lib/enums";
 import { fromBase } from "@/lib/units";
@@ -74,21 +79,26 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
   const create = useCreateItem();
   const update = useUpdateItem();
   const stock = useStockIn(stockSeed);
-  const submitting = create.isPending || update.isPending || stock.committing;
+  const extra = useExtraStockIns();
+  const submitting = create.isPending || update.isPending || stock.committing || extra.committing;
 
   const primaryUnit = useWatch({ control: form.control, name: "primary_unit" });
   const unitLabel = primaryUnit ? t(`units.${primaryUnit}`) : "";
 
   async function onSubmit(values: ItemValues) {
     try {
-      // Recording a purchase here implies the item is warehouse-managed.
-      const payload = { ...values, track_in_warehouse: values.track_in_warehouse || stock.hasStock };
+      // Recording a purchase here (primary block or any extra supplier) implies
+      // the item is warehouse-managed.
+      const recordingStock = stock.hasStock || extra.dirty;
+      const payload = { ...values, track_in_warehouse: values.track_in_warehouse || recordingStock };
       const saved =
         isEdit && item
           ? await update.mutateAsync({ id: item.id, values: payload })
           : await create.mutateAsync(payload);
       // Edit: SET stock to the entered quantity (balancing adjustment vs current).
       await stock.commitSet(saved.id, itemFactor, currentBase);
+      // Each additional supplier block is an additive purchase.
+      await extra.commitAll(saved.id, itemFactor);
       toast.success(t("toast.saved"));
       onClose();
     } catch (err) {
@@ -103,7 +113,7 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
         onClose={onClose}
         onSubmit={form.handleSubmit(onSubmit)}
         submitting={submitting}
-        dirty={stock.dirty}
+        dirty={stock.dirty || extra.dirty}
       >
         <div className="space-y-4">
           <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
@@ -115,6 +125,7 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
             title={t("warehouse.currentStock")}
             hint={t("items.currentStockHint")}
           />
+          <ExtraStockInsFields extra={extra} unitLabel={unitLabel} />
           <FormField
             control={form.control}
             name="track_in_warehouse"

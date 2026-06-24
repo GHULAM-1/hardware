@@ -46,10 +46,19 @@ export async function setWarehouseTracking(
   );
 }
 
-/** Item ids referenced by at least one order line — these can't be deleted (FK). */
+/**
+ * Item ids referenced by at least one order line OR supplier-order line — these
+ * can't be deleted (both tables FK to items). Union both so the delete guard
+ * matches what the DB will actually allow.
+ */
 export async function listUsedItemIds(accessToken: string): Promise<string[]> {
-  const rows = await runQuery<{ item_id: string }[]>(accessToken, (c) =>
+  const orderRows = await runQuery<{ item_id: string }[]>(accessToken, (c) =>
     c.from("order_items").select("item_id"),
   );
-  return Array.from(new Set(rows.map((r) => r.item_id)));
+  const supplierRows = await runQuery<{ item_id: string | null }[]>(accessToken, (c) =>
+    c.from("supplier_order_items").select("item_id"),
+  );
+  const ids = new Set<string>(orderRows.map((r) => r.item_id));
+  for (const r of supplierRows) if (r.item_id) ids.add(r.item_id);
+  return Array.from(ids);
 }

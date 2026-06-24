@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { Plus, X } from "lucide-react";
 
 import { SupplierCombobox } from "@/components/common/supplier-combobox";
 import { DatePicker } from "@/components/common/date-picker";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StockEntryType } from "@/lib/enums";
@@ -206,6 +208,157 @@ export function StockInFields({
         <Label className="text-xs text-muted-foreground">{t("fields.date")}</Label>
         <DatePicker value={stock.date} onChange={stock.setDate} />
       </div>
+    </div>
+  );
+}
+
+/**
+ * Extra purchase blocks — one per *additional* supplier. The item's supplier list
+ * is derived from its stock-in entries, so recording a purchase from another
+ * supplier is how a second/third supplier gets attached. Each block is purely
+ * additive (a fresh stock-in); it never touches the primary "current stock" block.
+ */
+type ExtraRow = {
+  key: number;
+  supplierId: string | null;
+  qty: string;
+  buyingPrice: string;
+  date: string;
+};
+
+export function useExtraStockIns() {
+  const [rows, setRows] = React.useState<ExtraRow[]>([]);
+  const nextKey = React.useRef(0);
+  const createStock = useCreateStockEntry();
+
+  const add = React.useCallback(() => {
+    setRows((r) => [
+      ...r,
+      { key: nextKey.current++, supplierId: null, qty: "", buyingPrice: "", date: todayISO() },
+    ]);
+  }, []);
+
+  const remove = React.useCallback((key: number) => {
+    setRows((r) => r.filter((x) => x.key !== key));
+  }, []);
+
+  const update = React.useCallback((key: number, patch: Partial<Omit<ExtraRow, "key">>) => {
+    setRows((r) => r.map((x) => (x.key === key ? { ...x, ...patch } : x)));
+  }, []);
+
+  // A pending purchase the admin actually filled in (so empty blank rows don't
+  // trigger the discard prompt).
+  const dirty = rows.some((r) => Number(r.qty) > 0 || r.supplierId || r.buyingPrice !== "");
+
+  /** Record each filled-in block (qty > 0) as an additive stock-in entry. */
+  const commitAll = React.useCallback(
+    async (itemId: string, basePerPrimary: number) => {
+      for (const r of rows) {
+        if (Number(r.qty) <= 0) continue;
+        await createStock.mutateAsync(
+          stockEntrySchema.parse({
+            item_id: itemId,
+            type: StockEntryType.In,
+            quantity: toBase(Number(r.qty), basePerPrimary),
+            supplier_id: r.supplierId,
+            buying_price: r.buyingPrice === "" ? null : Number(r.buyingPrice),
+            note: null,
+            entry_date: r.date,
+          }),
+        );
+      }
+    },
+    [rows, createStock],
+  );
+
+  return {
+    rows,
+    add,
+    remove,
+    update,
+    dirty,
+    committing: createStock.isPending,
+    commitAll,
+  };
+}
+
+export type ExtraStockInsController = ReturnType<typeof useExtraStockIns>;
+
+export function ExtraStockInsFields({
+  extra,
+  unitLabel,
+}: {
+  extra: ExtraStockInsController;
+  unitLabel: string;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-3">
+      {extra.rows.map((row, i) => (
+        <div
+          key={row.key}
+          className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <Label>{t("items.additionalSupplier", { n: i + 2 })}</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground"
+              onClick={() => extra.remove(row.key)}
+              aria-label={t("common.remove")}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">{t("fields.supplier")}</Label>
+            <SupplierCombobox
+              value={row.supplierId}
+              onChange={(v) => extra.update(row.key, { supplierId: v })}
+            />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">
+                {t("fields.quantity")}
+                {unitLabel ? ` (${unitLabel})` : ""}
+              </Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                dir="ltr"
+                value={row.qty}
+                onChange={(e) => extra.update(row.key, { qty: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">
+                {t("fields.buyingPrice")}
+                {unitLabel ? ` (PKR / ${unitLabel})` : " (PKR)"}
+              </Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                dir="ltr"
+                value={row.buyingPrice}
+                onChange={(e) => extra.update(row.key, { buyingPrice: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">{t("fields.date")}</Label>
+            <DatePicker value={row.date} onChange={(v) => extra.update(row.key, { date: v })} />
+          </div>
+        </div>
+      ))}
+      <Button type="button" variant="outline" className="w-full" onClick={extra.add}>
+        <Plus className="-ms-1 me-1 h-4 w-4" />
+        {t("items.addSupplier")}
+      </Button>
     </div>
   );
 }

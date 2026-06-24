@@ -9,7 +9,7 @@ import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { StockEntryType } from "@/lib/enums";
 import { DialogKey } from "@/lib/dialog-keys";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { formatQuantity } from "@/lib/units";
+import { formatQuantity, hasSubUnit } from "@/lib/units";
 import { Money } from "@/components/common/money";
 import { ZoomableImage } from "@/components/common/zoomable-image";
 import { StatusBadge } from "@/components/common/status-badge";
@@ -92,9 +92,31 @@ export function ItemDetailBody({ item }: { item: Item }) {
             formatQuantity(item, stock ?? 0, (k) => t(`units.${k}`))
           )}
         </Field>
+        {item.sku ? <Field label={t("fields.sku")}>{item.sku}</Field> : null}
         <Field label={t("fields.unit")}>{t(`units.${item.primary_unit}`)}</Field>
+        <Field label={t("fields.measurementType")}>{t(`measurement.${item.measurement_type}`)}</Field>
+        {hasSubUnit(item) ? (
+          <Field label={t("items.packSize")}>
+            <span dir="ltr">
+              {item.base_per_primary} {t(`units.${item.base_unit}`)} / {t(`units.${item.primary_unit}`)}
+            </span>
+          </Field>
+        ) : null}
         <Field label={t("fields.sellingPrice")}>
           <Money value={item.selling_price} />
+        </Field>
+        {item.low_stock_threshold != null ? (
+          <Field label={t("items.lowStockAlertNoUnit")}>
+            <span dir="ltr" className="tabular-nums">
+              {item.low_stock_threshold} {t(`units.${item.primary_unit}`)}
+            </span>
+          </Field>
+        ) : null}
+        <Field label={t("items.trackInWarehouse")}>
+          <StatusBadge
+            tone={item.track_in_warehouse ? "success" : "muted"}
+            label={t(item.track_in_warehouse ? "items.tracked" : "items.notTracked")}
+          />
         </Field>
         <Field label={t("fields.addedOn")}>{formatDateTime(item.created_at)}</Field>
       </div>

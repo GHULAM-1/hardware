@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { getAccessToken } from "@/lib/auth-token";
 import { getCatalogSummary, getFinancialSummary, getTodayStats } from "@/server/actions/dashboard";
+import { useKhataReminders } from "@/hooks/use-khata";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { formatNumber, formatPKR } from "@/lib/format";
 import { Icon3D, type Icon3DName } from "@/components/ui/icon-3d";
@@ -80,6 +81,9 @@ export function StatBar() {
     queryFn: async () => getTodayStats(await getAccessToken()),
     enabled: isSuperAdmin,
   });
+  // Same payments-due-soon signal as the dashboard strip — drives the urgency
+  // beacon ahead of the first KPI card (super-admin only; gone when nothing's due).
+  const { data: reminders = [] } = useKhataReminders();
 
   return (
     <div className="shrink-0 overflow-x-auto px-4 pt-3 pb-1 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -88,6 +92,26 @@ export function StatBar() {
       <div className="mx-auto flex w-max items-center gap-3">
         {isSuperAdmin ? (
           <>
+            {reminders.length > 0 && (
+              <Link
+                href="/khata"
+                aria-label={t("khata.dueSoonCount", { count: reminders.length })}
+                className={cn(
+                  "candy candy-lg flex h-[80px] min-w-[164px] shrink-0 items-center gap-3 rounded-2xl px-3.5 text-white",
+                  CANDY.red,
+                )}
+              >
+                <span className="beacon ms-1 shrink-0" aria-hidden="true" />
+                <div className="min-w-0 flex-1 text-start">
+                  <div className="truncate text-[13px] font-bold text-white/90">
+                    {t("dashboard.paymentsDue")}
+                  </div>
+                  <div className="truncate text-start text-[22px] font-extrabold tabular-nums [text-shadow:0_2px_0_rgba(0,0,0,0.25)]">
+                    {reminders.length}
+                  </div>
+                </div>
+              </Link>
+            )}
             <StatCard
               href="/orders"
               color="green"
