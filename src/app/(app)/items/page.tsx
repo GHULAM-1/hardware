@@ -131,6 +131,18 @@ export default function ItemsPage() {
       headerClassName: "hidden sm:table-cell",
     },
     {
+      key: "buying",
+      header: t("fields.buyingPrice"),
+      cell: (row) =>
+        row.buying_price != null ? (
+          <Money value={row.buying_price} />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+      className: "hidden text-end md:table-cell",
+      headerClassName: "hidden text-end md:table-cell",
+    },
+    {
       key: "price",
       header: t("fields.sellingPrice"),
       cell: (row) => <Money value={row.selling_price} />,

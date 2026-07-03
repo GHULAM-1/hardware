@@ -79,8 +79,11 @@ export type StaffSalaryDetail = StaffSalaryRow & {
 
 export type WarehouseStock = Views["warehouse_stock"]["Row"];
 
-/** Item joined with its derived warehouse quantity (pricing + warehouse share one item). */
-export type ItemWithStock = Item & { quantity: number };
+/**
+ * Item joined with its derived warehouse quantity and latest recorded buying
+ * price (from the most recent stock-in). Pricing + warehouse share one item.
+ */
+export type ItemWithStock = Item & { quantity: number; buying_price: number | null };
 
 /** A stock entry with its (optional) supplier name resolved for display. */
 export type StockEntryWithSupplier = StockEntry & {

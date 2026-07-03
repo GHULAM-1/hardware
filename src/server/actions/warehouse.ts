@@ -22,7 +22,32 @@ export async function listItemsWithStock(accessToken: string, search = ""): Prom
   if (e2) throw new Error(e2.message);
 
   const qty = new Map((stock ?? []).map((s) => [s.item_id, Number(s.quantity ?? 0)]));
-  return (items ?? []).map((i) => ({ ...i, quantity: qty.get(i.id) ?? 0 }));
+
+  // Latest recorded buying price per item = the most recent stock-in with a price.
+  // One query for all listed items; rows come newest-first, so the first seen per
+  // item wins.
+  const ids = (items ?? []).map((i) => i.id);
+  const buy = new Map<string, number>();
+  if (ids.length) {
+    const { data: prices, error: e3 } = await client
+      .from("stock_entries")
+      .select("item_id, buying_price")
+      .in("item_id", ids)
+      .eq("type", StockEntryType.In)
+      .not("buying_price", "is", null)
+      .order("entry_date", { ascending: false })
+      .order("created_at", { ascending: false });
+    if (e3) throw new Error(e3.message);
+    for (const p of prices ?? []) {
+      if (!buy.has(p.item_id)) buy.set(p.item_id, Number(p.buying_price));
+    }
+  }
+
+  return (items ?? []).map((i) => ({
+    ...i,
+    quantity: qty.get(i.id) ?? 0,
+    buying_price: buy.get(i.id) ?? null,
+  }));
 }
 
 /** Derived warehouse quantity (Σin − Σout) for a single item. */
