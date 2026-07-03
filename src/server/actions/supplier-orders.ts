@@ -11,6 +11,7 @@ import {
 import { SupplierOrderStatus } from "@/lib/enums";
 import type {
   ItemNamePair,
+  SupplierBoughtItem,
   SupplierFrequentItem,
   SupplierOrder,
   SupplierOrderDetailView,
@@ -132,6 +133,42 @@ export async function getFrequentItemsForSupplier(
   return Array.from(totals.values())
     .sort((a, b) => b.total - a.total)
     .slice(0, limit);
+}
+
+/**
+ * Every distinct item we buy from a supplier, for the supplier detail view. Unions
+ * both places an item can be tied to a supplier: supplier orders/bills
+ * (`supplier_order_items`) and stock-in purchases (`stock_entries`, which also
+ * covers the supplier linked while adding an item). Deduped by item, sorted by name.
+ */
+export async function getSupplierItems(
+  accessToken: string,
+  supplierId: string,
+): Promise<SupplierBoughtItem[]> {
+  const client = createActionClient(accessToken);
+
+  const [ordered, bought] = await Promise.all([
+    client
+      .from("supplier_order_items")
+      .select("item_id, items(name_en, name_ur)")
+      .eq("supplier_id", supplierId),
+    client
+      .from("stock_entries")
+      .select("item_id, items(name_en, name_ur)")
+      .eq("supplier_id", supplierId)
+      .eq("type", "in"),
+  ]);
+  if (ordered.error) throw new Error(ordered.error.message);
+  if (bought.error) throw new Error(bought.error.message);
+
+  const distinct = new Map<string, SupplierBoughtItem>();
+  for (const row of [...(ordered.data ?? []), ...(bought.data ?? [])]) {
+    if (!row.items || !row.item_id || distinct.has(row.item_id)) continue;
+    distinct.set(row.item_id, { id: row.item_id, ...row.items });
+  }
+  return Array.from(distinct.values()).sort((a, b) =>
+    a.name_en.localeCompare(b.name_en),
+  );
 }
 
 export async function getSupplierOrder(

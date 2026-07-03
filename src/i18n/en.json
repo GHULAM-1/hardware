@@ -298,6 +298,8 @@
     "supplierName": "Supplier name",
     "location": "Location",
     "frequentItems": "Frequently ordered",
+    "itemsBought": "Items we buy",
+    "noItems": "No items bought yet",
     "recentOrders": "Recent orders",
     "noOrders": "No orders yet",
     "duplicatePhone": "A supplier with this phone number already exists",

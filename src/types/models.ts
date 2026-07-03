@@ -133,6 +133,9 @@ export type SupplierOrderListView = Pick<
 /** An item aggregated across a supplier's orders — "what we usually buy here". */
 export type SupplierFrequentItem = { item: ItemNamePair; total: number };
 
+/** A distinct item we buy from a supplier (from orders and/or stock-in purchases). */
+export type SupplierBoughtItem = ItemNamePair & { id: string };
+
 /**
  * One line of a supplier order, flattened for display. Carries its own supplier
  * and how much was received (null = not tallied yet) plus the item's cover image.

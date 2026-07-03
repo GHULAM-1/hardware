@@ -9,6 +9,7 @@ import {
   createSupplierOrder,
   deleteSupplierOrder,
   getFrequentItemsForSupplier,
+  getSupplierItems,
   getSupplierOrder,
   listSupplierOrders,
   listSupplierOrdersBySupplier,
@@ -44,6 +45,15 @@ export function useFrequentItemsForSupplier(supplierId: string | undefined) {
   return useQuery({
     queryKey: ["supplier-orders", "frequent", supplierId ?? ""],
     queryFn: async () => getFrequentItemsForSupplier(await getAccessToken(), supplierId as string),
+    enabled: Boolean(supplierId),
+  });
+}
+
+/** Items we buy from a supplier — ordered history, or bought (stock-in) fallback. */
+export function useSupplierItems(supplierId: string | undefined) {
+  return useQuery({
+    queryKey: ["supplier-orders", "items", supplierId ?? ""],
+    queryFn: async () => getSupplierItems(await getAccessToken(), supplierId as string),
     enabled: Boolean(supplierId),
   });
 }

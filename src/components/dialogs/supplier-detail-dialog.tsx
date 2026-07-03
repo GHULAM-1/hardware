@@ -12,10 +12,11 @@ import { SupplierOrderStatus } from "@/lib/enums";
 import { displayName } from "@/lib/display";
 import { formatDate, formatDateTime } from "@/lib/format";
 import {
-  useFrequentItemsForSupplier,
+  useSupplierItems,
   useSupplierOrdersBySupplier,
 } from "@/hooks/use-supplier-orders";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/common/status-badge";
 import {
   Dialog,
@@ -44,8 +45,8 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
   const { openDialog } = useDialogManager();
   const { supplier } = payload;
 
-  const { data: frequent = [] } = useFrequentItemsForSupplier(supplier.id);
-  const { data: orders = [] } = useSupplierOrdersBySupplier(supplier.id);
+  const { data: items = [], isLoading: itemsLoading } = useSupplierItems(supplier.id);
+  const { data: orders = [], isLoading: ordersLoading } = useSupplierOrdersBySupplier(supplier.id);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -64,30 +65,40 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
           <Field label={t("fields.addedOn")}>{formatDateTime(supplier.created_at)}</Field>
         </div>
 
-        {/* What we usually order from this supplier. */}
+        {/* Items we buy from this supplier — ordered history, or a stock-in fallback. */}
         <section className="space-y-2">
-          <h3 className="text-sm font-semibold">{t("suppliers.frequentItems")}</h3>
-          {frequent.length > 0 ? (
+          <h3 className="text-sm font-semibold">{t("suppliers.itemsBought")}</h3>
+          {itemsLoading ? (
             <div className="flex flex-wrap gap-2">
-              {frequent.map((f) => (
+              {[64, 88, 72, 56].map((w, i) => (
+                <Skeleton key={i} className="h-8 rounded-full" style={{ width: w }} />
+              ))}
+            </div>
+          ) : items.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {items.map((item) => (
                 <span
-                  key={f.item.name_en}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1 text-sm"
+                  key={item.id}
+                  className="inline-flex items-center rounded-full border border-border bg-secondary px-3 py-1 text-sm font-medium"
                 >
-                  <span className="font-medium">{displayName(f.item, language)}</span>
-                  <span className="text-muted-foreground">×{f.total}</span>
+                  {displayName(item, language)}
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("suppliers.noOrders")}</p>
+            <p className="text-sm text-muted-foreground">{t("suppliers.noItems")}</p>
           )}
         </section>
 
         {/* Recent orders placed with this supplier. */}
         <section className="space-y-2">
           <h3 className="text-sm font-semibold">{t("suppliers.recentOrders")}</h3>
-          {orders.length > 0 ? (
+          {ordersLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-14 w-full rounded-md" />
+              <Skeleton className="h-14 w-full rounded-md" />
+            </div>
+          ) : orders.length > 0 ? (
             <ul className="space-y-2">
               {orders.map((o) => (
                 <li key={o.id}>
