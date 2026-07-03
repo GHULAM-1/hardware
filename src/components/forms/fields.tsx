@@ -1,7 +1,9 @@
 "use client";
 
+import * as React from "react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Eye, EyeOff } from "lucide-react";
 
 import {
   FormControl,
@@ -52,6 +54,9 @@ export function TextField<T extends FieldValues>({
   optional,
   type = "text",
 }: BaseProps<T> & { type?: "text" | "email" | "password" }) {
+  const { t } = useTranslation();
+  const isPassword = type === "password";
+  const [reveal, setReveal] = React.useState(false);
   return (
     <FormField
       control={control}
@@ -60,13 +65,26 @@ export function TextField<T extends FieldValues>({
         <FormItem>
           <Labelled label={label} optional={optional} />
           <FormControl>
-            <Input
-              type={type}
-              dir={dir}
-              placeholder={placeholder}
-              {...field}
-              value={(field.value as string | null) ?? ""}
-            />
+            <div className="relative">
+              <Input
+                type={isPassword && reveal ? "text" : type}
+                dir={dir}
+                placeholder={placeholder}
+                {...field}
+                value={(field.value as string | null) ?? ""}
+                className={isPassword ? "pr-10" : undefined}
+              />
+              {isPassword ? (
+                <button
+                  type="button"
+                  onClick={() => setReveal((v) => !v)}
+                  aria-label={reveal ? t("auth.hidePassword") : t("auth.showPassword")}
+                  className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:text-foreground"
+                >
+                  {reveal ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              ) : null}
+            </div>
           </FormControl>
           <FormMessage />
         </FormItem>

@@ -66,7 +66,9 @@
     "signingIn": "Signing in…",
     "welcome": "Welcome back",
     "invalidCredentials": "Invalid email or password",
-    "accountDisabled": "Your account has been disabled. Please contact the owner."
+    "accountDisabled": "Your account has been disabled. Please contact the owner.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "fields": {
     "nameEn": "Name (English)",

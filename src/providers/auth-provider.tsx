@@ -40,23 +40,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       return;
     }
-    const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-    setProfile(data ?? null);
+    try {
+      const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+      setProfile(data ?? null);
+    } catch {
+      // A failed profile read must not wedge the loader — leave profile as-is and
+      // let the caller clear `loading` in its finally block.
+      setProfile((prev) => prev);
+    }
   }, []);
 
   React.useEffect(() => {
     let active = true;
+    // Skip redundant profile reloads on token refreshes for the same user.
+    let loadedForUserId: string | undefined;
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    // `onAuthStateChange` fires an INITIAL_SESSION event right after subscribing,
+    // so it is the single source of truth for both the initial session and later
+    // sign-in/out/refresh — no separate getSession() call (which would race it).
+    //
+    // IMPORTANT: the callback runs while gotrue holds an internal lock. Awaiting a
+    // Supabase call here (loadProfile → supabase.from → needs the token → same lock)
+    // can DEADLOCK, which leaves the app stuck on the loader until a refresh. So the
+    // callback stays synchronous and defers the profile fetch with setTimeout(…, 0),
+    // which releases the lock before the query runs.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       if (!active) return;
-      setSession(data.session);
-      await loadProfile(data.session?.user.id);
-      setLoading(false);
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       setSession(newSession);
-      await loadProfile(newSession?.user.id);
+
+      const userId = newSession?.user?.id;
+      if (!userId) {
+        loadedForUserId = undefined;
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+      if (userId === loadedForUserId) {
+        setLoading(false);
+        return;
+      }
+      loadedForUserId = userId;
+
+      setTimeout(async () => {
+        try {
+          await loadProfile(userId);
+        } finally {
+          if (active) setLoading(false);
+        }
+      }, 0);
     });
 
     return () => {
