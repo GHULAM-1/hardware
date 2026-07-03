@@ -31,10 +31,10 @@
     "pricing": "قیمتیں",
     "warehouse": "گودام",
     "customers": "گاہک",
-    "orders": "آرڈرز",
+    "orders": "نیا بل",
     "khata": "کھاتہ",
     "suppliers": "سپلائرز",
-    "supplierOrders": "سپلائر آرڈرز",
+    "supplierOrders": "سپلائر بل",
     "staff": "ملازمین",
     "users": "صارفین",
     "settings": "ترتیبات"
@@ -202,10 +202,18 @@
     "blacklistHint": "اس گاہک کا بل بناتے وقت خبردار کرے گا — فروخت نہیں روکے گا۔",
     "blacklisted": "بلیک لسٹ",
     "internalNote": "اندرونی نوٹ",
-    "internalNotePlaceholder": "اس گاہک کے بارے میں صرف عملے کے لیے نوٹ…"
+    "internalNotePlaceholder": "اس گاہک کے بارے میں صرف عملے کے لیے نوٹ…",
+    "itemLookup": "اس گاہک کو بیچی گئی کوئی چیز ڈھونڈیں",
+    "itemLookupPlaceholder": "چیز کا نام لکھ کر تلاش کریں…",
+    "itemLookupSummary": "{{count}} بار بیچی گئی · کل مقدار {{qty}} · {{total}}",
+    "noItemMatches": "یہ چیز اس گاہک کو نہیں بیچی گئی۔",
+    "bill": "بل",
+    "buyingPriceThen": "خرید (اُس وقت)",
+    "sellingPriceThen": "فروخت (اُس وقت)",
+    "profit": "منافع"
   },
   "orders": {
-    "title": "آرڈرز",
+    "title": "نیا بل",
     "newOrder": "نیا آرڈر",
     "lineItems": "اشیاء",
     "addLine": "آئٹم شامل کریں",
@@ -248,6 +256,7 @@
   },
   "assistant": {
     "title": "اسسٹنٹ",
+    "askMe": "مجھ سے پوچھیں!",
     "placeholder": "پوچھیں یا تلاش کریں…",
     "empty": "گاہکوں، آرڈرز، اسٹاک یا واجبات کے بارے میں پوچھیں۔",
     "exampleHint": "مثلاً \"احمد کے آرڈرز دکھائیں\"",
@@ -299,6 +308,8 @@
     "soonestDue": "اگلی مقررہ تاریخ",
     "totalOutstanding": "کل واجب",
     "noOutstanding": "کسی گاہک کا کوئی ادھار باقی نہیں۔",
+    "searchPlaceholder": "گاہک کا نام یا فون لکھ کر تلاش کریں…",
+    "noSearchResults": "آپ کی تلاش سے کوئی کھاتہ نہیں ملا۔",
     "allCleared": "سب ادا ہو گیا — کچھ باقی نہیں۔",
     "paidOff": "ادا شدہ",
     "settleAll": "سب ادا کریں",
@@ -347,7 +358,7 @@
     "invalidPhone": "درست نمبر درج کریں جیسے 03001234567"
   },
   "supplierOrders": {
-    "title": "سپلائر آرڈرز",
+    "title": "سپلائر بل",
     "newOrder": "نیا آرڈر",
     "detail": "سپلائر آرڈر",
     "searchOrders": "آرڈر تلاش کریں…",

@@ -1,5 +1,7 @@
 "use client";
 
+import * as React from "react";
+import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useCustomerOrders, useLastPurchase } from "@/hooks/use-customers";
@@ -9,8 +11,22 @@ import { formatDate, formatPKR } from "@/lib/format";
 import { paymentMeta } from "@/lib/status-meta";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { Money } from "@/components/common/money";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/common/status-badge";
 import type { Customer, CustomerOrderView } from "@/types/models";
+
+/** One item-line from the customer's history, flattened for the item lookup. */
+type PurchaseLine = {
+  id: string;
+  order_no: string;
+  created_at: string;
+  payment_type: CustomerOrderView["payment_type"];
+  name_en: string;
+  name_ur: string | null;
+  quantity: number;
+  selling_price: number;
+  cost_at_sale: number | null;
+};
 
 /**
  * Customer detail content (blacklist flag, internal note, last purchase, order
@@ -24,36 +40,100 @@ export function CustomerDetailBody({ customer }: { customer: Customer }) {
   const { data: orders = [], isLoading } = useCustomerOrders(customer.id);
   const { data: last } = useLastPurchase(customer.id);
 
-  const columns: Column<CustomerOrderView>[] = [
-    { key: "order_no", header: "#", cell: (o) => <span className="font-mono text-sm">{o.order_no}</span> },
-    { key: "date", header: t("fields.date"), cell: (o) => formatDate(o.created_at) },
+  const [itemQuery, setItemQuery] = React.useState("");
+
+  // Flatten every purchased item-line across all this customer's orders, so we
+  // can search for one item and list each time it was sold.
+  const purchaseLines = React.useMemo<PurchaseLine[]>(
+    () =>
+      orders.flatMap((o) =>
+        o.lines.map((l, i) => ({
+          id: `${o.id}-${i}`,
+          order_no: o.order_no,
+          created_at: o.created_at,
+          payment_type: o.payment_type,
+          name_en: l.item?.name_en ?? "",
+          name_ur: l.item?.name_ur ?? null,
+          quantity: l.quantity,
+          selling_price: l.selling_price,
+          cost_at_sale: l.cost_at_sale,
+        })),
+      ),
+    [orders],
+  );
+
+  const q = itemQuery.trim().toLowerCase();
+  // One row per purchased item-line, filtered by the item search when active.
+  const rows = React.useMemo(
+    () =>
+      q
+        ? purchaseLines.filter(
+            (r) =>
+              r.name_en.toLowerCase().includes(q) ||
+              (r.name_ur ?? "").toLowerCase().includes(q),
+          )
+        : purchaseLines,
+    [purchaseLines, q],
+  );
+
+  // Totals across the currently-shown lines (used for the filter summary).
+  const totalQty = rows.reduce((s, r) => s + r.quantity, 0);
+  const totalSpent = rows.reduce((s, r) => s + r.selling_price * r.quantity, 0);
+
+  const columns: Column<PurchaseLine>[] = [
+    { key: "order_no", header: t("customers.bill"), cell: (r) => <span className="font-mono text-sm">{r.order_no}</span> },
+    { key: "date", header: t("fields.date"), cell: (r) => <span className="whitespace-nowrap">{formatDate(r.created_at)}</span> },
     {
-      key: "items",
-      header: t("orders.lineItems"),
-      cell: (o) =>
-        o.lines
-          .map((l) => `${l.item ? displayName(l.item, language) : "—"} ×${l.quantity}`)
-          .join(", ") || "—",
+      key: "item",
+      header: t("fields.item"),
+      cell: (r) => displayName({ name_en: r.name_en, name_ur: r.name_ur }, language),
+    },
+    { key: "qty", header: t("fields.quantity"), cell: (r) => <span className="tabular-nums">{r.quantity}</span>, className: "text-end", headerClassName: "text-end" },
+    {
+      key: "buying",
+      header: t("customers.buyingPriceThen"),
+      cell: (r) => (r.cost_at_sale != null ? <Money value={r.cost_at_sale} /> : "—"),
+      className: "text-end",
+      headerClassName: "text-end",
+    },
+    {
+      key: "selling",
+      header: t("customers.sellingPriceThen"),
+      cell: (r) => <Money value={r.selling_price} />,
+      className: "text-end",
+      headerClassName: "text-end",
+    },
+    {
+      key: "line_total",
+      header: t("orders.total"),
+      cell: (r) => <Money value={r.selling_price * r.quantity} />,
+      className: "text-end",
+      headerClassName: "text-end",
+    },
+    {
+      key: "profit",
+      header: t("customers.profit"),
+      cell: (r) =>
+        r.cost_at_sale != null ? (
+          <Money value={(r.selling_price - r.cost_at_sale) * r.quantity} />
+        ) : (
+          "—"
+        ),
+      className: "text-end",
+      headerClassName: "text-end",
     },
     {
       key: "payment",
       header: t("fields.paymentType"),
-      cell: (o) => {
-        const m = paymentMeta(o.payment_type);
+      cell: (r) => {
+        const m = paymentMeta(r.payment_type);
         return <StatusBadge tone={m.tone} label={t(m.labelKey)} />;
       },
-    },
-    {
-      key: "total",
-      header: t("orders.total"),
-      cell: (o) => <Money value={o.total} />,
-      className: "text-end",
-      headerClassName: "text-end",
     },
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       {customer.is_blacklisted && (
         <StatusBadge tone="danger" label={t("customers.blacklisted")} className="self-start" />
       )}
@@ -76,11 +156,39 @@ export function CustomerDetailBody({ customer }: { customer: Customer }) {
         <p className="text-sm text-muted-foreground">{t("customers.noPurchases")}</p>
       )}
 
-      <div className="min-w-0">
-        <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+      {/* Order history — one row per purchased item, searchable by item name.
+          Each line carries the buying/selling price snapshotted at that sale. */}
+      <div className="min-w-0 space-y-2">
+        <h3 className="text-sm font-semibold text-muted-foreground">
           {t("customers.orderHistory")}
         </h3>
-        <DataTable columns={columns} rows={orders} getRowId={(o) => o.id} loading={isLoading} />
+        <div className="relative w-full">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={itemQuery}
+            onChange={(e) => setItemQuery(e.target.value)}
+            placeholder={t("customers.itemLookupPlaceholder")}
+            className="ps-9"
+          />
+        </div>
+
+        {q ? (
+          <p className="text-xs text-muted-foreground">
+            {t("customers.itemLookupSummary", {
+              count: rows.length,
+              qty: totalQty,
+              total: formatPKR(totalSpent),
+            })}
+          </p>
+        ) : null}
+
+        <DataTable
+          columns={columns}
+          rows={rows}
+          getRowId={(r) => r.id}
+          loading={isLoading}
+          emptyText={q ? t("customers.noItemMatches") : undefined}
+        />
       </div>
     </div>
   );

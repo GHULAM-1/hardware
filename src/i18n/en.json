@@ -31,10 +31,10 @@
     "pricing": "Pricing",
     "warehouse": "Warehouse",
     "customers": "Customers",
-    "orders": "Orders",
+    "orders": "New bill",
     "khata": "Khata",
     "suppliers": "Suppliers",
-    "supplierOrders": "Supplier orders",
+    "supplierOrders": "Supplier bill",
     "staff": "Staff",
     "users": "Users",
     "settings": "Settings"
@@ -202,10 +202,18 @@
     "blacklistHint": "Shows a warning when this customer is billed — does not block sales.",
     "blacklisted": "Blacklisted",
     "internalNote": "Internal note",
-    "internalNotePlaceholder": "Staff-only memo about this customer…"
+    "internalNotePlaceholder": "Staff-only memo about this customer…",
+    "itemLookup": "Find an item sold to this customer",
+    "itemLookupPlaceholder": "Search an item by name…",
+    "itemLookupSummary": "Sold {{count}} time(s) · {{qty}} total qty · {{total}}",
+    "noItemMatches": "This item hasn't been sold to this customer.",
+    "bill": "Bill",
+    "buyingPriceThen": "Buying (then)",
+    "sellingPriceThen": "Selling (then)",
+    "profit": "Profit"
   },
   "orders": {
-    "title": "Orders",
+    "title": "New bill",
     "newOrder": "New order",
     "lineItems": "Items",
     "addLine": "Add item",
@@ -248,6 +256,7 @@
   },
   "assistant": {
     "title": "Assistant",
+    "askMe": "Ask me!",
     "placeholder": "Ask or search…",
     "empty": "Ask about customers, orders, stock, or dues.",
     "exampleHint": "e.g. \"check out the orders of Ahmad\"",
@@ -299,6 +308,8 @@
     "soonestDue": "Next due",
     "totalOutstanding": "Total owed",
     "noOutstanding": "No customer has any pending udhaar.",
+    "searchPlaceholder": "Search a customer by name or phone…",
+    "noSearchResults": "No customer khata matches your search.",
     "allCleared": "All paid — nothing pending.",
     "paidOff": "Paid off",
     "settleAll": "Settle all",
@@ -347,7 +358,7 @@
     "invalidPhone": "Enter a valid number like 03001234567"
   },
   "supplierOrders": {
-    "title": "Supplier orders",
+    "title": "Supplier bill",
     "newOrder": "New order",
     "detail": "Supplier order",
     "searchOrders": "Search orders…",

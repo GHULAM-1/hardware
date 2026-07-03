@@ -63,6 +63,13 @@ export function ActionFab() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Other surfaces (e.g. the dashboard mascot) open the assistant via this event.
+  React.useEffect(() => {
+    const open = () => setAssistantOpen(true);
+    window.addEventListener("assistant:open", open);
+    return () => window.removeEventListener("assistant:open", open);
+  }, []);
+
   const playing = status === "playing";
   const busy = status === "loading";
   const readLabel = playing

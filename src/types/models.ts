@@ -98,6 +98,8 @@ export type OrderLineView = {
   quantity: number;
   unit: string;
   selling_price: number;
+  /** Supplier buying price snapshotted at sale time (null for pre-snapshot orders). */
+  cost_at_sale: number | null;
   item: ItemNamePair | null;
 };
 

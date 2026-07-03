@@ -162,7 +162,7 @@ export async function getOrderReceipt(
   const { data, error } = await client
     .from("orders")
     .select(
-      "id, order_no, created_at, total, amount_paid, balance_due, payment_type, due_date, internal_note, customers(name_en, name_ur, phone), order_items(quantity, unit, selling_price, items(name_en, name_ur))",
+      "id, order_no, created_at, total, amount_paid, balance_due, payment_type, due_date, internal_note, customers(name_en, name_ur, phone), order_items(quantity, unit, selling_price, cost_at_sale, items(name_en, name_ur))",
     )
     .eq("id", orderId)
     .single();
@@ -183,6 +183,7 @@ export async function getOrderReceipt(
       quantity: li.quantity,
       unit: li.unit,
       selling_price: li.selling_price,
+      cost_at_sale: li.cost_at_sale,
       item: li.items ?? null,
     })),
   };

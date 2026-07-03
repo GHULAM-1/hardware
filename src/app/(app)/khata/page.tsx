@@ -8,11 +8,14 @@ import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
+import { groupCustomerKhatas } from "@/lib/khata-groups";
 import { PageHeader } from "@/components/layout/page-header";
+import { CustomerKhataTable } from "@/components/khata/customer-khata-table";
 import { KhataTable } from "@/components/khata/khata-table";
 import { DueSoonStrip } from "@/components/khata/due-soon-strip";
 import { Button } from "@/components/ui/button";
-import { BellPlus, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { BellPlus, Plus, Search } from "lucide-react";
 
 export default function KhataPage() {
   const { t } = useTranslation();
@@ -22,8 +25,28 @@ export default function KhataPage() {
   const { data: khatas = [], isLoading } = useKhatas();
   const { fulfill, pendingId } = useFulfillKhata();
 
+  const [search, setSearch] = React.useState("");
+  const q = search.trim().toLowerCase();
+
   // Manual reminders (no customer) are kept in their own section below.
   const reminders = React.useMemo(() => khatas.filter((k) => !k.customer), [khatas]);
+
+  // Search collapses khatas into one row per customer, filtered by name/phone.
+  const customerGroups = React.useMemo(() => groupCustomerKhatas(khatas), [khatas]);
+  const searchResults = React.useMemo(
+    () =>
+      q
+        ? customerGroups.filter((g) => {
+            const c = g.customer;
+            return (
+              c.name_en.toLowerCase().includes(q) ||
+              (c.name_ur ?? "").toLowerCase().includes(q) ||
+              (c.phone ?? "").toLowerCase().includes(q)
+            );
+          })
+        : [],
+    [customerGroups, q],
+  );
 
   // The reminders table's inline "Mark fulfilled" is a one-way status change, so
   // it gets the same confirm. This button lives on the page (not inside a dialog),
@@ -56,30 +79,53 @@ export default function KhataPage() {
           ) : null
         }
       />
-      <DueSoonStrip
-        className="mb-6"
-        onOpen={(khata) =>
-          // A customer row opens the full per-customer khata view (receive
-          // payment / settle all); a manual reminder keeps the single-entry view.
-          khata.customer
-            ? openDialog(DialogKey.CustomerKhata, { customerId: khata.customer.id })
-            : openDialog(DialogKey.KhataDetail, { khata })
-        }
-        onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
-      />
+      {/* Search a customer's khata by name or phone. */}
+      <div className="relative mb-6 w-full sm:max-w-md">
+        <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("khata.searchPlaceholder")}
+          className="ps-9"
+        />
+      </div>
 
-      {reminders.length > 0 ? (
-        <section className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-muted-foreground">{t("khata.reminders")}</h2>
-          <KhataTable
-            rows={reminders}
-            loading={isLoading}
-            onMarkFulfilled={confirmFulfill}
-            markingId={pendingId}
-            onRowClick={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+      {q ? (
+        // Search mode: matching customers' cumulative khata; clicking opens theirs.
+        <CustomerKhataTable
+          groups={searchResults}
+          loading={isLoading}
+          emptyText={t("khata.noSearchResults")}
+          onRowClick={(group) => openDialog(DialogKey.CustomerKhata, { customerId: group.customer.id })}
+        />
+      ) : (
+        <>
+          <DueSoonStrip
+            className="mb-6"
+            onOpen={(khata) =>
+              // A customer row opens the full per-customer khata view (receive
+              // payment / settle all); a manual reminder keeps the single-entry view.
+              khata.customer
+                ? openDialog(DialogKey.CustomerKhata, { customerId: khata.customer.id })
+                : openDialog(DialogKey.KhataDetail, { khata })
+            }
+            onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
           />
-        </section>
-      ) : null}
+
+          {reminders.length > 0 ? (
+            <section className="mt-8">
+              <h2 className="mb-3 text-sm font-semibold text-muted-foreground">{t("khata.reminders")}</h2>
+              <KhataTable
+                rows={reminders}
+                loading={isLoading}
+                onMarkFulfilled={confirmFulfill}
+                markingId={pendingId}
+                onRowClick={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+              />
+            </section>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

@@ -70,7 +70,7 @@ export async function getCustomerOrders(
   const client = createActionClient(accessToken);
   const { data, error } = await client
     .from("orders")
-    .select("id, order_no, created_at, total, payment_type, status, order_items(quantity, unit, selling_price, items(name_en, name_ur))")
+    .select("id, order_no, created_at, total, payment_type, status, order_items(quantity, unit, selling_price, cost_at_sale, items(name_en, name_ur))")
     .eq("customer_id", customerId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -86,6 +86,7 @@ export async function getCustomerOrders(
       quantity: li.quantity,
       unit: li.unit,
       selling_price: li.selling_price,
+      cost_at_sale: li.cost_at_sale,
       item: li.items ?? null,
     })),
   }));

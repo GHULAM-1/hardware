@@ -15,7 +15,7 @@ export function Logo({ className, compact = false }: { className?: string; compa
       </span>
       {!compact && (
         <span className="leading-[1.05]">
-          <span className="block text-sm font-extrabold tracking-wide text-current">LAHORE</span>
+          <span className="block text-sm font-extrabold tracking-wide text-current">QASIM</span>
           <span className="block text-sm font-extrabold tracking-wide text-gold">HARDWARE</span>
           <span className="block text-[9px] leading-tight tracking-[0.3em] text-gold">★★★★★</span>
         </span>
