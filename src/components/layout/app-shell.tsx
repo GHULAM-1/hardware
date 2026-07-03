@@ -8,6 +8,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { StatBar } from "@/components/layout/stat-bar";
 import { ActionFab } from "@/components/assistant/action-fab";
 import { useNavShortcuts } from "@/hooks/use-nav-shortcuts";
+import { useArrowScroll } from "@/hooks/use-arrow-scroll";
 import { cn } from "@/lib/utils";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
@@ -19,6 +20,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   // Global "Ctrl + letter" launcher shortcuts, active on every app page.
   useNavShortcuts();
+  // Arrow / Page / Home / End keys scroll the main content area (the shell is a
+  // fixed layout, so the page itself never scrolls) — works on every tab.
+  const mainRef = useArrowScroll<HTMLElement>();
   // The dashboard is a launcher: its own tile grid replaces the sidebar (desktop)
   // and it owns its scroll, so the stat-bar stays pinned on top and the info
   // cards stay pinned at the bottom.
@@ -46,6 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Non-dashboard pages scroll normally; pb clears the floating assistant
             button. The dashboard owns its own scroll (pinned top/bottom zones). */}
         <main
+          ref={mainRef}
           className={cn(
             "min-h-0 flex-1",
             isDashboard ? "overflow-hidden" : "overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-24",
