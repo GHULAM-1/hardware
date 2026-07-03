@@ -32,6 +32,7 @@ export const queryKeys = {
   users: () => ["users"] as const,
   settings: () => ["settings"] as const,
   navShortcuts: () => ["settings", "nav-shortcuts"] as const,
+  lockedTabs: () => ["settings", "locked-tabs"] as const,
 
   staff: (search?: string) => ["staff", { search: search ?? "" }] as const,
   staffMember: (id: string) => ["staff", id] as const,

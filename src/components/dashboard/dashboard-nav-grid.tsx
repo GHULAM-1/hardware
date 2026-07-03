@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { Lock, LockOpen } from "lucide-react";
 
 import { NAV_ITEMS, type GameColor } from "@/lib/nav";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
-import { useNavShortcutSettings } from "@/hooks/use-settings";
+import { useLock } from "@/providers/lock-provider";
+import { useNavShortcutSettings, useLockedTabs } from "@/hooks/use-settings";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { DialogKey } from "@/lib/dialog-keys";
 import { Icon3D } from "@/components/ui/icon-3d";
@@ -35,6 +37,9 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const isSuperAdmin = useIsSuperAdmin();
   const { data: shortcuts } = useNavShortcutSettings();
+  const { data: lock } = useLockedTabs();
+  const lockedTabs = lock?.tabs ?? [];
+  const { unlocked } = useLock();
   const { openDialog } = useDialogManager();
 
   const items = NAV_ITEMS.filter(
@@ -45,6 +50,7 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
       {items.map((item) => {
         const active = pathname.startsWith(item.href);
+        const locked = lockedTabs.includes(item.href);
         return (
           <Link
             key={item.href}
@@ -56,6 +62,21 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
               active && "ring-gold",
             )}
           >
+            {locked && (
+              <span
+                className={cn(
+                  "absolute start-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full shadow-md ring-2 ring-white/80",
+                  unlocked ? "bg-emerald-500 text-white" : "bg-gold text-slate-900",
+                )}
+                title={unlocked ? t("lock.unlocked") : t("lock.lockedTitle")}
+              >
+                {unlocked ? (
+                  <LockOpen className="size-[18px]" strokeWidth={2.75} />
+                ) : (
+                  <Lock className="size-[18px]" strokeWidth={2.75} />
+                )}
+              </span>
+            )}
             <ShortcutHint
               letter={shortcuts?.[item.href] ?? item.shortcut}
               className="absolute end-2 top-2 hidden md:inline-flex"

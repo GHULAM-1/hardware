@@ -10,6 +10,8 @@ import {
   setReminderLeadDays,
   getNavShortcuts,
   setNavShortcuts,
+  getLockedTabs,
+  setTabLock,
 } from "@/server/actions/settings";
 
 export function useReminderLeadDays() {
@@ -42,6 +44,26 @@ export function useSetNavShortcutSettings() {
     // The action returns the resolved map — write it straight into the cache so
     // the sidebar/dashboard badges and the launcher update without a refetch.
     onSuccess: (resolved) => qc.setQueryData(queryKeys.navShortcuts(), resolved),
+  });
+}
+
+/** The current lock config (tabs + version). Drives the gate + badges. */
+export function useLockedTabs() {
+  return useQuery({
+    queryKey: queryKeys.lockedTabs(),
+    queryFn: async () => getLockedTabs(await getAccessToken()),
+  });
+}
+
+/** Persist the locked-tab set + password (super_admin only). */
+export function useSetTabLock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { tabs: string[]; password: string | null }) =>
+      setTabLock(await getAccessToken(), input.tabs, input.password),
+    // Refetch so we pick up the new version stamp — this is what invalidates any
+    // stale "unlocked this session" flag once the lock config changes.
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lockedTabs() }),
   });
 }
 

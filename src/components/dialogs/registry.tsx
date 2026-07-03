@@ -30,6 +30,7 @@ import { SalarySlipDialog } from "@/components/dialogs/salary-slip-dialog";
 import { ReminderFormDialog } from "@/components/forms/reminder-form-dialog";
 import { UserFormDialog } from "@/components/forms/user-form-dialog";
 import { UserEditDialog } from "@/components/forms/user-edit-dialog";
+import { LockConfigDialog } from "@/components/dialogs/lock-config-dialog";
 
 /**
  * Central dialog registry — single source of truth mapping dialog keys to their
@@ -65,4 +66,5 @@ export const dialogRegistry: DialogRegistry = {
   [DialogKey.ReminderForm]: ReminderFormDialog,
   [DialogKey.UserForm]: UserFormDialog,
   [DialogKey.UserEdit]: UserEditDialog,
+  [DialogKey.LockConfig]: LockConfigDialog,
 };

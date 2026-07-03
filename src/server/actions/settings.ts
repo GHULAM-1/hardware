@@ -62,3 +62,56 @@ export async function setNavShortcuts(
   if (error) throw new Error(error.message);
   return resolved;
 }
+
+/* ------------------------------------------------------------------ */
+/* Tab lock — password-gated nav tabs (one app-wide shared password).   */
+/* The bcrypt hash lives only in the DB; these RPCs never return it.    */
+/* ------------------------------------------------------------------ */
+
+/** Locked hrefs + a version stamp (bumps on every change, so a prior unlock can
+ * be invalidated when the lock config changes). */
+export type LockConfig = { tabs: string[]; version: number };
+
+/** The current lock config (empty tabs when nothing is locked). */
+export async function getLockedTabs(accessToken: string): Promise<LockConfig> {
+  const client = createActionClient(accessToken);
+  const { data, error } = await client.rpc("get_locked_tabs");
+  if (error) throw new Error(error.message);
+  const obj = (data ?? {}) as { tabs?: unknown; version?: unknown };
+  return {
+    tabs: Array.isArray(obj.tabs) ? (obj.tabs as string[]) : [],
+    version: typeof obj.version === "number" ? obj.version : 0,
+  };
+}
+
+/** True when `password` matches the shared lock password (or none is set). */
+export async function verifyTabLockPassword(
+  accessToken: string,
+  password: string,
+): Promise<boolean> {
+  const client = createActionClient(accessToken);
+  const { data, error } = await client.rpc("verify_tab_lock_password", {
+    p_password: password,
+  });
+  if (error) throw new Error(error.message);
+  return data === true;
+}
+
+/**
+ * Persist the locked tabs + password (super_admin only; enforced in the RPC).
+ * An empty `tabs` list clears the lock and password. A null `password` with a
+ * non-empty list keeps the existing password (editing the set after auth).
+ */
+export async function setTabLock(
+  accessToken: string,
+  tabs: string[],
+  password: string | null,
+): Promise<string[]> {
+  const client = createActionClient(accessToken);
+  const { error } = await client.rpc("set_tab_lock", {
+    p_tabs: tabs,
+    p_password: password,
+  });
+  if (error) throw new Error(error.message);
+  return tabs;
+}

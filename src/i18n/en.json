@@ -2,6 +2,29 @@
   "app": {
     "name": "Hardware Shop CRM"
   },
+  "lock": {
+    "manageTitle": "Lock tabs",
+    "manageHint": "Choose which tabs to hide behind a password.",
+    "authHint": "Enter the password to change the locked tabs.",
+    "lock": "Lock",
+    "removeLock": "Remove lock",
+    "setPasswordTitle": "Set a password",
+    "setPasswordHint": "You'll need this password to open the locked tabs.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "passwordPlaceholder": "Password",
+    "passwordTooShort": "Password must be at least 4 characters.",
+    "passwordMismatch": "Passwords don't match.",
+    "lockedTitle": "This tab is locked",
+    "lockedHint": "Enter the password to unlock.",
+    "unlock": "Unlock",
+    "wrongPassword": "Wrong password. Try again.",
+    "saved": "Lock settings saved.",
+    "saveError": "Couldn't save the lock settings.",
+    "unlocked": "Unlocked",
+    "relockHint": "Lock now",
+    "relocked": "Locked — tabs need the password again."
+  },
   "nav": {
     "dashboard": "Dashboard",
     "items": "Items",
@@ -136,7 +159,11 @@
     "addStockHint": "Your last supplier and price are prefilled — enter a quantity to record a new purchase. Adding a quantity turns on warehouse tracking.",
     "currentStockHint": "Change the quantity to set the item's current stock. Supplier and last buying price are prefilled.",
     "addSupplier": "Add another supplier",
-    "additionalSupplier": "Supplier {{n}}"
+    "additionalSupplier": "Supplier {{n}}",
+    "shareWithSupplier": "Share with supplier",
+    "shareTooltip": "Send this item's photo and name to a supplier",
+    "shareCopied": "Item details copied — paste them to your supplier.",
+    "shareFailed": "Couldn't share this item."
   },
   "measurement": {
     "count": "Count",
@@ -151,7 +178,12 @@
     "stockIn": "Stock in",
     "stockOut": "Stock out",
     "addStock": "Add stock",
+    "removeStock": "Remove stock",
     "manageStock": "Manage stock",
+    "quickStockTitle": "Quick stock in / out",
+    "quickStockHint": "Pick an item to add or remove stock without opening it.",
+    "quickStockPick": "Search an item…",
+    "pickItemFirst": "Pick an item to stock in or out.",
     "history": "Stock history",
     "inStock": "In stock",
     "lowStock": "Low stock",

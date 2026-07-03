@@ -19,13 +19,19 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { ItemWithStock, StockEntryWithSupplier } from "@/types/models";
 
-/** Inline add/edit form for a single stock movement (in = sourcing, out = manual deduction). */
+/**
+ * Inline add/edit form for a single stock movement (in = sourcing, out = manual
+ * deduction). `item` may be null so the box can render as an inert placeholder
+ * (used by the warehouse quick-stock panel before an item is picked); submitting
+ * is blocked until an item is present. When an item IS given (the dialog path),
+ * every fallback below is a no-op, so behaviour there is unchanged.
+ */
 export function StockEntryForm({
   item,
   editing,
   onDone,
 }: {
-  item: ItemWithStock;
+  item: ItemWithStock | null;
   editing: StockEntryWithSupplier | null;
   onDone: () => void;
 }) {
@@ -33,16 +39,18 @@ export function StockEntryForm({
   const create = useCreateStockEntry();
   const update = useUpdateStockEntry();
   const unitLabel = (key: string) => t(`units.${key}`);
+  // Pack ratio drives unit conversion; default to 1 (no sub-unit) when itemless.
+  const basePerPrimary = item?.base_per_primary ?? 1;
 
   const form = useForm({
     resolver: zodResolver(stockEntrySchema),
     defaultValues: {
-      item_id: item.id,
+      item_id: item?.id ?? "",
       // Default to Stock out: this dialog manages an existing item; sourcing
       // (stock-in) happens at creation, manual deductions are the common action.
       type: (editing?.type as StockEntryType) ?? StockEntryType.Out,
       // The form works in the item's PRIMARY unit; we convert to base on submit.
-      quantity: editing ? fromBase(editing.quantity, item.base_per_primary) : ("" as unknown as number),
+      quantity: editing ? fromBase(editing.quantity, basePerPrimary) : ("" as unknown as number),
       supplier_id: editing?.supplier_id ?? null,
       buying_price: editing?.buying_price ?? null,
       note: editing?.note ?? "",
@@ -57,10 +65,10 @@ export function StockEntryForm({
   const submitting = create.isPending || update.isPending;
 
   // Per-base cost hint (e.g. "₨10 / piece") so the admin sees the derived unit cost.
-  const showPerBase = item.base_per_primary > 1 && Number(price) > 0;
-  const perBase = showPerBase ? Number(price) / item.base_per_primary : 0;
+  const showPerBase = basePerPrimary > 1 && Number(price) > 0;
+  const perBase = showPerBase ? Number(price) / basePerPrimary : 0;
   // Total of this entry in base units (e.g. "= 50 piece").
-  const baseTotal = Number(qty) > 0 ? toBase(Number(qty), item.base_per_primary) : 0;
+  const baseTotal = Number(qty) > 0 ? toBase(Number(qty), basePerPrimary) : 0;
 
   function setType(next: StockEntryType) {
     form.setValue("type", next);
@@ -72,9 +80,10 @@ export function StockEntryForm({
 
   async function onSubmit(values: StockEntryValues) {
     // Persist quantity in canonical base units; buying price stays per primary unit.
+    if (!item) return; // submit is disabled without an item; guard defensively.
     const payload: StockEntryValues = {
       ...values,
-      quantity: toBase(Number(values.quantity), item.base_per_primary),
+      quantity: toBase(Number(values.quantity), basePerPrimary),
     };
     try {
       if (editing) await update.mutateAsync({ id: editing.id, values: payload });
@@ -111,7 +120,7 @@ export function StockEntryForm({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 [&>*]:min-w-0">
-          {isIn && (
+          {isIn && item && (
             <FormField
               control={form.control}
               name="supplier_id"
@@ -133,10 +142,10 @@ export function StockEntryForm({
           <NumberField
             control={form.control}
             name="quantity"
-            label={`${t("fields.quantity")} (${unitLabel(item.primary_unit)})`}
+            label={`${t("fields.quantity")}${item ? ` (${unitLabel(item.primary_unit)})` : ""}`}
             step="0.01"
           />
-          {isIn && (
+          {isIn && item && (
             <NumberField
               control={form.control}
               name="buying_price"
@@ -168,7 +177,7 @@ export function StockEntryForm({
         </div>
 
         {/* Derived hints: total in base units + per-base cost for packs. */}
-        {(baseTotal > 0 || showPerBase) && hasSubUnit(item) && (
+        {item && (baseTotal > 0 || showPerBase) && hasSubUnit(item) && (
           <p className="text-xs text-muted-foreground" dir="ltr">
             {baseTotal > 0 && `= ${baseTotal} ${unitLabel(item.base_unit)}`}
             {baseTotal > 0 && showPerBase && " · "}
@@ -176,14 +185,23 @@ export function StockEntryForm({
           </p>
         )}
 
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {!item && (
+            <p className="me-auto text-xs text-muted-foreground">
+              {t("warehouse.pickItemFirst")}
+            </p>
+          )}
           {editing && (
             <Button type="button" variant="outline" onClick={onDone} disabled={submitting}>
               {t("common.cancel")}
             </Button>
           )}
-          <Button type="submit" disabled={submitting}>
-            {editing ? t("common.save") : t("warehouse.addStock")}
+          <Button type="submit" disabled={submitting || !item}>
+            {editing
+              ? t("common.save")
+              : isIn
+                ? t("warehouse.addStock")
+                : t("warehouse.removeStock")}
           </Button>
         </div>
       </form>

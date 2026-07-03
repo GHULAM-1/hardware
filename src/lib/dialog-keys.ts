@@ -30,6 +30,7 @@ export const DialogKey = {
   ReminderForm: "reminder-form",
   UserForm: "user-form",
   UserEdit: "user-edit",
+  LockConfig: "lock-config",
   ConfirmDelete: "confirm-delete",
 } as const;
 

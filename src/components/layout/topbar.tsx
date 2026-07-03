@@ -2,10 +2,15 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { LogOut, UserCog } from "lucide-react";
+import { toast } from "sonner";
+import { LogOut, UserCog, Lock, LockOpen } from "lucide-react";
 
-import { useAuth } from "@/providers/auth-provider";
+import { useAuth, useIsSuperAdmin } from "@/providers/auth-provider";
+import { useLock } from "@/providers/lock-provider";
 import { UserRole } from "@/lib/enums";
+import { useDialogManager } from "@/components/dialogs/dialog-manager";
+import { DialogKey } from "@/lib/dialog-keys";
+import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Logo } from "@/components/layout/logo";
@@ -38,10 +43,26 @@ export function Topbar() {
   // in the topbar there on desktop too.
   const isDashboard = pathname === "/dashboard";
   const { profile, signOut } = useAuth();
+  const isSuperAdmin = useIsSuperAdmin();
+  const { openDialog } = useDialogManager();
+  const { hasLock, unlocked, relock } = useLock();
 
   async function onLogout() {
     await signOut();
     router.replace("/login");
+  }
+
+  // The lock button is a session toggle. Once the app has been unlocked this
+  // session, clicking it re-locks immediately (tabs demand the password again).
+  // Otherwise it opens the config dialog (set up / manage the locked tabs).
+  const showUnlocked = hasLock && unlocked;
+  function onLockButton() {
+    if (showUnlocked) {
+      relock();
+      toast.success(t("lock.relocked"));
+    } else {
+      openDialog(DialogKey.LockConfig, null);
+    }
   }
 
   return (
@@ -55,6 +76,31 @@ export function Topbar() {
       <div className="flex min-w-0 flex-1 sm:max-w-md">
         <GlobalSearch />
       </div>
+
+      {/* Tab lock — a session toggle next to the search. Super_admin only.
+          Green "Unlocked" while the app is unlocked (click to re-lock now);
+          gold "Lock" otherwise (click to set up / manage locked tabs). */}
+      {isSuperAdmin && (
+        <button
+          type="button"
+          onClick={onLockButton}
+          title={showUnlocked ? t("lock.relockHint") : t("lock.manageTitle")}
+          aria-label={showUnlocked ? t("lock.relockHint") : t("lock.manageTitle")}
+          className={cn(
+            "flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-2.5 font-bold shadow-md outline-none transition-transform hover:brightness-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-white sm:px-3",
+            showUnlocked ? "bg-emerald-500 text-white" : "bg-gold text-slate-900",
+          )}
+        >
+          {showUnlocked ? (
+            <LockOpen className="h-5 w-5" strokeWidth={2.75} />
+          ) : (
+            <Lock className="h-5 w-5" strokeWidth={2.75} />
+          )}
+          <span className="hidden text-sm sm:inline">
+            {showUnlocked ? t("lock.unlocked") : t("lock.lock")}
+          </span>
+        </button>
+      )}
 
       <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
         <LanguageSwitcher />

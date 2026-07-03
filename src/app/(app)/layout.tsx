@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/providers/auth-provider";
 import { UserRole } from "@/lib/enums";
 import { isAdminAllowedPath } from "@/lib/nav";
+import { LockProvider, useLock } from "@/providers/lock-provider";
 import { AppShell } from "@/components/layout/app-shell";
+import { TabLockScreen } from "@/components/lock/tab-lock-screen";
 import { FullPageLoader } from "@/components/layout/full-page-loader";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -50,5 +52,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading || !session || inactive || adminBlocked) return <FullPageLoader />;
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <LockProvider>
+      <AppShell>
+        <LockGate>{children}</LockGate>
+      </AppShell>
+    </LockProvider>
+  );
+}
+
+/**
+ * Replaces a locked page's content with the unlock prompt (keeping the shell,
+ * so the user can navigate elsewhere). Direct-URL entry is covered because this
+ * keys off the live pathname, just like the admin guard above.
+ */
+function LockGate({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { isGated } = useLock();
+  return isGated(pathname) ? <TabLockScreen /> : <>{children}</>;
 }

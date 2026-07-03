@@ -1,14 +1,20 @@
 "use client";
 
+import * as React from "react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { Share2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useItemStock, useStockEntries } from "@/hooks/use-warehouse";
 import { useItemSuppliers } from "@/hooks/use-suppliers";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
+import { useLanguage } from "@/providers/i18n-provider";
 import { StockEntryType } from "@/lib/enums";
 import { DialogKey } from "@/lib/dialog-keys";
+import { displayName } from "@/lib/display";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { formatQuantity, hasSubUnit } from "@/lib/units";
 import { Money } from "@/components/common/money";
@@ -17,6 +23,7 @@ import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Icon3D } from "@/components/ui/icon-3d";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Carousel,
   CarouselContent,
@@ -51,6 +58,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
  */
 export function ItemDetailBody({ item }: { item: Item }) {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
   const { openDialog } = useDialogManager();
@@ -61,6 +69,86 @@ export function ItemDetailBody({ item }: { item: Item }) {
 
   const images = item.image_urls?.length ? item.image_urls : item.image_url ? [item.image_url] : [];
   const recent = entries.slice(0, 5);
+
+  // Share the item's cover photo + name to a supplier via the device's native
+  // share sheet (WhatsApp, SMS, email, Bluetooth — whatever the admin picks).
+  //
+  // The cover image (first image) is prefetched into a File as soon as the detail
+  // opens. This is essential: the Web Share API must be invoked synchronously from
+  // the click's user gesture, so we can't `await fetch()` inside the handler — that
+  // consumes the gesture and the share silently fails (which is why items WITH an
+  // image gave no options). With the file ready ahead of time, the click shares
+  // immediately.
+  const coverUrl = images[0];
+  // Cached alongside its URL so a stale file from a previously-viewed item is never
+  // shared once the selection changes.
+  const [cover, setCover] = React.useState<{ url: string; file: File } | null>(null);
+  React.useEffect(() => {
+    if (!coverUrl) return;
+    let active = true;
+    (async () => {
+      try {
+        const { data: blob } = await axios.get<Blob>(coverUrl, { responseType: "blob" });
+        const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+        const file = new File([blob], `${item.name_en || "item"}.${ext}`, {
+          type: blob.type || "image/jpeg",
+        });
+        if (active) setCover({ url: coverUrl, file });
+      } catch {
+        // offline/CORS — we'll share the link instead
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [coverUrl, item.name_en]);
+
+  const isAbort = (err: unknown) => (err as Error)?.name === "AbortError";
+
+  async function shareItem() {
+    const name = displayName(item, language);
+    const coverFile = cover?.url === coverUrl ? cover.file : null;
+    const link = coverUrl;
+
+    // 1) Native share with the actual cover image attached.
+    if (coverFile && navigator.canShare?.({ files: [coverFile] }) && navigator.share) {
+      try {
+        await navigator.share({ title: name, text: name, files: [coverFile] });
+        return;
+      } catch (err) {
+        if (isAbort(err)) return; // user closed the sheet — done
+        // otherwise fall through to a text share
+      }
+    }
+
+    // 2) Native share with text (+ image link so it still previews).
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: name, text: [name, link].filter(Boolean).join("\n") });
+        return;
+      } catch (err) {
+        if (isAbort(err)) return;
+        // fall through to the WhatsApp/clipboard fallback
+      }
+    }
+
+    // 3) No Web Share API (or it failed) — open WhatsApp prefilled; if the popup is
+    // blocked, copy the details so the admin can paste them anywhere.
+    const msg = [name, link].filter(Boolean).join("\n");
+    const win = window.open(
+      `https://wa.me/?text=${encodeURIComponent(msg)}`,
+      "_blank",
+      "noopener",
+    );
+    if (!win) {
+      try {
+        await navigator.clipboard.writeText(msg);
+        toast.success(t("items.shareCopied"));
+      } catch {
+        toast.error(t("items.shareFailed"));
+      }
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -175,16 +263,30 @@ export function ItemDetailBody({ item }: { item: Item }) {
         </Section>
       ) : null}
 
-      {isSuperAdmin && (
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => openDialog(DialogKey.ItemForm, { item })}
-        >
-          <Icon3D name="pencil" size={24} className="-ms-1 me-1" alt="" />
-          {t("pricing.editItem")}
-        </Button>
-      )}
+      <div className="space-y-2">
+        {/* Share the item's photo + name to a supplier via any app. The label +
+            tooltip make it clear this shares *this* item. */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="w-full" onClick={shareItem}>
+              <Share2 className="-ms-1 me-1 h-4 w-4" />
+              {t("items.shareWithSupplier")}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("items.shareTooltip")}</TooltipContent>
+        </Tooltip>
+
+        {isSuperAdmin && (
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => openDialog(DialogKey.ItemForm, { item })}
+          >
+            <Icon3D name="pencil" size={24} className="-ms-1 me-1" alt="" />
+            {t("pricing.editItem")}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

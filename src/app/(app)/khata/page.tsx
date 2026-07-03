@@ -8,9 +8,7 @@ import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { DialogKey } from "@/lib/dialog-keys";
-import { groupCustomerKhatas } from "@/lib/khata-groups";
 import { PageHeader } from "@/components/layout/page-header";
-import { CustomerKhataTable } from "@/components/khata/customer-khata-table";
 import { KhataTable } from "@/components/khata/khata-table";
 import { DueSoonStrip } from "@/components/khata/due-soon-strip";
 import { Button } from "@/components/ui/button";
@@ -24,9 +22,7 @@ export default function KhataPage() {
   const { data: khatas = [], isLoading } = useKhatas();
   const { fulfill, pendingId } = useFulfillKhata();
 
-  // One cumulative row per customer who still owes; manual reminders (no customer)
-  // are kept in their own section below, unchanged.
-  const customerGroups = React.useMemo(() => groupCustomerKhatas(khatas), [khatas]);
+  // Manual reminders (no customer) are kept in their own section below.
   const reminders = React.useMemo(() => khatas.filter((k) => !k.customer), [khatas]);
 
   // The reminders table's inline "Mark fulfilled" is a one-way status change, so
@@ -62,15 +58,14 @@ export default function KhataPage() {
       />
       <DueSoonStrip
         className="mb-6"
-        onOpen={(khata) => openDialog(DialogKey.KhataDetail, { khata })}
+        onOpen={(khata) =>
+          // A customer row opens the full per-customer khata view (receive
+          // payment / settle all); a manual reminder keeps the single-entry view.
+          khata.customer
+            ? openDialog(DialogKey.CustomerKhata, { customerId: khata.customer.id })
+            : openDialog(DialogKey.KhataDetail, { khata })
+        }
         onViewReceipt={(orderId) => openDialog(DialogKey.Receipt, { orderId })}
-      />
-
-      <CustomerKhataTable
-        groups={customerGroups}
-        loading={isLoading}
-        emptyText={t("khata.noOutstanding")}
-        onRowClick={(group) => openDialog(DialogKey.CustomerKhata, { customerId: group.customer.id })}
       />
 
       {reminders.length > 0 ? (

@@ -25,6 +25,7 @@ import { Money } from "@/components/common/money";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ItemDetailBody } from "@/components/warehouse/item-detail-body";
+import { WarehouseQuickStock } from "@/components/warehouse/warehouse-quick-stock";
 import type { ItemWithStock } from "@/types/models";
 
 export default function WarehousePage() {
@@ -162,6 +163,8 @@ export default function WarehousePage() {
         onSearchChange={setSearch}
         searchPlaceholder={t("pricing.searchItems")}
       />
+      {/* Inline stock in/out — super_admin only; sits above the list. */}
+      <WarehouseQuickStock />
       {!isLoading && items.length === 0 && !debounced && (
         <Card className="mb-4 p-6 text-center text-sm text-muted-foreground">
           {t("warehouse.emptyTracked")}

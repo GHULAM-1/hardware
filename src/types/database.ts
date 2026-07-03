@@ -967,6 +967,9 @@ export type Database = {
       }
       is_active_user: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      get_locked_tabs: { Args: never; Returns: Json }
+      verify_tab_lock_password: { Args: { p_password: string }; Returns: boolean }
+      set_tab_lock: { Args: { p_tabs: Json; p_password: string | null }; Returns: undefined }
       match_items: {
         Args: { match_count?: number; query_embedding: string }
         Returns: {
