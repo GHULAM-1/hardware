@@ -16,6 +16,8 @@ import { formatDateTime } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
+import { ViewToggle, type ListView } from "@/components/common/view-toggle";
+import { ItemsGrid } from "@/components/items/items-grid";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
@@ -40,6 +42,18 @@ export default function ItemsPage() {
   const { data: items = [], isLoading } = useItemsWithStock(debounced);
   const { data: usedItemIds } = useUsedItemIds();
 
+  // List vs grid view — persisted so the choice sticks across visits. Read lazily
+  // (this page only renders client-side, behind the auth guard, so localStorage is
+  // safe here and there's no hydration flash — same pattern as AppShell).
+  const [view, setView] = React.useState<ListView>(() => {
+    if (typeof window === "undefined") return "list";
+    return window.localStorage.getItem("items-view") === "grid" ? "grid" : "list";
+  });
+  const changeView = React.useCallback((v: ListView) => {
+    setView(v);
+    window.localStorage.setItem("items-view", v);
+  }, []);
+
   // Desktop shows a master-detail side panel (first row selected by default);
   // mobile keeps the tap-to-open detail dialog. Mirrors the Warehouse screen.
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -54,6 +68,21 @@ export default function ItemsPage() {
       }
     },
     [openDialog],
+  );
+
+  // Shared by the table's row actions and the grid cards.
+  const handleEdit = React.useCallback(
+    (row: ItemWithStock) => openDialog(DialogKey.ItemForm, { item: row }),
+    [openDialog],
+  );
+  const handleDelete = React.useCallback(
+    (row: ItemWithStock) =>
+      confirmDelete({
+        title: t("common.delete"),
+        description: displayName(row, language),
+        onConfirm: () => deleteItem.mutateAsync(row.id),
+      }),
+    [confirmDelete, deleteItem, language, t],
   );
 
   const columns: Column<ItemWithStock>[] = [
@@ -150,16 +179,10 @@ export default function ItemsPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <RowActions
-                  onEdit={() => openDialog(DialogKey.ItemForm, { item: row })}
+                  onEdit={() => handleEdit(row)}
                   deleteDisabled={usedItemIds?.has(row.id)}
                   deleteDisabledReason={t("pricing.itemInUse")}
-                  onDelete={() =>
-                    confirmDelete({
-                      title: t("common.delete"),
-                      description: displayName(row, language),
-                      onConfirm: () => deleteItem.mutateAsync(row.id),
-                    })
-                  }
+                  onDelete={() => handleDelete(row)}
                 />
               </div>
             ),
@@ -175,19 +198,36 @@ export default function ItemsPage() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder={t("pricing.searchItems")}
+        filters={<ViewToggle value={view} onChange={changeView} />}
         onNew={isSuperAdmin ? () => openDialog(DialogKey.ItemCreate, null) : undefined}
         newLabel={t("pricing.newItem")}
       />
       <div className="flex gap-4">
         <div className="min-w-0 flex-1">
-          <DataTable
-            columns={columns}
-            rows={items}
-            getRowId={(r) => r.id}
-            loading={isLoading}
-            selectedRowId={selected?.id}
-            onRowClick={handleRowClick}
-          />
+          {view === "grid" ? (
+            <ItemsGrid
+              items={items}
+              loading={isLoading}
+              selectedId={selected?.id}
+              onOpen={handleRowClick}
+              isSuperAdmin={isSuperAdmin}
+              trackingPendingId={setTracking.isPending ? setTracking.variables?.id : undefined}
+              onToggleTracking={(id, track) => setTracking.mutate({ id, track })}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              isDeleteDisabled={(row) => Boolean(usedItemIds?.has(row.id))}
+              deleteDisabledReason={t("pricing.itemInUse")}
+            />
+          ) : (
+            <DataTable
+              columns={columns}
+              rows={items}
+              getRowId={(r) => r.id}
+              loading={isLoading}
+              selectedRowId={selected?.id}
+              onRowClick={handleRowClick}
+            />
+          )}
         </div>
         {/* Desktop master-detail panel; mobile uses the tap-to-open dialog instead. */}
         <aside className="hidden w-[360px] shrink-0 xl:block">

@@ -40,6 +40,8 @@
     "searchPlaceholder": "Search…",
     "loading": "Loading…",
     "noResults": "No results found",
+    "listView": "List view",
+    "gridView": "Grid view",
     "actions": "Actions",
     "confirm": "Confirm",
     "yes": "Yes",
