@@ -6,6 +6,9 @@ import { useTranslation } from "react-i18next";
 
 import { NAV_ITEMS, type GameColor } from "@/lib/nav";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
+import { useNavShortcutSettings } from "@/hooks/use-settings";
+import { useDialogManager } from "@/components/dialogs/dialog-manager";
+import { DialogKey } from "@/lib/dialog-keys";
 import { Icon3D } from "@/components/ui/icon-3d";
 import { ShortcutHint } from "@/components/layout/shortcut-hint";
 import { cn } from "@/lib/utils";
@@ -31,6 +34,8 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation();
   const pathname = usePathname();
   const isSuperAdmin = useIsSuperAdmin();
+  const { data: shortcuts } = useNavShortcutSettings();
+  const { openDialog } = useDialogManager();
 
   const items = NAV_ITEMS.filter(
     (i) => i.href !== "/dashboard" && (isSuperAdmin || i.adminAllowed),
@@ -52,7 +57,7 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
             )}
           >
             <ShortcutHint
-              letter={item.shortcut}
+              letter={shortcuts?.[item.href] ?? item.shortcut}
               className="absolute end-2 top-2 hidden md:inline-flex"
             />
             <Icon3D
@@ -64,6 +69,26 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
           </Link>
         );
       })}
+
+      {/* Quick item search — an action tile (opens a dialog), not a route. */}
+      <button
+        type="button"
+        onClick={() => {
+          openDialog(DialogKey.ItemQuickSearch, null);
+          onNavigate?.();
+        }}
+        className={cn(
+          "candy candy-lg relative flex flex-col items-center justify-center gap-1.5 rounded-2xl px-3 py-3 text-center font-bold text-white",
+          CANDY.red,
+        )}
+      >
+        <Icon3D
+          name="search"
+          size={48}
+          className="drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]"
+        />
+        <span className="line-clamp-2 text-sm leading-tight">{t("quickSearch.title")}</span>
+      </button>
     </div>
   );
 }

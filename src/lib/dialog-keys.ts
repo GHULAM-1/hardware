@@ -11,6 +11,7 @@ export const DialogKey = {
   CustomerProfile: "customer-profile",
   StockEntryForm: "stock-entry-form",
   ItemCreate: "item-create",
+  ItemQuickSearch: "item-quick-search",
   OrderForm: "order-form",
   OrderEdit: "order-edit",
   OrderDetail: "order-detail",

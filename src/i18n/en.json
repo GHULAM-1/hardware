@@ -47,6 +47,9 @@
     "yes": "Yes",
     "no": "No",
     "back": "Back",
+    "close": "Close",
+    "maximize": "Maximize",
+    "restore": "Restore",
     "addNamed": "Add \"{{name}}\"",
     "required": "Required",
     "optional": "Optional",
@@ -204,6 +207,12 @@
     "customers": "Customers",
     "orders": "Orders",
     "staff": "Staff"
+  },
+  "quickSearch": {
+    "title": "Quick search",
+    "placeholder": "Search items by name or SKU…",
+    "empty": "No items found.",
+    "selectPrompt": "Search and pick a result to see its details."
   },
   "assistant": {
     "title": "Assistant",
@@ -398,11 +407,25 @@
   },
   "settings": {
     "title": "Settings",
+    "subtitle": "Manage your account and how the app works",
+    "preferences": "Preferences",
+    "preferencesHint": "Choose the language for the whole app.",
+    "reminders": "Reminders",
+    "remindersHint": "How many days before a due date khata reminders show on the dashboard.",
+    "viewOnly": "View only",
     "reminderLeadDays": "Reminder lead days",
     "language": "Language",
     "theme": "Theme",
     "english": "English",
-    "urdu": "Urdu"
+    "urdu": "Urdu",
+    "shortcuts": "Keyboard shortcuts",
+    "shortcutsHint": "Press Ctrl + a letter to jump to a section. Click a key to change it.",
+    "changeShortcut": "Change shortcut for {{name}}",
+    "pressKey": "Press a key…",
+    "resetDefaults": "Reset to defaults",
+    "shortcutTaken": "\"{{letter}}\" is already used by {{name}}.",
+    "shortcutReserved": "\"{{letter}}\" is reserved by the browser. Pick another.",
+    "shortcutLettersOnly": "Use a letter A–Z."
   },
   "dashboard": {
     "title": "Dashboard",

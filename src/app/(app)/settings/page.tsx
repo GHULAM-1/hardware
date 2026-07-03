@@ -3,13 +3,16 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Bell, Languages } from "lucide-react";
 
 import { useReminderLeadDays, useSetReminderLeadDays } from "@/hooks/use-settings";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { useLanguage } from "@/providers/i18n-provider";
 import { Language } from "@/lib/enums";
 import { PageHeader } from "@/components/layout/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AccountSettings } from "@/components/settings/account-settings";
+import { ShortcutSettings } from "@/components/settings/shortcut-settings";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -42,42 +45,22 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <PageHeader title={t("settings.title")} />
+    <div className="mx-auto max-w-3xl space-y-5 pb-10 sm:space-y-6">
+      <PageHeader title={t("settings.title")} subtitle={t("settings.subtitle")} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.reminderLeadDays")}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-end gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="lead">{t("khata.reminders")}</Label>
-            <Input
-              id="lead"
-              type="number"
-              min={0}
-              dir="ltr"
-              className="w-32"
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-              disabled={!isSuperAdmin}
-            />
-          </div>
-          {isSuperAdmin && (
-            <Button onClick={onSaveLead} disabled={saveLead.isPending}>
-              {t("common.save")}
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+      {/* Personal account — available to everyone. */}
+      <AccountSettings />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.language")}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center gap-4">
+      {/* Language — a per-user, client-side preference for everyone. */}
+      <SettingsSection
+        icon={Languages}
+        title={t("settings.preferences")}
+        description={t("settings.preferencesHint")}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="lang">{t("settings.language")}</Label>
           <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger id="lang" className="w-full sm:w-56">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -85,9 +68,51 @@ export default function SettingsPage() {
               <SelectItem value={Language.Urdu}>{t("settings.urdu")}</SelectItem>
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
+      {/* Keyboard shortcuts — everyone sees theirs; super_admin edits the global set. */}
+      <ShortcutSettings />
+
+      {/* Reminders — a shop-wide setting; super_admin edits, others read-only. */}
+      <SettingsSection
+        icon={Bell}
+        title={t("settings.reminders")}
+        description={t("settings.remindersHint")}
+        action={
+          !isSuperAdmin ? (
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+              {t("settings.viewOnly")}
+            </span>
+          ) : undefined
+        }
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="space-y-2">
+            <Label htmlFor="lead">{t("settings.reminderLeadDays")}</Label>
+            <Input
+              id="lead"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              dir="ltr"
+              className="w-full sm:w-32"
+              value={days}
+              onChange={(e) => setDays(e.target.value)}
+              disabled={!isSuperAdmin}
+            />
+          </div>
+          {isSuperAdmin && (
+            <Button
+              className="w-full sm:w-auto"
+              onClick={onSaveLead}
+              disabled={saveLead.isPending}
+            >
+              {t("common.save")}
+            </Button>
+          )}
+        </div>
+      </SettingsSection>
     </div>
   );
 }

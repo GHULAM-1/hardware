@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 import { useSuppliers, useDeleteSupplier } from "@/hooks/use-suppliers";
@@ -15,8 +16,10 @@ import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
 import type { Supplier } from "@/types/models";
 
-export default function SuppliersPage() {
+function SuppliersPageInner() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { openDialog } = useDialogManager();
   const confirmDelete = useConfirmDelete();
   const deleteSupplier = useDeleteSupplier();
@@ -24,6 +27,20 @@ export default function SuppliersPage() {
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
   const { data: suppliers = [], isLoading } = useSuppliers(debounced);
+
+  // When arriving from a supplier link (e.g. an item's supplier chip), open that
+  // supplier's detail once its full row is available in the loaded list.
+  const supplierId = searchParams.get("supplierId");
+  const handledSupplierId = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!supplierId || handledSupplierId.current === supplierId) return;
+    const supplier = suppliers.find((s) => s.id === supplierId);
+    if (!supplier) return;
+    handledSupplierId.current = supplierId;
+    openDialog(DialogKey.SupplierDetail, { supplier });
+    // Clear the param so refreshing/back-navigation doesn't reopen the dialog.
+    router.replace("/suppliers");
+  }, [supplierId, suppliers, openDialog, router]);
 
   const columns: Column<Supplier>[] = [
     {
@@ -103,5 +120,13 @@ export default function SuppliersPage() {
         onRowClick={(row) => openDialog(DialogKey.SupplierDetail, { supplier: row })}
       />
     </div>
+  );
+}
+
+export default function SuppliersPage() {
+  return (
+    <React.Suspense fallback={null}>
+      <SuppliersPageInner />
+    </React.Suspense>
   );
 }

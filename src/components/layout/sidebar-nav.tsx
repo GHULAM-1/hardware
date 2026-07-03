@@ -7,6 +7,7 @@ import { ChevronRight } from "lucide-react";
 
 import { NAV_ITEMS, type GameColor } from "@/lib/nav";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
+import { useNavShortcutSettings } from "@/hooks/use-settings";
 import { Icon3D } from "@/components/ui/icon-3d";
 import { ShortcutHint } from "@/components/layout/shortcut-hint";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ export function SidebarNav({
   const { t } = useTranslation();
   const pathname = usePathname();
   const isSuperAdmin = useIsSuperAdmin();
+  const { data: shortcuts } = useNavShortcutSettings();
 
   const items = NAV_ITEMS.filter((i) => isSuperAdmin || i.adminAllowed);
 
@@ -62,7 +64,7 @@ export function SidebarNav({
             {!collapsed && <span className="flex-1 truncate text-start">{label}</span>}
             {!collapsed && (
               <ShortcutHint
-                letter={item.shortcut}
+                letter={shortcuts?.[item.href] ?? item.shortcut}
                 className="hidden shrink-0 md:inline-flex"
               />
             )}

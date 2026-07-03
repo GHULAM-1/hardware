@@ -71,6 +71,9 @@ export const NAV_ITEMS: NavItem[] = [
  */
 const ADMIN_PATHS = [
   ...NAV_ITEMS.filter((i) => i.adminAllowed).map((i) => i.href),
+  // Personal account + app settings live on /settings now; admins reach it from
+  // the topbar menu (it's not in their sidebar). /profile stays for old links.
+  "/settings",
   "/profile",
 ];
 

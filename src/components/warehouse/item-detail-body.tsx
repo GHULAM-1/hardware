@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
@@ -50,6 +51,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
  */
 export function ItemDetailBody({ item }: { item: Item }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
   const { openDialog } = useDialogManager();
 
@@ -130,12 +132,14 @@ export function ItemDetailBody({ item }: { item: Item }) {
         <Section title={t("suppliers.title")}>
           <div className="flex flex-wrap gap-2">
             {suppliers.map((s) => (
-              <span
+              <button
                 key={s.id}
-                className="rounded-full border border-border bg-secondary px-3 py-1 text-xs"
+                type="button"
+                onClick={() => router.push(`/suppliers?supplierId=${s.id}`)}
+                className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-primary transition hover:bg-secondary/70 hover:underline"
               >
                 {s.name}
-              </span>
+              </button>
             ))}
           </div>
         </Section>

@@ -4,6 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { NAV_ITEMS } from "@/lib/nav";
+import { DEFAULT_SHORTCUTS } from "@/lib/nav-shortcuts";
+import { useNavShortcutSettings } from "@/hooks/use-settings";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 
 /** Elements where a keystroke means "type", not "navigate" — never hijack there. */
@@ -27,11 +29,19 @@ function isEditableTarget(el: EventTarget | null): boolean {
 export function useNavShortcuts() {
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
+  const { data: shortcuts } = useNavShortcutSettings();
 
-  // Keep the latest permission flag in a ref so the listener isn't re-bound on
-  // every auth change (and so the handler always reads the current value).
+  // Keep the latest permission flag and the (user-customizable) shortcut map in
+  // refs so the listener isn't re-bound on every auth/settings change — and so
+  // the handler always reads the current values. Falls back to code defaults
+  // until the stored map has loaded. Synced in an effect (never mutated during
+  // render) so the single keydown listener below stays mounted.
   const canAllRef = React.useRef(isSuperAdmin);
-  canAllRef.current = isSuperAdmin;
+  const mapRef = React.useRef(DEFAULT_SHORTCUTS);
+  React.useEffect(() => {
+    canAllRef.current = isSuperAdmin;
+    mapRef.current = shortcuts ?? DEFAULT_SHORTCUTS;
+  });
 
   React.useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -42,10 +52,12 @@ export function useNavShortcuts() {
       if (isEditableTarget(e.target)) return;
 
       const key = e.key.toLowerCase();
-      const item = NAV_ITEMS.find(
-        (i) => i.shortcut.toLowerCase() === key && (canAllRef.current || i.adminAllowed),
+      const href = Object.keys(mapRef.current).find(
+        (h) => mapRef.current[h].toLowerCase() === key,
       );
-      if (!item) return;
+      if (!href) return;
+      const item = NAV_ITEMS.find((i) => i.href === href);
+      if (!item || !(canAllRef.current || item.adminAllowed)) return;
 
       // Preserve real copy: if Ctrl+C is pressed while text is selected, let the
       // browser copy instead of navigating.

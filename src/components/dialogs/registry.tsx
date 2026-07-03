@@ -9,6 +9,7 @@ import { SupplierFormDialog } from "@/components/forms/supplier-form-dialog";
 import { SupplierDetailDialog } from "@/components/dialogs/supplier-detail-dialog";
 import { StockDetailDialog } from "@/components/dialogs/stock-detail-dialog";
 import { ItemCreateDialog } from "@/components/dialogs/item-create-dialog";
+import { ItemQuickSearchDialog } from "@/components/dialogs/item-quick-search-dialog";
 import { CustomerFormDialog } from "@/components/forms/customer-form-dialog";
 import { CustomerProfileDialog } from "@/components/dialogs/customer-profile-dialog";
 import { OrderFormDialog } from "@/components/dialogs/order-form-dialog";
@@ -43,6 +44,7 @@ export const dialogRegistry: DialogRegistry = {
   [DialogKey.SupplierDetail]: SupplierDetailDialog,
   [DialogKey.StockEntryForm]: StockDetailDialog,
   [DialogKey.ItemCreate]: ItemCreateDialog,
+  [DialogKey.ItemQuickSearch]: ItemQuickSearchDialog,
   [DialogKey.CustomerForm]: CustomerFormDialog,
   [DialogKey.CustomerProfile]: CustomerProfileDialog,
   [DialogKey.OrderForm]: OrderFormDialog,

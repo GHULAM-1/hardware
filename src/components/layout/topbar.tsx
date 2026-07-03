@@ -77,9 +77,9 @@ export function Topbar() {
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel>{profile?.full_name ?? "—"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/profile")}>
+            <DropdownMenuItem onClick={() => router.push("/settings")}>
               <UserCog className="me-2 h-4 w-4" />
-              {t("profile.title")}
+              {t("nav.settings")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onLogout}>
               <LogOut className="me-2 h-4 w-4" />

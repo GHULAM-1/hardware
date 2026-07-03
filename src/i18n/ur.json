@@ -47,6 +47,9 @@
     "yes": "ہاں",
     "no": "نہیں",
     "back": "واپس",
+    "close": "بند کریں",
+    "maximize": "بڑا کریں",
+    "restore": "واپس چھوٹا کریں",
     "addNamed": "\"{{name}}\" شامل کریں",
     "required": "ضروری",
     "optional": "اختیاری",
@@ -204,6 +207,12 @@
     "customers": "گاہک",
     "orders": "آرڈرز",
     "staff": "ملازمین"
+  },
+  "quickSearch": {
+    "title": "فوری تلاش",
+    "placeholder": "نام یا SKU سے آئٹم تلاش کریں…",
+    "empty": "کوئی آئٹم نہیں ملا۔",
+    "selectPrompt": "تفصیل دیکھنے کے لیے کوئی نتیجہ تلاش کر کے منتخب کریں۔"
   },
   "assistant": {
     "title": "اسسٹنٹ",
@@ -398,11 +407,25 @@
   },
   "settings": {
     "title": "ترتیبات",
+    "subtitle": "اپنا اکاؤنٹ اور ایپ کے کام کرنے کا طریقہ سنبھالیں",
+    "preferences": "ترجیحات",
+    "preferencesHint": "پوری ایپ کے لیے زبان منتخب کریں۔",
+    "reminders": "یاد دہانیاں",
+    "remindersHint": "مقررہ تاریخ سے کتنے دن پہلے کھاتہ یاد دہانیاں ڈیش بورڈ پر دکھیں۔",
+    "viewOnly": "صرف دیکھنے کے لیے",
     "reminderLeadDays": "یاد دہانی کے دن",
     "language": "زبان",
     "theme": "تھیم",
     "english": "انگریزی",
-    "urdu": "اردو"
+    "urdu": "اردو",
+    "shortcuts": "کی بورڈ شارٹ کٹ",
+    "shortcutsHint": "کسی سیکشن پر جانے کے لیے Ctrl کے ساتھ کوئی حرف دبائیں۔ بدلنے کے لیے کی پر کلک کریں۔",
+    "changeShortcut": "{{name}} کا شارٹ کٹ بدلیں",
+    "pressKey": "کوئی کی دبائیں…",
+    "resetDefaults": "ڈیفالٹ پر واپس لائیں",
+    "shortcutTaken": "\"{{letter}}\" پہلے ہی {{name}} کے لیے استعمال ہو رہا ہے۔",
+    "shortcutReserved": "\"{{letter}}\" براؤزر نے روکا ہوا ہے۔ کوئی اور منتخب کریں۔",
+    "shortcutLettersOnly": "A–Z میں سے کوئی حرف استعمال کریں۔"
   },
   "dashboard": {
     "title": "ڈیش بورڈ",
