@@ -8,6 +8,7 @@ import { ChevronRight } from "lucide-react";
 import { NAV_ITEMS, type GameColor } from "@/lib/nav";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { Icon3D } from "@/components/ui/icon-3d";
+import { ShortcutHint } from "@/components/layout/shortcut-hint";
 import { cn } from "@/lib/utils";
 
 const CANDY: Record<GameColor, string> = {
@@ -59,6 +60,12 @@ export function SidebarNav({
               className="shrink-0 drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]"
             />
             {!collapsed && <span className="flex-1 truncate text-start">{label}</span>}
+            {!collapsed && (
+              <ShortcutHint
+                letter={item.shortcut}
+                className="hidden shrink-0 md:inline-flex"
+              />
+            )}
             {active && !collapsed && (
               <ChevronRight className="size-5 shrink-0 text-gold drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)] rtl:rotate-180" />
             )}

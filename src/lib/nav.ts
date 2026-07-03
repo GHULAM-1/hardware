@@ -41,20 +41,27 @@ export type NavItem = {
    * everything; admin is limited to stock & catalog (no revenue/customer data).
    */
   adminAllowed?: boolean;
+  /**
+   * Single uppercase letter for the global keyboard shortcut (Ctrl + this letter,
+   * on both Windows and Mac — the physical Control key). Letters are chosen to
+   * dodge the combos browsers reserve and can't release (Ctrl+T/N/W) and to keep
+   * a first-letter mnemonic where possible. See useNavShortcuts.
+   */
+  shortcut: string;
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", i18nKey: "nav.dashboard", icon: LayoutDashboard, icon3d: "home", color: "blue", adminAllowed: true },
-  { href: "/items", i18nKey: "nav.items", icon: Tag, icon3d: "tag", color: "purple", adminAllowed: true },
-  { href: "/warehouse", i18nKey: "nav.warehouse", icon: Warehouse, icon3d: "boxes", color: "orange", adminAllowed: true },
-  { href: "/customers", i18nKey: "nav.customers", icon: Users, icon3d: "users", color: "purple" },
-  { href: "/orders", i18nKey: "nav.orders", icon: ShoppingCart, icon3d: "cart-plus", color: "green" },
-  { href: "/khata", i18nKey: "nav.khata", icon: BookUser, icon3d: "wallet", color: "teal" },
-  { href: "/suppliers", i18nKey: "nav.suppliers", icon: Truck, icon3d: "truck", color: "blue" },
-  { href: "/supplier-orders", i18nKey: "nav.supplierOrders", icon: ClipboardList, icon3d: "reports", color: "orange" },
-  { href: "/staff", i18nKey: "nav.staff", icon: Contact, icon3d: "users", color: "pink" },
-  { href: "/users", i18nKey: "nav.users", icon: UserCog, icon3d: "users", color: "teal" },
-  { href: "/settings", i18nKey: "nav.settings", icon: Settings, icon3d: "settings", color: "slate" },
+  { href: "/dashboard", i18nKey: "nav.dashboard", icon: LayoutDashboard, icon3d: "home", color: "blue", adminAllowed: true, shortcut: "H" },
+  { href: "/items", i18nKey: "nav.items", icon: Tag, icon3d: "tag", color: "purple", adminAllowed: true, shortcut: "I" },
+  { href: "/warehouse", i18nKey: "nav.warehouse", icon: Warehouse, icon3d: "boxes", color: "orange", adminAllowed: true, shortcut: "B" },
+  { href: "/customers", i18nKey: "nav.customers", icon: Users, icon3d: "users", color: "purple", shortcut: "C" },
+  { href: "/orders", i18nKey: "nav.orders", icon: ShoppingCart, icon3d: "cart-plus", color: "green", shortcut: "O" },
+  { href: "/khata", i18nKey: "nav.khata", icon: BookUser, icon3d: "wallet", color: "teal", shortcut: "K" },
+  { href: "/suppliers", i18nKey: "nav.suppliers", icon: Truck, icon3d: "truck", color: "blue", shortcut: "S" },
+  { href: "/supplier-orders", i18nKey: "nav.supplierOrders", icon: ClipboardList, icon3d: "reports", color: "orange", shortcut: "D" },
+  { href: "/staff", i18nKey: "nav.staff", icon: Contact, icon3d: "users", color: "pink", shortcut: "E" },
+  { href: "/users", i18nKey: "nav.users", icon: UserCog, icon3d: "users", color: "teal", shortcut: "U" },
+  { href: "/settings", i18nKey: "nav.settings", icon: Settings, icon3d: "settings", color: "slate", shortcut: "G" },
 ];
 
 /**

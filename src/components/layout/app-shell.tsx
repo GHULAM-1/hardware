@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { StatBar } from "@/components/layout/stat-bar";
 import { ActionFab } from "@/components/assistant/action-fab";
+import { useNavShortcuts } from "@/hooks/use-nav-shortcuts";
 import { cn } from "@/lib/utils";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
@@ -16,6 +17,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // only mounts client-side (after the auth guard), so reading localStorage here
   // is safe and flash-free.
   const pathname = usePathname();
+  // Global "Ctrl + letter" launcher shortcuts, active on every app page.
+  useNavShortcuts();
   // The dashboard is a launcher: its own tile grid replaces the sidebar (desktop)
   // and it owns its scroll, so the stat-bar stays pinned on top and the info
   // cards stay pinned at the bottom.

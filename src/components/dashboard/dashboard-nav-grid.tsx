@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { NAV_ITEMS, type GameColor } from "@/lib/nav";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { Icon3D } from "@/components/ui/icon-3d";
+import { ShortcutHint } from "@/components/layout/shortcut-hint";
 import { cn } from "@/lib/utils";
 
 const CANDY: Record<GameColor, string> = {
@@ -45,11 +46,15 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "candy candy-lg flex flex-col items-center justify-center gap-1.5 rounded-2xl px-3 py-3 text-center font-bold text-white",
+              "candy candy-lg relative flex flex-col items-center justify-center gap-1.5 rounded-2xl px-3 py-3 text-center font-bold text-white",
               CANDY[item.color],
               active && "ring-gold",
             )}
           >
+            <ShortcutHint
+              letter={item.shortcut}
+              className="absolute end-2 top-2 hidden md:inline-flex"
+            />
             <Icon3D
               name={item.icon3d}
               size={48}
