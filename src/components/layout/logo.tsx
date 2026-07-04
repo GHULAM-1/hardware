@@ -1,25 +1,31 @@
-import { Store } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 /**
- * Red "candy" storefront plaque + wordmark. Reused in the sidebar, mobile topbar
- * and login. The wordmark inherits the parent text color (white on the blue chrome,
- * ink inside the white login card), so it stays legible everywhere.
+ * Qasim Hardware brand lockup (circular "QH" emblem + wordmark). Reused in the
+ * sidebar, mobile topbar and login. The PNG has a transparent background, so it
+ * sits cleanly on both the blue app chrome and the white login card. `compact`
+ * renders it smaller for the mobile topbar.
  */
-export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
+export function Logo({
+  className,
+  compact = false,
+  size = "md",
+}: {
+  className?: string;
+  compact?: boolean;
+  /** Visual size — `sm` (compact), `md` (chrome), `lg` (login hero). */
+  size?: "sm" | "md" | "lg";
+}) {
+  const height = compact || size === "sm" ? "h-9" : size === "lg" ? "h-20" : "h-12";
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
-      <span className="candy candy-red flex h-10 w-10 items-center justify-center rounded-xl border-2 border-gold text-white">
-        <Store className="h-5 w-5" />
-      </span>
-      {!compact && (
-        <span className="leading-[1.05]">
-          <span className="block text-sm font-extrabold tracking-wide text-current">QASIM</span>
-          <span className="block text-sm font-extrabold tracking-wide text-gold">HARDWARE</span>
-          <span className="block text-[9px] leading-tight tracking-[0.3em] text-gold">★★★★★</span>
-        </span>
-      )}
+    <div className={cn("flex items-center", className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo_hardware.png"
+        alt="Qasim Hardware"
+        draggable={false}
+        className={cn("w-auto select-none object-contain", height)}
+      />
     </div>
   );
 }

@@ -55,14 +55,17 @@ export default function LoginPage() {
         <LanguageSwitcher />
       </div>
 
-      <Card className="w-full max-w-sm">
-        <CardHeader className="items-center gap-3 text-center">
-          <Logo />
-          <p className="text-sm text-muted-foreground">{t("auth.welcome")}</p>
+      <Card className="w-full max-w-sm py-8">
+        <CardHeader className="flex flex-col items-center gap-4 pb-6 text-center">
+          <Logo size="lg" />
+          <div className="space-y-1">
+            <h1 className="text-2xl font-extrabold text-ink">{t("auth.welcome")}</h1>
+            <p className="text-sm text-muted-foreground">{t("auth.signInSubtitle")}</p>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-5">
               <TextField
                 control={form.control}
                 name="email"

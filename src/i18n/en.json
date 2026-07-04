@@ -93,6 +93,7 @@
     "signIn": "Sign in",
     "signingIn": "Signing in…",
     "welcome": "Welcome back",
+    "signInSubtitle": "Sign in to your shop",
     "invalidCredentials": "Invalid email or password",
     "accountDisabled": "Your account has been disabled. Please contact the owner.",
     "showPassword": "Show password",
