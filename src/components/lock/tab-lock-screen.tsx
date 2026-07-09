@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { LockKeyhole } from "lucide-react";
 
@@ -10,11 +11,12 @@ import { Input } from "@/components/ui/input";
 
 /**
  * Full-content unlock prompt shown in place of a locked page. The shell (sidebar
- * + topbar) stays, so the user can navigate away instead of being trapped. One
- * correct entry unlocks the whole app for the session.
+ * + topbar) stays, so the user can navigate away instead of being trapped. A
+ * correct entry unlocks only this tab for the session (per-tab).
  */
 export function TabLockScreen() {
   const { t } = useTranslation();
+  const pathname = usePathname();
   const { verifyAndUnlock } = useLock();
 
   const [password, setPassword] = React.useState("");
@@ -27,7 +29,7 @@ export function TabLockScreen() {
     setPending(true);
     setError(false);
     try {
-      const ok = await verifyAndUnlock(password);
+      const ok = await verifyAndUnlock(password, pathname);
       if (!ok) {
         setError(true);
         setPassword("");

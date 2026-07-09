@@ -45,20 +45,25 @@ export function Topbar() {
   const { profile, signOut } = useAuth();
   const isSuperAdmin = useIsSuperAdmin();
   const { openDialog } = useDialogManager();
-  const { hasLock, unlocked, relock } = useLock();
+  const { matchedLockedHref, isTabUnlocked, relockTab } = useLock();
+  // The lock button reflects the CURRENT tab: green "Unlocked" (click to re-lock
+  // this tab) when the current route is an unlocked locked-tab, gold "Lock"
+  // (opens config) otherwise.
+  const currentLockedHref = matchedLockedHref(pathname);
+  const currentUnlocked = currentLockedHref !== null && isTabUnlocked(currentLockedHref);
 
   async function onLogout() {
     await signOut();
     router.replace("/login");
   }
 
-  // The lock button is a session toggle. Once the app has been unlocked this
-  // session, clicking it re-locks immediately (tabs demand the password again).
-  // Otherwise it opens the config dialog (set up / manage the locked tabs).
-  const showUnlocked = hasLock && unlocked;
+  // Clicking the button re-locks the current tab when it's unlocked (it then
+  // demands the password again); otherwise it opens the config dialog to set up
+  // / manage the locked tabs.
+  const showUnlocked = currentUnlocked;
   function onLockButton() {
-    if (showUnlocked) {
-      relock();
+    if (currentLockedHref !== null && currentUnlocked) {
+      relockTab(currentLockedHref);
       toast.success(t("lock.relocked"));
     } else {
       openDialog(DialogKey.LockConfig, null);
@@ -77,8 +82,8 @@ export function Topbar() {
         <GlobalSearch />
       </div>
 
-      {/* Tab lock — a session toggle next to the search. Super_admin only.
-          Green "Unlocked" while the app is unlocked (click to re-lock now);
+      {/* Tab lock — next to the search. Super_admin only. Reflects the current
+          tab: green "Lock now" when this tab is unlocked (click to re-lock it);
           gold "Lock" otherwise (click to set up / manage locked tabs). */}
       {isSuperAdmin && (
         <button
@@ -97,7 +102,7 @@ export function Topbar() {
             <Lock className="h-5 w-5" strokeWidth={2.75} />
           )}
           <span className="hidden text-sm sm:inline">
-            {showUnlocked ? t("lock.unlocked") : t("lock.lock")}
+            {showUnlocked ? t("lock.relockHint") : t("lock.lock")}
           </span>
         </button>
       )}

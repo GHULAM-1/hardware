@@ -39,7 +39,7 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
   const { data: shortcuts } = useNavShortcutSettings();
   const { data: lock } = useLockedTabs();
   const lockedTabs = lock?.tabs ?? [];
-  const { unlocked } = useLock();
+  const { isTabUnlocked } = useLock();
   const { openDialog } = useDialogManager();
 
   const items = NAV_ITEMS.filter(
@@ -51,6 +51,7 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
       {items.map((item) => {
         const active = pathname.startsWith(item.href);
         const locked = lockedTabs.includes(item.href);
+        const unlocked = isTabUnlocked(item.href);
         return (
           <Link
             key={item.href}

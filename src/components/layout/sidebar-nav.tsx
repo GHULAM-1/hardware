@@ -38,7 +38,7 @@ export function SidebarNav({
   const { data: shortcuts } = useNavShortcutSettings();
   const { data: lock } = useLockedTabs();
   const lockedTabs = lock?.tabs ?? [];
-  const { unlocked } = useLock();
+  const { isTabUnlocked } = useLock();
 
   const items = NAV_ITEMS.filter((i) => isSuperAdmin || i.adminAllowed);
 
@@ -47,6 +47,7 @@ export function SidebarNav({
       {items.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const locked = lockedTabs.includes(item.href);
+        const unlocked = isTabUnlocked(item.href);
         const label = t(item.i18nKey);
         return (
           <Link
