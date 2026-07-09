@@ -145,6 +145,8 @@
     "title": "Items",
     "subtitle": "All products and their selling prices (PKR)",
     "trackInWarehouse": "Track in warehouse",
+    "addInWarehouse": "Add in warehouse",
+    "deleteInUse": "This item is used in orders or supplier orders. Remove it from those first, then you can delete it.",
     "trackInWarehouseHint": "Turn on to manage stock in/out for this item in the Warehouse screen.",
     "tracked": "In warehouse",
     "notTracked": "Not tracked",

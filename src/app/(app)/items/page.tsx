@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { useItemsWithStock } from "@/hooks/use-warehouse";
 import { useDeleteItem, useSetWarehouseTracking, useUsedItemIds } from "@/hooks/use-items";
@@ -46,8 +47,9 @@ export default function ItemsPage() {
   // (this page only renders client-side, behind the auth guard, so localStorage is
   // safe here and there's no hydration flash — same pattern as AppShell).
   const [view, setView] = React.useState<ListView>(() => {
-    if (typeof window === "undefined") return "list";
-    return window.localStorage.getItem("items-view") === "grid" ? "grid" : "list";
+    if (typeof window === "undefined") return "grid";
+    // Default to grid; only honour an explicit past choice of "list".
+    return window.localStorage.getItem("items-view") === "list" ? "list" : "grid";
   });
   const changeView = React.useCallback((v: ListView) => {
     setView(v);
@@ -76,13 +78,29 @@ export default function ItemsPage() {
     [openDialog],
   );
   const handleDelete = React.useCallback(
-    (row: ItemWithStock) =>
+    (row: ItemWithStock) => {
+      // Delete is no longer silently disabled — if the item is referenced by an
+      // order/supplier order, tell the user why (and what to do) instead.
+      if (usedItemIds?.has(row.id)) {
+        toast.error(t("items.deleteInUse"));
+        return;
+      }
       confirmDelete({
         title: t("common.delete"),
         description: displayName(row, language),
-        onConfirm: () => deleteItem.mutateAsync(row.id),
-      }),
-    [confirmDelete, deleteItem, language, t],
+        onConfirm: async () => {
+          try {
+            await deleteItem.mutateAsync(row.id);
+          } catch (err) {
+            // Fallback for a relation we didn't know about (e.g. added since the
+            // used-ids list loaded) — surface a friendly message, not a raw FK error.
+            toast.error(err instanceof Error ? t("items.deleteInUse") : t("toast.error"));
+            throw err;
+          }
+        },
+      });
+    },
+    [confirmDelete, deleteItem, language, t, usedItemIds],
   );
 
   const columns: Column<ItemWithStock>[] = [
@@ -192,8 +210,6 @@ export default function ItemsPage() {
               >
                 <RowActions
                   onEdit={() => handleEdit(row)}
-                  deleteDisabled={usedItemIds?.has(row.id)}
-                  deleteDisabledReason={t("pricing.itemInUse")}
                   onDelete={() => handleDelete(row)}
                 />
               </div>
@@ -227,8 +243,6 @@ export default function ItemsPage() {
               onToggleTracking={(id, track) => setTracking.mutate({ id, track })}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              isDeleteDisabled={(row) => Boolean(usedItemIds?.has(row.id))}
-              deleteDisabledReason={t("pricing.itemInUse")}
             />
           ) : (
             <DataTable
