@@ -70,10 +70,10 @@ export function Topbar() {
       {/* Mobile: menu button + logo (sidebar is hidden). On the dashboard the
           sidebar is hidden on desktop too, so show the full logo there. */}
       <MobileNav />
-      <Logo className="md:hidden" compact />
-      {isDashboard && <Logo className="me-1 hidden md:flex" />}
+      <Logo className="md:hidden" compact branded />
+      {isDashboard && <Logo className="me-1 hidden md:flex" branded />}
 
-      <div className="flex min-w-0 flex-1 sm:max-w-md">
+      <div className="ms-1 flex min-w-0 flex-1 sm:ms-2 sm:max-w-md">
         <GlobalSearch />
       </div>
 

@@ -27,11 +27,11 @@ export function AppSidebar({
     >
       <div
         className={cn(
-          "flex h-16 items-center",
-          collapsed ? "justify-center px-2" : "justify-between px-4",
+          "flex h-16 items-center gap-2",
+          collapsed ? "justify-center px-2" : "justify-between px-3",
         )}
       >
-        {!collapsed && <Logo />}
+        {!collapsed && <Logo branded className="min-w-0 flex-1" />}
         <Button
           variant="ghost"
           size="icon"

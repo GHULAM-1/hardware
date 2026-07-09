@@ -35,7 +35,7 @@ export function MobileNav() {
       >
         <SheetHeader className="h-16 justify-center border-b border-sidebar-border px-5">
           <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
-          <Logo />
+          <Logo branded />
         </SheetHeader>
         <SidebarNav onNavigate={() => setOpen(false)} />
       </SheetContent>

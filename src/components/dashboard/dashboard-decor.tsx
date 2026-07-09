@@ -50,9 +50,11 @@ export function DashboardDecor() {
         </span>
       </button>
 
-      {/* Signboard — hanging in the top-right gutter, with live info on its face. */}
+      {/* Signboard — hanging in the top-right gutter, with live info on its face.
+          The board scales with the gutter width, so the overlay uses container-query
+          units (cqw) to scale too — the text never outgrows the cream face. */}
       <div aria-hidden className="absolute end-2 top-[180px]" style={{ width: gutter }}>
-        <div className="dash-sway relative">
+        <div className="dash-sway relative" style={{ containerType: "inline-size" }}>
           <Image
             src="/signboard.png"
             alt=""
@@ -60,10 +62,13 @@ export function DashboardDecor() {
             height={1536}
             className="h-auto w-full drop-shadow-xl"
           />
-          {/* Overlay sits on the blank cream face (≈ vertical middle). Nudge top-% if needed. */}
-          <div className="absolute inset-x-0 top-[44%] flex -translate-y-1/2 flex-col items-center gap-1 text-ink">
-            <div className="text-lg leading-none text-gold drop-shadow-sm">★★★★★</div>
-            <div className="text-[11px] font-extrabold tracking-wide">LAHORE, PK</div>
+          {/* Constrained to the cream face (center ~54%); font sizes track the board
+              width and cap out so they stay readable but never overflow. */}
+          <div className="absolute inset-x-[23%] top-[43%] flex -translate-y-1/2 flex-col items-center gap-[1.5cqw] text-ink">
+            <div className="leading-none text-gold drop-shadow-sm text-[min(9cqw,18px)]">★★★★★</div>
+            <div className="whitespace-nowrap font-extrabold leading-none tracking-wide text-[min(7.5cqw,12px)]">
+              LAHORE, PK
+            </div>
           </div>
         </div>
       </div>
