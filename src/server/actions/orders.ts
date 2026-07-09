@@ -1,6 +1,7 @@
 "use server";
 
 import { createActionClient } from "@/lib/supabase/server";
+import { searchTokens } from "@/lib/search";
 import { orderPaymentSchema, orderSchema, type OrderPaymentValues, type OrderValues } from "@/lib/schemas";
 import { PaymentType, StockEntryType } from "@/lib/enums";
 import type { Json } from "@/types/database";
@@ -22,10 +23,11 @@ export async function listOrders(accessToken: string, search = ""): Promise<Orde
   // matched the customer name the user sees and types.
   const s = search.trim().replace(/[%,()]/g, "");
   if (s) {
-    const { data: matches } = await client
-      .from("customers")
-      .select("id")
-      .or(`name_en.ilike.%${s}%,name_ur.ilike.%${s}%,phone.ilike.%${s}%`);
+    // Resolve matching customers via their normalized column (spacing/word-order
+    // tolerant — same pattern as items), then match orders by that customer OR order_no.
+    let cq = client.from("customers").select("id");
+    for (const t of searchTokens(search)) cq = cq.ilike("search_norm", `%${t}%`);
+    const { data: matches } = await cq;
     const ids = (matches ?? []).map((c) => c.id);
     const ors = [`order_no.ilike.%${s}%`];
     if (ids.length) ors.push(`customer_id.in.(${ids.join(",")})`);

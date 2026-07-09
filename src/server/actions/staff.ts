@@ -3,6 +3,7 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { staffSchema, type StaffValues } from "@/lib/schemas";
+import { searchTokens } from "@/lib/search";
 import { DUPLICATE_CNIC, DUPLICATE_PHONE } from "@/lib/errors";
 import type { Staff } from "@/types/models";
 
@@ -15,10 +16,9 @@ export async function listStaff(
   return runQuery(accessToken, (c) => {
     let q = c.from("staff").select("*").order("name").limit(100);
     if (opts.activeOnly) q = q.eq("is_active", true);
-    if (search.trim()) {
-      const term = search.trim().replace(/[%,]/g, "");
-      q = q.or(`name.ilike.%${term}%,phone.ilike.%${term}%`);
-    }
+    // Match every word as a substring of the normalized column (name + phone), so
+    // spacing/word-order don't matter — same pattern as items.
+    for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
     return q;
   });
 }

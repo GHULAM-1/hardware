@@ -3,15 +3,15 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { customerSchema, type CustomerValues } from "@/lib/schemas";
+import { searchTokens } from "@/lib/search";
 import type { Customer, CustomerOrderView, LastPurchaseView } from "@/types/models";
 
 export async function listCustomers(accessToken: string, search = ""): Promise<Customer[]> {
   return runQuery(accessToken, (c) => {
     let q = c.from("customers").select("*").order("name_en").limit(50);
-    if (search.trim()) {
-      const s = search.trim().replace(/[%,]/g, "");
-      q = q.or(`name_en.ilike.%${s}%,name_ur.ilike.%${s}%,phone.ilike.%${s}%`);
-    }
+    // Match every word as a substring of the normalized column (name + phone), so
+    // spacing/word-order don't matter — same pattern as items.
+    for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
     return q;
   });
 }

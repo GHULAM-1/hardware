@@ -93,6 +93,7 @@ export type Database = {
           name_ur: string | null
           notes: string | null
           phone: string | null
+          search_norm: string | null
           updated_at: string
         }
         Insert: {
@@ -106,6 +107,7 @@ export type Database = {
           name_ur?: string | null
           notes?: string | null
           phone?: string | null
+          search_norm?: string | null
           updated_at?: string
         }
         Update: {
@@ -119,6 +121,7 @@ export type Database = {
           name_ur?: string | null
           notes?: string | null
           phone?: string | null
+          search_norm?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -611,6 +614,7 @@ export type Database = {
           monthly_salary: number
           name: string
           phone: string
+          search_norm: string | null
           updated_at: string
         }
         Insert: {
@@ -625,6 +629,7 @@ export type Database = {
           monthly_salary: number
           name: string
           phone: string
+          search_norm?: string | null
           updated_at?: string
         }
         Update: {
@@ -639,6 +644,7 @@ export type Database = {
           monthly_salary?: number
           name?: string
           phone?: string
+          search_norm?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -901,6 +907,7 @@ export type Database = {
           name: string
           note: string | null
           phone: string | null
+          search_norm: string | null
           shop_name: string | null
           updated_at: string
         }
@@ -912,6 +919,7 @@ export type Database = {
           name: string
           note?: string | null
           phone?: string | null
+          search_norm?: string | null
           shop_name?: string | null
           updated_at?: string
         }
@@ -923,6 +931,7 @@ export type Database = {
           name?: string
           note?: string | null
           phone?: string | null
+          search_norm?: string | null
           shop_name?: string | null
           updated_at?: string
         }
