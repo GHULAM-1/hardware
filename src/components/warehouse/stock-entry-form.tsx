@@ -25,15 +25,21 @@ import type { ItemWithStock, StockEntryWithSupplier } from "@/types/models";
  * (used by the warehouse quick-stock panel before an item is picked); submitting
  * is blocked until an item is present. When an item IS given (the dialog path),
  * every fallback below is a no-op, so behaviour there is unchanged.
+ *
+ * `fixedType` locks the form to stock-in OR stock-out and hides the toggle —
+ * used by the desktop split panels, where in/out are two distinct boxes rather
+ * than one toggled box. Omit it to keep the toggle (dialog + mobile quick-stock).
  */
 export function StockEntryForm({
   item,
   editing,
   onDone,
+  fixedType,
 }: {
   item: ItemWithStock | null;
   editing: StockEntryWithSupplier | null;
   onDone: () => void;
+  fixedType?: StockEntryType;
 }) {
   const { t } = useTranslation();
   const create = useCreateStockEntry();
@@ -46,9 +52,10 @@ export function StockEntryForm({
     resolver: zodResolver(stockEntrySchema),
     defaultValues: {
       item_id: item?.id ?? "",
-      // Default to Stock out: this dialog manages an existing item; sourcing
-      // (stock-in) happens at creation, manual deductions are the common action.
-      type: (editing?.type as StockEntryType) ?? StockEntryType.Out,
+      // A locked panel dictates its type; otherwise default to Stock out: the
+      // dialog manages an existing item, so sourcing (stock-in) happens at
+      // creation and manual deductions are the common action.
+      type: (editing?.type as StockEntryType) ?? fixedType ?? StockEntryType.Out,
       // The form works in the item's PRIMARY unit; we convert to base on submit.
       quantity: editing ? fromBase(editing.quantity, basePerPrimary) : ("" as unknown as number),
       supplier_id: editing?.supplier_id ?? null,
@@ -102,22 +109,24 @@ export function StockEntryForm({
         noValidate
         className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4"
       >
-        {/* Type toggle */}
-        <div className="inline-flex rounded-md border border-border p-0.5">
-          {[StockEntryType.In, StockEntryType.Out].map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setType(option)}
-              className={cn(
-                "rounded px-3 py-1 text-sm font-medium transition-colors",
-                type === option ? "bg-primary text-primary-foreground" : "text-muted-foreground",
-              )}
-            >
-              {option === StockEntryType.In ? t("warehouse.stockIn") : t("warehouse.stockOut")}
-            </button>
-          ))}
-        </div>
+        {/* Type toggle — hidden when the panel is locked to a single type. */}
+        {!fixedType && (
+          <div className="inline-flex rounded-md border border-border p-0.5">
+            {[StockEntryType.In, StockEntryType.Out].map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setType(option)}
+                className={cn(
+                  "rounded px-3 py-1 text-sm font-medium transition-colors",
+                  type === option ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+                )}
+              >
+                {option === StockEntryType.In ? t("warehouse.stockIn") : t("warehouse.stockOut")}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="grid gap-3 sm:grid-cols-2 [&>*]:min-w-0">
           {isIn && item && (

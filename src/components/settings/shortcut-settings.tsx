@@ -4,9 +4,9 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { NAV_ITEMS } from "@/lib/nav";
 import {
   DEFAULT_SHORTCUTS,
+  SHORTCUT_ENTRIES,
   normalizeShortcut,
   shortcutConflict,
   type ShortcutMap,
@@ -24,7 +24,7 @@ import { Keyboard } from "lucide-react";
 
 /** Did the working map drift from the code defaults? (drives the Reset button) */
 function isDirty(a: ShortcutMap, b: ShortcutMap): boolean {
-  return NAV_ITEMS.some((i) => a[i.href] !== b[i.href]);
+  return SHORTCUT_ENTRIES.some((e) => a[e.key] !== b[e.key]);
 }
 
 /**
@@ -68,9 +68,9 @@ export function ShortcutSettings() {
   );
 
   const nameFor = React.useCallback(
-    (href: string) => {
-      const item = NAV_ITEMS.find((i) => i.href === href);
-      return item ? t(item.i18nKey) : href;
+    (key: string) => {
+      const entry = SHORTCUT_ENTRIES.find((e) => e.key === key);
+      return entry ? t(entry.i18nKey) : key;
     },
     [t],
   );
@@ -112,9 +112,9 @@ export function ShortcutSettings() {
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [listening, map, nameFor, persist, t]);
 
-  // Admins see only the sections they can actually reach (matches the sidebar);
+  // Admins see only the targets they can actually reach (matches the sidebar);
   // super_admin edits the full set. Conflict checks always use the whole `map`.
-  const rows = NAV_ITEMS.filter((i) => isSuperAdmin || i.adminAllowed);
+  const rows = SHORTCUT_ENTRIES.filter((e) => isSuperAdmin || e.adminAllowed);
 
   return (
     <SettingsSection
@@ -124,21 +124,21 @@ export function ShortcutSettings() {
     >
       <div className="space-y-4">
         <ul className="divide-y divide-border/60 overflow-hidden rounded-xl border">
-          {rows.map((item) => {
-            const listeningHere = listening === item.href;
+          {rows.map((entry) => {
+            const listeningHere = listening === entry.key;
             return (
               <li
-                key={item.href}
+                key={entry.key}
                 className="flex min-h-[3.25rem] items-center justify-between gap-3 px-3 py-2 sm:px-4"
               >
                 <span className="min-w-0 truncate text-sm font-medium">
-                  {t(item.i18nKey)}
+                  {t(entry.i18nKey)}
                 </span>
                 <button
                   type="button"
                   disabled={!isSuperAdmin}
-                  aria-label={t("settings.changeShortcut", { name: t(item.i18nKey) })}
-                  onClick={() => setListening(listeningHere ? null : item.href)}
+                  aria-label={t("settings.changeShortcut", { name: t(entry.i18nKey) })}
+                  onClick={() => setListening(listeningHere ? null : entry.key)}
                   className={cn(
                     "inline-flex h-11 min-w-11 shrink-0 items-center justify-center rounded-lg px-1 transition",
                     isSuperAdmin && "hover:bg-muted",
@@ -151,7 +151,7 @@ export function ShortcutSettings() {
                       {t("settings.pressKey")}
                     </span>
                   ) : (
-                    <ShortcutHint letter={map[item.href]} className="bg-black/70" />
+                    <ShortcutHint letter={map[entry.key]} className="bg-black/70" />
                   )}
                 </button>
               </li>

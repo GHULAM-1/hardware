@@ -67,18 +67,6 @@ export function GlobalSearch() {
     [stop],
   );
 
-  // Cmd/Ctrl+K toggles the palette.
-  React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setPaletteOpen(!open);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, setPaletteOpen]);
-
   const items = useQuery({
     queryKey: ["global-search", "items", debounced],
     queryFn: async () => listItems(await getAccessToken(), debounced),
@@ -130,9 +118,6 @@ export function GlobalSearch() {
       >
         <Search className="h-4 w-4 shrink-0" />
         <span className="hidden truncate sm:inline">{t("globalSearch.placeholder")}</span>
-        <kbd className="ms-auto hidden rounded border border-border px-1.5 font-mono text-[10px] sm:inline">
-          ⌘K
-        </kbd>
       </button>
 
       <Dialog open={open} onOpenChange={setPaletteOpen}>

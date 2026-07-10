@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Lock, LockOpen } from "lucide-react";
 
 import { NAV_ITEMS, type GameColor } from "@/lib/nav";
+import { DEFAULT_SHORTCUTS, QUICK_SEARCH_KEY } from "@/lib/nav-shortcuts";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
 import { useLock } from "@/providers/lock-provider";
 import { useNavShortcutSettings, useLockedTabs } from "@/hooks/use-settings";
@@ -104,6 +105,10 @@ export function DashboardNavGrid({ onNavigate }: { onNavigate?: () => void }) {
           CANDY.red,
         )}
       >
+        <ShortcutHint
+          letter={shortcuts?.[QUICK_SEARCH_KEY] ?? DEFAULT_SHORTCUTS[QUICK_SEARCH_KEY]}
+          className="absolute end-2 top-2 hidden md:inline-flex"
+        />
         <Icon3D
           name="search"
           size={48}

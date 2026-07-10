@@ -185,6 +185,8 @@
     "manageStock": "Manage stock",
     "quickStockTitle": "Quick stock in / out",
     "quickStockHint": "Pick an item to add or remove stock without opening it.",
+    "quickStockInHint": "Pick an item to add stock without opening it.",
+    "quickStockOutHint": "Pick an item to remove stock without opening it.",
     "quickStockPick": "Search an item…",
     "pickItemFirst": "Pick an item to stock in or out.",
     "history": "Stock history",

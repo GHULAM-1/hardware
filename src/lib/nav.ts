@@ -56,7 +56,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/warehouse", i18nKey: "nav.warehouse", icon: Warehouse, icon3d: "boxes", color: "orange", adminAllowed: true, shortcut: "B" },
   { href: "/customers", i18nKey: "nav.customers", icon: Users, icon3d: "users", color: "purple", shortcut: "C" },
   { href: "/orders", i18nKey: "nav.orders", icon: ShoppingCart, icon3d: "cart-plus", color: "green", shortcut: "O" },
-  { href: "/khata", i18nKey: "nav.khata", icon: BookUser, icon3d: "wallet", color: "teal", shortcut: "K" },
+  { href: "/khata", i18nKey: "nav.khata", icon: BookUser, icon3d: "wallet", color: "teal", shortcut: "A" },
   { href: "/suppliers", i18nKey: "nav.suppliers", icon: Truck, icon3d: "truck", color: "blue", shortcut: "S" },
   { href: "/supplier-orders", i18nKey: "nav.supplierOrders", icon: ClipboardList, icon3d: "reports", color: "orange", shortcut: "D" },
   { href: "/staff", i18nKey: "nav.staff", icon: Contact, icon3d: "users", color: "pink", shortcut: "E" },

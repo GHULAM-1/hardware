@@ -4,9 +4,11 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { NAV_ITEMS } from "@/lib/nav";
-import { DEFAULT_SHORTCUTS } from "@/lib/nav-shortcuts";
+import { DEFAULT_SHORTCUTS, QUICK_SEARCH_KEY } from "@/lib/nav-shortcuts";
 import { useNavShortcutSettings } from "@/hooks/use-settings";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
+import { useDialogManager } from "@/components/dialogs/dialog-manager";
+import { DialogKey } from "@/lib/dialog-keys";
 
 /** Elements where a keystroke means "type", not "navigate" — never hijack there. */
 function isEditableTarget(el: EventTarget | null): boolean {
@@ -30,17 +32,21 @@ export function useNavShortcuts() {
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
   const { data: shortcuts } = useNavShortcutSettings();
+  const { openDialog } = useDialogManager();
 
-  // Keep the latest permission flag and the (user-customizable) shortcut map in
-  // refs so the listener isn't re-bound on every auth/settings change — and so
-  // the handler always reads the current values. Falls back to code defaults
-  // until the stored map has loaded. Synced in an effect (never mutated during
-  // render) so the single keydown listener below stays mounted.
+  // Keep the latest permission flag, the (user-customizable) shortcut map, and
+  // the dialog opener in refs so the listener isn't re-bound on every auth/
+  // settings change — and so the handler always reads the current values. Falls
+  // back to code defaults until the stored map has loaded. Synced in an effect
+  // (never mutated during render) so the single keydown listener below stays
+  // mounted.
   const canAllRef = React.useRef(isSuperAdmin);
   const mapRef = React.useRef(DEFAULT_SHORTCUTS);
+  const openDialogRef = React.useRef(openDialog);
   React.useEffect(() => {
     canAllRef.current = isSuperAdmin;
     mapRef.current = shortcuts ?? DEFAULT_SHORTCUTS;
+    openDialogRef.current = openDialog;
   });
 
   React.useEffect(() => {
@@ -52,20 +58,29 @@ export function useNavShortcuts() {
       if (isEditableTarget(e.target)) return;
 
       const key = e.key.toLowerCase();
-      const href = Object.keys(mapRef.current).find(
+      const target = Object.keys(mapRef.current).find(
         (h) => mapRef.current[h].toLowerCase() === key,
       );
-      if (!href) return;
-      const item = NAV_ITEMS.find((i) => i.href === href);
-      if (!item || !(canAllRef.current || item.adminAllowed)) return;
+      if (!target) return;
 
       // Preserve real copy: if Ctrl+C is pressed while text is selected, let the
-      // browser copy instead of navigating.
+      // browser copy instead of firing a shortcut.
       if (key === "c") {
         const sel = window.getSelection?.();
         if (sel && !sel.isCollapsed && sel.toString().length > 0) return;
       }
 
+      // Action shortcut: open the Quick search dialog (available to admins too).
+      if (target === QUICK_SEARCH_KEY) {
+        e.preventDefault();
+        e.stopPropagation();
+        openDialogRef.current(DialogKey.ItemQuickSearch, null);
+        return;
+      }
+
+      // Route shortcut: navigate, subject to the admin permission filter.
+      const item = NAV_ITEMS.find((i) => i.href === target);
+      if (!item || !(canAllRef.current || item.adminAllowed)) return;
       e.preventDefault();
       e.stopPropagation();
       router.push(item.href);
