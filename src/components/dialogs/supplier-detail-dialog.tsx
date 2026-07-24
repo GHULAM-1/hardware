@@ -55,7 +55,7 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
           <DialogTitle className="break-words pe-6">{supplier.name}</DialogTitle>
         </DialogHeader>
 
-        <div className="rounded-lg border border-border bg-card px-4 py-1">
+        <div className="rounded-lg well border border-white/20 px-4 py-1">
           <Field label={t("suppliers.supplierName")}>{supplier.name}</Field>
           <Field label={t("fields.shopName")}>{supplier.shop_name ?? "—"}</Field>
           <Field label={t("fields.phone")}>
@@ -79,7 +79,7 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
               {items.map((item) => (
                 <span
                   key={item.id}
-                  className="inline-flex items-center rounded-full border border-border bg-secondary px-3 py-1 text-sm font-medium"
+                  className="inline-flex items-center rounded-full well border border-white/20 px-3 py-1 text-sm font-medium"
                 >
                   {displayName(item, language)}
                 </span>
@@ -105,7 +105,7 @@ export function SupplierDetailDialog({ payload, onClose }: DialogComponentProps<
                   <button
                     type="button"
                     onClick={() => openDialog(DialogKey.SupplierOrderDetail, { id: o.id })}
-                    className="flex w-full items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-start transition-colors hover:bg-secondary"
+                    className="flex w-full items-center justify-between gap-3 rounded-md well border border-white/20 px-3 py-2 text-start transition-colors hover:bg-secondary"
                   >
                     <span className="min-w-0">
                       <span className="block font-medium">{o.order_no}</span>

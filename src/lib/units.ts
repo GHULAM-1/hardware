@@ -19,11 +19,105 @@ export const UNITS = [
 export type Unit = (typeof UNITS)[number];
 
 // ── Measurement model ──────────────────────────────────────────────────────
-// Quantity is stored in a canonical BASE unit per measurement type. The admin
-// works in a PRIMARY (bulk) unit; base_per_primary converts between them.
-//   count  → base "piece"; primary box/dozen/carton with a user-defined factor
-//   weight → base "gram";  primary kg/ton/gram (physical constants)
-//   length → base "mm";    primary meter/foot/inch/cm/mm (physical constants)
+// Quantity is stored in a canonical BASE unit. The admin works in a PRIMARY unit;
+// base_per_primary converts between them.
+//
+// The admin used to pick a measurement TYPE first (Count / Weight / Length) and
+// then a unit from that type's short list. That split was redundant — a unit
+// already tells you its family — so the UI now offers one searchable list of
+// every unit, and `measurement_type` is DERIVED from the chosen unit purely to
+// keep the existing DB column, order RPCs and reports working unchanged.
+//
+// Conversion is driven by `base`, never by `type`: two units are interchangeable
+// exactly when they share a base. That's why volume and area can live here
+// without new enum values — `liter` was already carried under `weight` this way.
+
+/** One selectable unit. `factor` = how many BASE units make one of this unit. */
+export type UnitDef = {
+  /** Stored in items.primary_unit and used as the `units.<key>` i18n key. */
+  key: string;
+  /** Written to items.measurement_type (DB compatibility only — see above). */
+  type: MeasurementType;
+  /** Canonical unit quantities are stored in. Shared base = interchangeable. */
+  base: string;
+  /** Base units per 1 of this unit. Ignored when `packable` (admin supplies it). */
+  factor: number;
+  /** Bulk count unit — the admin is asked how many pieces are in one. */
+  packable?: boolean;
+  /** Heading this unit appears under in the picker. */
+  group: "count" | "weight" | "volume" | "length" | "area";
+};
+
+/**
+ * Every unit the app offers, in picker order.
+ *
+ * IMPORTANT: the base/factor of any unit that already exists in the database
+ * (piece, box, dozen, carton, kg, ton, liter, inch, foot, meter) must never
+ * change — stored quantities are expressed in those bases, so altering one would
+ * silently reinterpret existing stock.
+ */
+export const UNIT_CATALOG: readonly UnitDef[] = [
+  // Count — base "piece". Everything but `piece` is a pack of a user-set size.
+  { key: "piece", type: MeasurementType.Count, base: "piece", factor: 1, group: "count" },
+  { key: "pair", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "dozen", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "gross", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "box", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "carton", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "packet", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "bundle", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "set", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "roll", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "coil", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "sheet", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "bag", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "tin", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "drum", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "can", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "tube", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "strip", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+  { key: "ream", type: MeasurementType.Count, base: "piece", factor: 1, packable: true, group: "count" },
+
+  // Weight — base "gram". Includes the South-Asian trade units.
+  { key: "milligram", type: MeasurementType.Weight, base: "gram", factor: 0.001, group: "weight" },
+  { key: "gram", type: MeasurementType.Weight, base: "gram", factor: 1, group: "weight" },
+  { key: "tola", type: MeasurementType.Weight, base: "gram", factor: 11.6638, group: "weight" },
+  { key: "ounce", type: MeasurementType.Weight, base: "gram", factor: 28.3495, group: "weight" },
+  { key: "pound", type: MeasurementType.Weight, base: "gram", factor: 453.592, group: "weight" },
+  { key: "seer", type: MeasurementType.Weight, base: "gram", factor: 933.105, group: "weight" },
+  { key: "kg", type: MeasurementType.Weight, base: "gram", factor: 1000, group: "weight" },
+  { key: "maund", type: MeasurementType.Weight, base: "gram", factor: 37_324.2, group: "weight" },
+  { key: "quintal", type: MeasurementType.Weight, base: "gram", factor: 100_000, group: "weight" },
+  { key: "ton", type: MeasurementType.Weight, base: "gram", factor: 1_000_000, group: "weight" },
+
+  // Volume — base "liter" (NOT millilitre: existing liter rows store factor 1).
+  { key: "ml", type: MeasurementType.Weight, base: "liter", factor: 0.001, group: "volume" },
+  { key: "liter", type: MeasurementType.Weight, base: "liter", factor: 1, group: "volume" },
+  { key: "gallon", type: MeasurementType.Weight, base: "liter", factor: 3.78541, group: "volume" },
+
+  // Length — base "mm".
+  { key: "mm", type: MeasurementType.Length, base: "mm", factor: 1, group: "length" },
+  { key: "cm", type: MeasurementType.Length, base: "mm", factor: 10, group: "length" },
+  { key: "inch", type: MeasurementType.Length, base: "mm", factor: 25.4, group: "length" },
+  { key: "foot", type: MeasurementType.Length, base: "mm", factor: 304.8, group: "length" },
+  { key: "yard", type: MeasurementType.Length, base: "mm", factor: 914.4, group: "length" },
+  { key: "meter", type: MeasurementType.Length, base: "mm", factor: 1000, group: "length" },
+  { key: "km", type: MeasurementType.Length, base: "mm", factor: 1_000_000, group: "length" },
+
+  // Area — base "sqft". Tiles, glass, sheet goods.
+  { key: "sqft", type: MeasurementType.Length, base: "sqft", factor: 1, group: "area" },
+  { key: "sqyd", type: MeasurementType.Length, base: "sqft", factor: 9, group: "area" },
+  { key: "sqm", type: MeasurementType.Length, base: "sqft", factor: 10.7639, group: "area" },
+];
+
+const UNIT_BY_KEY: Record<string, UnitDef> = Object.fromEntries(
+  UNIT_CATALOG.map((u) => [u.key, u]),
+);
+
+/** Look a unit up, falling back to `piece` for unknown/legacy values. */
+export function unitDef(key: string): UnitDef {
+  return UNIT_BY_KEY[key] ?? UNIT_BY_KEY.piece;
+}
 
 /** Canonical base unit stored in the DB for each measurement type. */
 export const BASE_UNIT: Record<MeasurementType, string> = {
@@ -32,34 +126,9 @@ export const BASE_UNIT: Record<MeasurementType, string> = {
   [MeasurementType.Length]: "mm",
 };
 
-/** Selectable primary (stored) units the admin can pick per measurement type. */
-export const PRIMARY_UNITS: Record<MeasurementType, readonly string[]> = {
-  [MeasurementType.Count]: ["piece", "box", "dozen", "carton"],
-  // Weight tab also offers liter (volume) — stored standalone, see deriveUnitModel.
-  [MeasurementType.Weight]: ["kg", "ton", "liter"],
-  [MeasurementType.Length]: ["inch", "foot", "meter"],
-};
-
-/** Base units (grams) in one of each weight primary unit. */
-const WEIGHT_FACTOR: Record<string, number> = { gram: 1, kg: 1000, ton: 1_000_000 };
-/** Base units (mm) in one of each length primary unit. Exact physical constants. */
-const LENGTH_FACTOR: Record<string, number> = { mm: 1, cm: 10, inch: 25.4, foot: 304.8, meter: 1000 };
-
-/**
- * Units that can be sold interchangeably for an order line, with their per-base
- * factors. An item is sold only within the group of its stored primary unit:
- *   mass   kg/ton (base gram)   ·   volume liter (standalone)   ·   length inch/foot/meter (base mm)
- * Count is handled separately (bulk + piece via base_per_primary).
- */
-const SALE_GROUPS: { units: readonly string[]; factor: Record<string, number> }[] = [
-  { units: ["kg", "ton"], factor: WEIGHT_FACTOR },
-  { units: ["liter"], factor: { liter: 1 } },
-  { units: ["inch", "foot", "meter"], factor: LENGTH_FACTOR },
-];
-
-/** The convertible group a primary unit belongs to (null = not a grouped unit). */
-function groupOf(primaryUnit: string): { units: readonly string[]; factor: Record<string, number> } | null {
-  return SALE_GROUPS.find((g) => g.units.includes(primaryUnit)) ?? null;
+/** Does this unit need a "how many pieces in one?" answer from the admin? */
+export function isPackableUnit(primaryUnit: string): boolean {
+  return Boolean(unitDef(primaryUnit).packable);
 }
 
 /** A count primary unit that is itself the base piece (no bulk packing). */
@@ -68,26 +137,44 @@ export function isCountBaseUnit(primaryUnit: string): boolean {
 }
 
 /**
- * Resolve the canonical (base_unit, base_per_primary) for an item from its
- * measurement type, primary unit, and — for count bulk units only — the
+ * The convertible group a primary unit belongs to: every non-packable unit that
+ * shares its base. Packable count units are excluded — their factor is per-item,
+ * so a "box" of one product isn't a "box" of another.
+ */
+function groupOf(
+  primaryUnit: string,
+): { units: readonly string[]; factor: Record<string, number> } | null {
+  const def = unitDef(primaryUnit);
+  if (def.packable || def.base === "piece") return null;
+  const peers = UNIT_CATALOG.filter((u) => u.base === def.base && !u.packable);
+  return {
+    units: peers.map((u) => u.key),
+    factor: Object.fromEntries(peers.map((u) => [u.key, u.factor])),
+  };
+}
+
+/**
+ * Resolve the canonical (measurement_type, base_unit, base_per_primary) for an
+ * item from its primary unit and — for packable count units only — the
  * user-supplied pieces-per-primary factor. Single source of truth for the math.
  */
 export function deriveUnitModel(
-  measurementType: MeasurementType,
   primaryUnit: string,
   countFactor: number | null | undefined,
-): { base_unit: string; base_per_primary: number } {
-  if (measurementType === MeasurementType.Weight) {
-    // Liter is a standalone volume unit (no fixed weight) — store it as its own base.
-    if (primaryUnit === "liter") return { base_unit: "liter", base_per_primary: 1 };
-    return { base_unit: "gram", base_per_primary: WEIGHT_FACTOR[primaryUnit] ?? 1 };
+): { measurement_type: MeasurementType; base_unit: string; base_per_primary: number } {
+  const def = unitDef(primaryUnit);
+  if (def.packable) {
+    return {
+      measurement_type: def.type,
+      base_unit: def.base,
+      base_per_primary: Number(countFactor) > 0 ? Number(countFactor) : 1,
+    };
   }
-  if (measurementType === MeasurementType.Length) {
-    return { base_unit: "mm", base_per_primary: LENGTH_FACTOR[primaryUnit] ?? 1 };
-  }
-  // count
-  if (isCountBaseUnit(primaryUnit)) return { base_unit: "piece", base_per_primary: 1 };
-  return { base_unit: "piece", base_per_primary: Number(countFactor) > 0 ? Number(countFactor) : 1 };
+  return {
+    measurement_type: def.type,
+    base_unit: def.base,
+    base_per_primary: def.factor,
+  };
 }
 
 /** Does this item sell/break down into a smaller unit (count with a bulk pack)? */

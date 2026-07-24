@@ -1,6 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { read } from "@/lib/read-client";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -14,8 +16,6 @@ import {
   createReminder,
   deleteKhata,
   fulfillKhatas,
-  getKhataReminders,
-  listKhatas,
   setKhataStatus,
   updateKhata,
 } from "@/server/actions/khata";
@@ -23,14 +23,14 @@ import {
 export function useKhatas(status = "") {
   return useQuery({
     queryKey: queryKeys.khatas(status),
-    queryFn: async () => listKhatas(await getAccessToken(), status),
+    queryFn: async () => read("khata.list", status),
   });
 }
 
 export function useKhataReminders() {
   return useQuery({
     queryKey: queryKeys.khataReminders(),
-    queryFn: async () => getKhataReminders(await getAccessToken()),
+    queryFn: async () => read("khata.reminders"),
   });
 }
 

@@ -48,7 +48,9 @@ export function DataTable<T>({
   return (
     // min-w-0 lets the table shrink inside grid/flex parents (e.g. dialogs) without
     // forcing the parent wider; the table scrolls internally only if truly needed.
-    <div className="w-full min-w-0 overflow-hidden rounded-lg border border-border bg-card">
+    // The Table itself paints the sunken well; this wrapper only clips the
+    // header rail to the rounded corners and draws the outer rim.
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border-2 border-white/25 shadow-[0_6px_0_rgba(0,0,0,0.28),0_12px_22px_rgba(4,14,40,0.4)]">
       <Table>
         <TableHeader>
           <TableRow>

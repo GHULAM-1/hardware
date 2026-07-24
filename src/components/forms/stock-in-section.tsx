@@ -56,16 +56,23 @@ export function useStockIn(seed?: StockSeed) {
     qty !== baseline.qty;
   const hasStock = Number(qty) > 0;
 
-  /** Create-mode: record a purchase that ADDS `qty` to stock. */
+  /**
+   * Create-mode: record a purchase that ADDS `qty` to stock.
+   *
+   * `priceOverride` lets the item dialogs stamp the entry with the item's own
+   * buying price — they render that field up beside selling price rather than in
+   * this section, so the local `buyingPrice` state is unused there.
+   */
   const commitAdd = React.useCallback(
-    async (itemId: string, basePerPrimary: number) => {
+    async (itemId: string, basePerPrimary: number, priceOverride?: number | null) => {
       if (Number(qty) <= 0) return;
+      const price = priceOverride !== undefined ? priceOverride : buyingPrice === "" ? null : Number(buyingPrice);
       const entry = stockEntrySchema.parse({
         item_id: itemId,
         type: StockEntryType.In,
         quantity: toBase(Number(qty), basePerPrimary),
         supplier_id: supplierId,
-        buying_price: buyingPrice === "" ? null : Number(buyingPrice),
+        buying_price: price,
         note: null,
         entry_date: date,
       });
@@ -84,7 +91,14 @@ export function useStockIn(seed?: StockSeed) {
    *    otherwise a price-only edit would be silently dropped.
    */
   const commitSet = React.useCallback(
-    async (itemId: string, basePerPrimary: number, currentBase: number) => {
+    async (
+      itemId: string,
+      basePerPrimary: number,
+      currentBase: number,
+      priceOverride?: number | null,
+    ) => {
+      const effectivePrice =
+        priceOverride !== undefined ? priceOverride : buyingPrice === "" ? null : Number(buyingPrice);
       const priceChanged = buyingPrice !== baseline.buyingPrice;
       const supplierChanged = supplierId !== baseline.supplierId;
 
@@ -102,7 +116,7 @@ export function useStockIn(seed?: StockSeed) {
             type: StockEntryType.In,
             quantity: delta,
             supplier_id: supplierId,
-            buying_price: buyingPrice === "" ? null : Number(buyingPrice),
+            buying_price: effectivePrice,
             note: null,
             entry_date: date,
           }),
@@ -124,9 +138,11 @@ export function useStockIn(seed?: StockSeed) {
         );
       }
 
-      // Quantity unchanged (or just decreased): persist a price/supplier edit.
-      if ((priceChanged || supplierChanged) && buyingPrice !== "") {
-        await setPrice.mutateAsync({ itemId, buyingPrice: Number(buyingPrice), supplierId });
+      // Quantity unchanged (or just decreased): keep the newest stock-in row in
+      // step with the edit. The item's own cost column is saved separately by
+      // updateItem, so this is only about purchase history staying consistent.
+      if ((priceChanged || supplierChanged) && effectivePrice != null) {
+        await setPrice.mutateAsync({ itemId, buyingPrice: effectivePrice, supplierId });
       }
     },
     [qty, supplierId, buyingPrice, baseline, date, createStock, setPrice],
@@ -156,15 +172,22 @@ export function StockInFields({
   unitLabel,
   title,
   hint,
+  showBuyingPrice = true,
 }: {
   stock: StockInController;
   unitLabel: string;
   title: string;
   hint: string;
+  /**
+   * The item dialogs hoist buying price up next to selling price (cost and price
+   * read together), so they hide it here. Other callers keep it inline with the
+   * quantity it's actually stored against.
+   */
+  showBuyingPrice?: boolean;
 }) {
   const { t } = useTranslation();
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4">
+    <div className="space-y-3 rounded-lg well border border-white/20 p-4">
       <div className="space-y-0.5">
         <Label>{title}</Label>
         <p className="text-xs text-muted-foreground">{hint}</p>
@@ -188,21 +211,23 @@ export function StockInFields({
             onChange={(e) => stock.setQty(e.target.value)}
           />
         </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">
-            {t("fields.buyingPrice")}
-            {unitLabel ? ` (PKR / ${unitLabel})` : " (PKR)"}
-          </Label>
-          <Input
-            type="number"
-            min={0}
-            step="0.01"
-            dir="ltr"
-            value={stock.buyingPrice}
-            onChange={(e) => stock.setBuyingPrice(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">{t("items.buyingPriceHint")}</p>
-        </div>
+        {showBuyingPrice && (
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">
+              {t("fields.buyingPrice")}
+              {unitLabel ? ` (PKR / ${unitLabel})` : " (PKR)"}
+            </Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              dir="ltr"
+              value={stock.buyingPrice}
+              onChange={(e) => stock.setBuyingPrice(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{t("items.buyingPriceHint")}</p>
+          </div>
+        )}
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{t("fields.date")}</Label>
@@ -297,7 +322,7 @@ export function ExtraStockInsFields({
       {extra.rows.map((row, i) => (
         <div
           key={row.key}
-          className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4"
+          className="space-y-3 rounded-lg well border border-white/20 p-4"
         >
           <div className="flex items-center justify-between gap-2">
             <Label>{t("items.additionalSupplier", { n: i + 2 })}</Label>

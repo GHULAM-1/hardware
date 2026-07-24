@@ -31,7 +31,7 @@ export function AssistantTrigger() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="relative flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="field relative flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-semibold text-white/75 transition-colors hover:text-white"
       >
         <Search className="h-4 w-4" />
         <span className="truncate">{t("assistant.placeholder")}</span>

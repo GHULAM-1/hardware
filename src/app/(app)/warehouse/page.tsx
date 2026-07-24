@@ -187,7 +187,7 @@ export default function WarehousePage() {
             <Card className="sticky top-0 gap-4 p-5">
               <div className="flex min-w-0 items-center gap-3">
                 <ImageThumb src={selected.image_urls?.[0] ?? selected.image_url} alt={selected.name_en} />
-                <span className="min-w-0 truncate text-lg font-extrabold text-ink">
+                <span className="min-w-0 truncate text-lg font-extrabold text-white">
                   {displayName(selected, language)}
                 </span>
               </div>

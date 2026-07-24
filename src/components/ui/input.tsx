@@ -19,9 +19,10 @@ function Input({ className, type, onKeyDown, ...props }: React.ComponentProps<"i
       data-slot="input"
       onKeyDown={handleKeyDown}
       className={cn(
-        "h-10 w-full min-w-0 rounded-lg border-2 border-input bg-card px-3 py-1 text-base font-medium text-foreground transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:font-normal placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        "focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/40",
-        "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
+        // `field` = sunken well cut into the panel (see globals.css) — white bold
+        // text on a deep well, the most legible pairing in a saturated scheme.
+        "field h-10 w-full min-w-0 rounded-lg px-3 py-1 text-base font-bold transition-[color,box-shadow] outline-none selection:bg-gold selection:text-ink file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-white disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/40",
         className
       )}
       {...props}

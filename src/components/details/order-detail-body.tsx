@@ -106,7 +106,7 @@ export function OrderDetailBody({ orderId, onClose }: { orderId: string; onClose
 
       {/* Internal note (staff-only) */}
       {order.internal_note && (
-        <div className="space-y-1 rounded-lg border border-border bg-secondary/40 p-3">
+        <div className="space-y-1 rounded-lg well border border-white/20 p-3">
           <p className="text-xs font-semibold text-muted-foreground">
             {t("orders.internalNoteLabel")}
           </p>

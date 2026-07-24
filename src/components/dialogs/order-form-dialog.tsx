@@ -213,7 +213,7 @@ export function OrderFormDialog({ payload, onClose }: DialogComponentProps<Order
         </div>
 
         {/* Payment */}
-        <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+        <div className="space-y-3 rounded-lg well border border-white/20 p-4">
           <Label>{t("fields.paymentType")}</Label>
           <div className="inline-flex flex-wrap rounded-md border border-border p-0.5">
             {PAY_MODES.map((opt) => (

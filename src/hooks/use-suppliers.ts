@@ -2,21 +2,20 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { SupplierValues } from "@/lib/schemas";
 import {
   createSupplier,
   deleteSupplier,
-  listSuppliers,
-  listSuppliersForItem,
   updateSupplier,
 } from "@/server/actions/suppliers";
 
 export function useSuppliers(search = "") {
   return useQuery({
     queryKey: queryKeys.suppliers(search),
-    queryFn: async () => listSuppliers(await getAccessToken(), search),
+    queryFn: async () => read("suppliers.list", search),
   });
 }
 
@@ -24,7 +23,7 @@ export function useSuppliers(search = "") {
 export function useItemSuppliers(itemId: string | null) {
   return useQuery({
     queryKey: ["item-suppliers", itemId],
-    queryFn: async () => listSuppliersForItem(await getAccessToken(), itemId as string),
+    queryFn: async () => read("suppliers.forItem", itemId as string),
     enabled: Boolean(itemId),
   });
 }

@@ -2,17 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { SupplierOrderTallyValues, SupplierOrderValues } from "@/lib/schemas";
 import {
   createSupplierOrder,
   deleteSupplierOrder,
-  getFrequentItemsForSupplier,
-  getSupplierItems,
-  getSupplierOrder,
-  listSupplierOrders,
-  listSupplierOrdersBySupplier,
   saveSupplierOrderTally,
   updateSupplierOrder,
   updateSupplierOrderBill,
@@ -21,14 +17,14 @@ import {
 export function useSupplierOrders(search = "") {
   return useQuery({
     queryKey: queryKeys.supplierOrders(search),
-    queryFn: async () => listSupplierOrders(await getAccessToken(), search),
+    queryFn: async () => read("supplierOrders.list", search),
   });
 }
 
 export function useSupplierOrder(id: string | undefined) {
   return useQuery({
     queryKey: queryKeys.supplierOrder(id ?? ""),
-    queryFn: async () => getSupplierOrder(await getAccessToken(), id as string),
+    queryFn: async () => read("supplierOrders.get", id as string),
     enabled: Boolean(id),
   });
 }
@@ -36,7 +32,7 @@ export function useSupplierOrder(id: string | undefined) {
 export function useSupplierOrdersBySupplier(supplierId: string | undefined) {
   return useQuery({
     queryKey: ["supplier-orders", "by-supplier", supplierId ?? ""],
-    queryFn: async () => listSupplierOrdersBySupplier(await getAccessToken(), supplierId as string),
+    queryFn: async () => read("supplierOrders.bySupplier", supplierId as string),
     enabled: Boolean(supplierId),
   });
 }
@@ -44,7 +40,7 @@ export function useSupplierOrdersBySupplier(supplierId: string | undefined) {
 export function useFrequentItemsForSupplier(supplierId: string | undefined) {
   return useQuery({
     queryKey: ["supplier-orders", "frequent", supplierId ?? ""],
-    queryFn: async () => getFrequentItemsForSupplier(await getAccessToken(), supplierId as string),
+    queryFn: async () => read("supplierOrders.frequentItems", supplierId as string),
     enabled: Boolean(supplierId),
   });
 }
@@ -53,7 +49,7 @@ export function useFrequentItemsForSupplier(supplierId: string | undefined) {
 export function useSupplierItems(supplierId: string | undefined) {
   return useQuery({
     queryKey: ["supplier-orders", "items", supplierId ?? ""],
-    queryFn: async () => getSupplierItems(await getAccessToken(), supplierId as string),
+    queryFn: async () => read("supplierOrders.supplierItems", supplierId as string),
     enabled: Boolean(supplierId),
   });
 }

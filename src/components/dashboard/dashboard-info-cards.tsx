@@ -1,20 +1,18 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { MapPin, Rocket } from "lucide-react";
 
-import { getAccessToken } from "@/lib/auth-token";
-import { getFinancialSummary, getPaymentBreakdown } from "@/server/actions/dashboard";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
+import { useDashboardBundle } from "@/hooks/use-dashboard";
 import { DialogKey } from "@/lib/dialog-keys";
 import { formatPKR } from "@/lib/format";
 import { Icon3D, type Icon3DName } from "@/components/ui/icon-3d";
 import { cn } from "@/lib/utils";
 
-/** Shared cream-panel shell. */
-const CARD = "flex flex-col rounded-2xl border-2 bg-cream p-3 text-ink shadow-card";
+/** Shared saturated-panel shell (see .panel in globals.css). */
+const CARD = "panel ink-pop flex flex-col rounded-2xl p-3 text-white";
 
 /**
  * The game-style cards at the bottom of the dashboard: quick actions + key money
@@ -43,10 +41,10 @@ function QuickActionsCard() {
   ];
 
   return (
-    <section className={cn(CARD, "border-game-blue/60")}>
+    <section className={cn(CARD, "candy-blue")}>
       <header className="mb-2 flex items-center gap-2">
-        <Rocket className="h-5 w-5 shrink-0 text-game-blue-d" />
-        <h3 className="truncate text-sm font-extrabold text-game-blue-d">{t("dashboard.quickActions")}</h3>
+        <Rocket className="h-5 w-5 shrink-0 text-white" />
+        <h3 className="truncate text-sm font-extrabold text-white">{t("dashboard.quickActions")}</h3>
       </header>
       <div className="flex min-h-0 flex-1 flex-col justify-center gap-1.5">
         {actions.map((a) => (
@@ -54,7 +52,7 @@ function QuickActionsCard() {
             key={a.label}
             type="button"
             onClick={a.onClick}
-            className="flex items-center gap-2 rounded-lg bg-white/70 px-2 py-1.5 text-start text-sm font-semibold transition-colors hover:bg-white active:scale-[0.98]"
+            className="flex items-center gap-2 rounded-lg bg-white/20 px-2 py-1.5 text-start text-sm font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-colors hover:bg-white/32 active:scale-[0.98]"
           >
             <Icon3D name={a.icon} size={28} alt="" />
             <span className="truncate">{a.label}</span>
@@ -68,14 +66,11 @@ function QuickActionsCard() {
 function ImportantInfoCard() {
   const { t } = useTranslation();
 
-  const finance = useQuery({
-    queryKey: ["dashboard", "finance"],
-    queryFn: async () => getFinancialSummary(await getAccessToken()),
-  });
-  const payments = useQuery({
-    queryKey: ["dashboard", "payments"],
-    queryFn: async () => getPaymentBreakdown(await getAccessToken()),
-  });
+  // Shares the StatBar's query key, so the bar and these cards resolve from one
+  // request rather than firing their own.
+  const { data } = useDashboardBundle();
+  const finance = { data: data?.finance };
+  const payments = { data: data?.payments };
 
   const rows: { icon: Icon3DName; label: string; value: string }[] = [
     { icon: "receipt", label: t("dashboard.totalUdhaar"), value: formatPKR(finance.data?.outstanding ?? 0) },
@@ -84,10 +79,10 @@ function ImportantInfoCard() {
   ];
 
   return (
-    <section className={cn(CARD, "border-gold")}>
+    <section className={cn(CARD, "candy-purple border-gold!")}>
       <header className="mb-2 flex items-center gap-2">
         <Icon3D name="star" size={26} alt="" />
-        <h3 className="truncate text-sm font-extrabold text-ink">{t("dashboard.importantInfo")}</h3>
+        <h3 className="truncate text-sm font-extrabold text-white">{t("dashboard.importantInfo")}</h3>
       </header>
       <ul className="min-h-0 flex-1 space-y-2">
         {rows.map((r) => (
@@ -102,7 +97,7 @@ function ImportantInfoCard() {
           </li>
         ))}
       </ul>
-      <div className="mt-2 flex items-center gap-1.5 border-t border-black/5 pt-2 text-xs font-semibold text-muted-foreground">
+      <div className="mt-2 flex items-center gap-1.5 border-t border-white/25 pt-2 text-xs font-bold text-white/85">
         <MapPin className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">
           {t("dashboard.shopLocation")}: {t("dashboard.cityCountry")}

@@ -7,7 +7,9 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "flex flex-col gap-6 rounded-2xl bg-card py-6 text-card-foreground shadow-card",
+        // `panel` paints the saturated module-color block (gradient + bevel +
+        // hard ledge). Pass any .candy-<family> to override the color per card.
+        "panel ink-pop flex flex-col gap-6 rounded-2xl py-6 font-semibold",
         className
       )}
       {...props}
@@ -32,7 +34,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("leading-none font-semibold", className)}
+      className={cn("leading-none font-extrabold tracking-tight", className)}
       {...props}
     />
   )
@@ -42,7 +44,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-sm font-semibold text-muted-foreground", className)}
       {...props}
     />
   )

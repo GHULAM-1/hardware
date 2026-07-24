@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { BilingualNameFields, ImagesField } from "@/components/forms/fields";
 import { MeasurementFields } from "@/components/forms/measurement-fields";
+import { PackingFields } from "@/components/forms/packing-fields";
 import { StockInFields, useStockIn } from "@/components/forms/stock-in-section";
 import { Switch } from "@/components/ui/switch";
 import { MeasurementType } from "@/lib/enums";
@@ -23,7 +24,8 @@ import { itemSchema, type ItemInput, type ItemValues } from "@/lib/schemas";
 import { useCreateItem } from "@/hooks/use-items";
 
 /**
- * Create a catalog item: name, measurement model (type → unit → pieces-per-pack),
+ * Create a catalog item: name, measurement model (unit → pieces-per-pack),
+ * packing styles (Box = 12, Carton = 60 — see @/lib/packings),
  * selling price (per primary unit), images, and an optional initial-stock section
  * (supplier — with inline "+ add new supplier" — quantity + buying price + date).
  * Recording initial stock turns on warehouse tracking, since stock lives only on
@@ -44,10 +46,13 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
       base_unit: "piece",
       base_per_primary: 1,
       selling_price: "" as unknown as number,
+      buying_price: "",
       low_stock_threshold: "",
       category_id: null,
       image_urls: [],
       track_in_warehouse: false,
+      // Start empty — the admin adds a row per pack size (Box = 12, Carton = 60).
+      packings: [],
     },
   });
 
@@ -57,12 +62,11 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
 
   async function onSubmit(values: ItemValues) {
     try {
-      const item = await createItem.mutateAsync({
-        ...values,
-        // Recording initial stock implies the item is warehouse-managed.
-        track_in_warehouse: values.track_in_warehouse || stock.hasStock,
-      });
-      await stock.commitAdd(item.id, values.base_per_primary);
+      // Warehouse tracking is the toggle's call alone — recording an opening
+      // quantity no longer forces it on.
+      const item = await createItem.mutateAsync(values);
+      // Stamp the purchase with the item's cost so stock history matches it.
+      await stock.commitAdd(item.id, values.base_per_primary, values.buying_price);
       toast.success(t("toast.created"));
       onClose();
     } catch (err) {
@@ -84,18 +88,24 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
         <div className="space-y-5">
           <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
           <MeasurementFields />
+          {/* Pack sizes sit right after the unit — a packing is expressed in
+              primary units, so it only makes sense once the unit is picked. */}
+          <PackingFields />
           <ImagesField control={form.control} name="image_urls" label={t("fields.image")} folder="product" />
           <StockInFields
             stock={stock}
             unitLabel={unitLabel}
             title={t("items.initialStock")}
             hint={t("items.initialStockHint")}
+            // Cost is an item field now (up beside selling price), not a
+            // property of this one purchase.
+            showBuyingPrice={false}
           />
           <FormField
             control={form.control}
             name="track_in_warehouse"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between gap-4 rounded-lg border border-border bg-secondary/40 p-3">
+              <FormItem className="flex items-center justify-between gap-4 rounded-lg well border border-white/20 p-3">
                 <div className="min-w-0 space-y-0.5">
                   <FormLabel>{t("items.trackInWarehouse")}</FormLabel>
                   <p className="text-xs text-muted-foreground">{t("items.trackInWarehouseHint")}</p>

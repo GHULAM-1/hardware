@@ -124,7 +124,7 @@ export function ReceiptDialog({ payload, onClose }: DialogComponentProps<Receipt
 
             {/* Internal note — staff-only, never printed */}
             {receipt.internal_note && (
-              <div className="no-print space-y-1 rounded-lg border border-border bg-secondary/40 p-3">
+              <div className="no-print space-y-1 rounded-lg well border border-white/20 p-3">
                 <p className="text-xs font-semibold text-muted-foreground">
                   {t("orders.internalNoteLabel")}
                 </p>

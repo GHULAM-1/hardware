@@ -2,14 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { ItemValues } from "@/lib/schemas";
 import {
   createItem,
   deleteItem,
-  listItems,
-  listUsedItemIds,
   setWarehouseTracking,
   updateItem,
 } from "@/server/actions/items";
@@ -17,7 +16,7 @@ import {
 export function useItems(search = "") {
   return useQuery({
     queryKey: queryKeys.items(search),
-    queryFn: async () => listItems(await getAccessToken(), search),
+    queryFn: async () => read("items.list", search),
   });
 }
 
@@ -25,7 +24,7 @@ export function useItems(search = "") {
 export function useUsedItemIds() {
   return useQuery({
     queryKey: queryKeys.usedItemIds(),
-    queryFn: async () => listUsedItemIds(await getAccessToken()),
+    queryFn: async () => read("items.usedIds"),
     select: (ids) => new Set(ids),
   });
 }

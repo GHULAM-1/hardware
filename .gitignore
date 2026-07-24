@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 icons
+# Database dumps — these carry real user rows, including bcrypt password
+# hashes and customer details. Never commit them.
+scripts/data-export.sql
+*.dump
+*.sql.gz

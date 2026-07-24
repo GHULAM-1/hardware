@@ -15,6 +15,9 @@ export function DashboardDecor() {
   // Keep the prop within the gutter: half the viewport minus half the content
   // width (max-w-5xl = 1024px → 512) minus a margin. Clamps to 0 (hidden) when tight.
   const gutter = "min(260px, calc(50vw - 552px))";
+  // The board reads as a single object rather than a column of art, so it can run
+  // wider than the mascot without crowding the content.
+  const board = "min(300px, calc(50vw - 540px))";
 
   // z-20 (above the z-10 content) so the mascot button is actually clickable in
   // the gutter; the wrapper stays pointer-events-none so it never blocks content.
@@ -50,24 +53,36 @@ export function DashboardDecor() {
         </span>
       </button>
 
-      {/* Signboard — hanging in the top-right gutter, with live info on its face.
-          The board scales with the gutter width, so the overlay uses container-query
-          units (cqw) to scale too — the text never outgrows the cream face. */}
-      <div aria-hidden className="absolute end-2 top-[180px]" style={{ width: gutter }}>
+      {/* Signboard — hung from the top of the right gutter, carrying the shop name.
+          Uses `signboard_trimmed.png`: the original 1024x1536 art placed the board
+          in the middle of a mostly-empty canvas, so sizing the element by width
+          rendered the board itself at barely half that — it looked shrunken with
+          large invisible margins. The trimmed asset is cropped to the board, so its
+          width IS the board's width.
+
+          The overlay is positioned in percentages of the image and sized in cqw, so
+          the name tracks the board at any gutter width and never spills off the
+          cream face. */}
+      {/* Hangs below the chrome: the topbar is h-16 (64px) and the stat bar ~105px,
+          so anything higher than this sits on top of the avatar / language switcher. */}
+      <div aria-hidden className="absolute end-2 top-[172px]" style={{ width: board }}>
         <div className="dash-sway relative" style={{ containerType: "inline-size" }}>
           <Image
-            src="/signboard.png"
+            src="/signboard_trimmed.png"
             alt=""
-            width={1024}
-            height={1536}
+            width={760}
+            height={900}
             className="h-auto w-full drop-shadow-xl"
           />
-          {/* Constrained to the cream face (center ~54%); font sizes track the board
-              width and cap out so they stay readable but never overflow. */}
-          <div className="absolute inset-x-[23%] top-[43%] flex -translate-y-1/2 flex-col items-center gap-[1.5cqw] text-ink">
-            <div className="leading-none text-gold drop-shadow-sm text-[min(9cqw,18px)]">★★★★★</div>
-            <div className="whitespace-nowrap font-extrabold leading-none tracking-wide text-[min(7.5cqw,12px)]">
-              LAHORE, PK
+          {/* The cream face spans x 16%–85%, y 35%–67% of the trimmed art. */}
+          <div className="absolute inset-x-[18%] top-[50.5%] flex -translate-y-1/2 flex-col items-center gap-[0.8cqw] text-ink">
+            <div className="leading-none text-brand-gold drop-shadow-sm text-[min(6cqw,13px)]">
+              ★★★★★
+            </div>
+            <div className="flex flex-col items-center font-extrabold uppercase leading-[1.05] tracking-tight">
+              <span className="whitespace-nowrap text-brand-red text-[min(11cqw,22px)]">Qasim</span>
+              <span className="whitespace-nowrap text-brand-red text-[min(9cqw,18px)]">Hardware</span>
+              <span className="whitespace-nowrap text-brand-gold text-[min(7.5cqw,15px)]">Store</span>
             </div>
           </div>
         </div>

@@ -54,22 +54,23 @@ export function DueSoonStrip({
     else if (d === -1) text = t("khata.dayOverdue");
     else text = t("khata.daysOverdue", { count: -d });
 
+    // Solid candy chips — the old /15 tints disappear against a saturated well.
     const tone =
       d < 0
-        ? "border-destructive/40 bg-destructive/15 text-destructive"
+        ? "candy candy-sm candy-red"
         : d <= 2
-          ? "border-warning/50 bg-warning/15 text-warning"
-          : "border-brand/40 bg-brand/15 text-brand";
+          ? "candy candy-sm candy-orange"
+          : "candy candy-sm candy-blue";
     return { text, tone };
   }
 
   return (
-    <div className={cn("rounded-2xl border-2 border-warning/50 bg-cream p-3 text-ink shadow-card sm:p-4", className)}>
+    <div className={cn("panel ink-pop candy-orange rounded-2xl p-3 text-white sm:p-4", className)}>
       <div className="mb-3 flex items-center gap-2.5">
         {beacon ? (
           <span className="beacon shrink-0" aria-hidden="true" />
         ) : (
-          <BellRing className="h-5 w-5 shrink-0 text-warning" />
+          <BellRing className="h-5 w-5 shrink-0 text-white" />
         )}
         <h2 className="text-sm font-extrabold sm:text-base">
           {t("khata.dueSoonCount", { count: reminders.length })}
@@ -89,20 +90,20 @@ export function DueSoonStrip({
                 tabIndex={0}
                 onClick={() => onOpen(k)}
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onOpen(k)}
-                className="flex min-w-0 cursor-pointer flex-col gap-3 rounded-md border border-border bg-card p-3 transition-colors hover:bg-secondary sm:flex-row sm:items-center sm:justify-between"
+                className="flex min-w-0 cursor-pointer flex-col gap-3 rounded-md well border border-white/20 p-3 transition-colors hover:bg-secondary sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   {/* Highlighted days-remaining chip — the urgency at a glance. */}
                   <span
                     className={cn(
-                      "inline-flex shrink-0 items-center rounded-md border px-2.5 py-1 text-sm font-bold",
+                      "inline-flex shrink-0 items-center rounded-md px-2.5 py-1 text-sm font-extrabold text-white",
                       badge.tone,
                     )}
                   >
                     {badge.text}
                   </span>
                   <div className="flex min-w-0 flex-col">
-                    <span className="truncate font-semibold text-[#e11d1d]">{title}</span>
+                    <span className="truncate font-extrabold text-white">{title}</span>
                     <span className="text-xs text-muted-foreground">
                       {t("fields.dueDate")}: {formatDate(k.due_date)}
                     </span>
@@ -143,7 +144,7 @@ export function DueSoonStrip({
                   {k.amount > 0 && (
                     <Money
                       value={k.amount}
-                      className="shrink-0 whitespace-nowrap text-base font-extrabold text-[#e11d1d]"
+                      className="shrink-0 whitespace-nowrap text-base font-extrabold text-gold"
                     />
                   )}
                 </div>

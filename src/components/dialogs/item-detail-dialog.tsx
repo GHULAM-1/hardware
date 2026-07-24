@@ -3,6 +3,8 @@
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useLanguage } from "@/providers/i18n-provider";
 import { displayName } from "@/lib/display";
+import { scrollRegionClass } from "@/lib/a11y";
+import { cn } from "@/lib/utils";
 import { ImageThumb } from "@/components/common/image-thumb";
 import { ItemDetailBody } from "@/components/warehouse/item-detail-body";
 import {
@@ -26,7 +28,14 @@ export function ItemDetailDialog({ payload, onClose }: DialogComponentProps<Item
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-md">
+      {/* Keyboard scrolling comes from DialogContent itself (it sets tabIndex so
+          the arrow keys reach it); this only adds the keyboard focus ring. */}
+      <DialogContent
+        className={cn(
+          "max-h-[90dvh] w-[calc(100%-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-md",
+          scrollRegionClass,
+        )}
+      >
         <DialogHeader className="min-w-0">
           <DialogTitle className="flex min-w-0 items-center gap-3">
             <ImageThumb src={images[0]} alt={item.name_en} />

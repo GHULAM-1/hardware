@@ -59,7 +59,7 @@ export default function LoginPage() {
         <CardHeader className="flex flex-col items-center gap-4 pb-6 text-center">
           <Logo size="lg" />
           <div className="space-y-1">
-            <h1 className="text-2xl font-extrabold text-ink">{t("auth.welcome")}</h1>
+            <h1 className="text-2xl font-extrabold text-white">{t("auth.welcome")}</h1>
             <p className="text-sm text-muted-foreground">{t("auth.signInSubtitle")}</p>
           </div>
         </CardHeader>
@@ -80,7 +80,7 @@ export default function LoginPage() {
                 type="password"
                 dir="ltr"
               />
-              {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+              {error && <p className="text-sm font-medium text-game-red-l">{error}</p>}
               <Button type="submit" className="w-full" disabled={submitting}>
                 {submitting ? t("auth.signingIn") : t("auth.signIn")}
               </Button>

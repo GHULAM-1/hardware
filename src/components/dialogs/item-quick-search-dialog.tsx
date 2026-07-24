@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
   Contact,
   Maximize2,
+  Mic,
   Minimize2,
   PackageSearch,
   ShoppingCart,
+  Square,
   User,
   X as XIcon,
 } from "lucide-react";
@@ -17,14 +18,11 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 
 import type { DialogComponentProps } from "@/components/dialogs/dialog-manager";
 import { useLanguage } from "@/providers/i18n-provider";
-import { useIsSuperAdmin } from "@/providers/auth-provider";
-import { getAccessToken } from "@/lib/auth-token";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useGlobalSearch } from "@/hooks/use-global-search";
+import { useSpeechRecognition } from "@/components/assistant/use-speech-recognition";
 import { displayName } from "@/lib/display";
-import { listItems } from "@/server/actions/items";
-import { listCustomers } from "@/server/actions/customers";
-import { listOrders } from "@/server/actions/orders";
-import { listStaff } from "@/server/actions/staff";
+import { scrollRegionClass, scrollRegionProps } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Language } from "@/lib/enums";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -59,49 +57,31 @@ type Selected =
 export function ItemQuickSearchDialog({ onClose }: DialogComponentProps<null>) {
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const isSuperAdmin = useIsSuperAdmin();
 
   const [query, setQuery] = React.useState("");
   const [selected, setSelected] = React.useState<Selected | null>(null);
   const [maximized, setMaximized] = React.useState(false);
+  // Voice: spoken words land in the box and the debounced query filters as usual
+  // (no forced submit). Carried over when this replaced the top-bar palette.
+  const { supported: micSupported, listening, start, stop } = useSpeechRecognition(setQuery);
   const debounced = useDebounce(query).trim();
   const searching = debounced.length > 0;
 
-  // Same search actions as the top-bar palette — but only fire once the user has
-  // typed something (no preloading the whole catalog). Non-item types are
-  // super-admin only.
-  const itemsQ = useQuery({
-    queryKey: ["quick-search", "items", debounced],
-    queryFn: async () => listItems(await getAccessToken(), debounced),
-    enabled: searching,
-  });
-  const customersQ = useQuery({
-    queryKey: ["quick-search", "customers", debounced],
-    queryFn: async () => listCustomers(await getAccessToken(), debounced),
-    enabled: searching && isSuperAdmin,
-  });
-  const ordersQ = useQuery({
-    queryKey: ["quick-search", "orders", debounced],
-    queryFn: async () => listOrders(await getAccessToken(), debounced),
-    enabled: searching && isSuperAdmin,
-  });
-  const staffQ = useQuery({
-    queryKey: ["quick-search", "staff", debounced],
-    queryFn: async () => listStaff(await getAccessToken(), debounced),
-    enabled: searching && isSuperAdmin,
-  });
+  // Same batched search as the top-bar palette — one request for all four result
+  // sets, and only once the user has typed (no preloading the whole catalog).
+  // Non-item types are super-admin only; the hook handles that gating.
+  const searchQ = useGlobalSearch(debounced, searching);
 
-  const itemRows = itemsQ.data ?? [];
-  const customerRows = customersQ.data ?? [];
-  const orderRows = ordersQ.data ?? [];
-  const staffRows = staffQ.data ?? [];
+  const itemRows = searchQ.data?.items ?? [];
+  const customerRows = searchQ.data?.customers ?? [];
+  const orderRows = searchQ.data?.orders ?? [];
+  const staffRows = searchQ.data?.staff ?? [];
   const hasResults =
     itemRows.length > 0 ||
     customerRows.length > 0 ||
     orderRows.length > 0 ||
     staffRows.length > 0;
-  const loading =
-    itemsQ.isFetching || customersQ.isFetching || ordersQ.isFetching || staffQ.isFetching;
+  const loading = searchQ.isFetching;
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -149,14 +129,33 @@ export function ItemQuickSearchDialog({ onClose }: DialogComponentProps<null>) {
             )}
           >
             <Command shouldFilter={false} className="flex min-h-0 flex-1 flex-col rounded-none">
-              <CommandInput
-                value={query}
-                onValueChange={setQuery}
-                placeholder={t("globalSearch.placeholder")}
-                // Reserve space for the window buttons on mobile (they overlay the
-                // top-right); on desktop they sit over the detail pane instead.
-                className="h-12 pe-16 md:pe-3"
-              />
+              <div className="relative">
+                <CommandInput
+                  value={query}
+                  onValueChange={setQuery}
+                  placeholder={t(listening ? "assistant.listening" : "globalSearch.placeholder")}
+                  // Reserve space for the window buttons on mobile (they overlay the
+                  // top-right); on desktop they sit over the detail pane instead.
+                  className={cn("h-12 pe-16 md:pe-3", micSupported && "md:pe-12")}
+                />
+                {micSupported && (
+                  <button
+                    type="button"
+                    onClick={() => (listening ? stop() : start())}
+                    aria-label={t(listening ? "assistant.listening" : "assistant.speak")}
+                    title={t(listening ? "assistant.listening" : "assistant.speak")}
+                    className={cn(
+                      "absolute end-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md transition-colors md:flex",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      listening
+                        ? "bg-primary text-primary-foreground"
+                        : "text-white/80 hover:bg-white/20 hover:text-white",
+                    )}
+                  >
+                    {listening ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </button>
+                )}
+              </div>
               {/* Override cmdk's default max-h-[300px] so the list fills the pane. */}
               <CommandList className="max-h-none min-h-0 flex-1 overflow-y-auto">
                 {!searching ? (
@@ -202,10 +201,25 @@ export function ItemQuickSearchDialog({ onClose }: DialogComponentProps<null>) {
                               </span>
                               <span className="truncate text-xs text-muted-foreground">{item.sku}</span>
                             </span>
-                            <Money
-                              value={item.selling_price}
-                              className="shrink-0 text-xs font-semibold text-muted-foreground"
-                            />
+                            {/* Cost then price, stacked and labelled so the two
+                                figures can't be mistaken for one another. */}
+                            <span className="flex shrink-0 flex-col items-end leading-tight">
+                              <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                {t("fields.buyingPrice")}
+                              </span>
+                              {item.buying_price != null ? (
+                                <Money
+                                  value={item.buying_price}
+                                  className="text-xs font-semibold text-muted-foreground"
+                                />
+                              ) : (
+                                <span className="text-xs font-semibold text-muted-foreground">—</span>
+                              )}
+                              <span className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                {t("fields.sellingPrice")}
+                              </span>
+                              <Money value={item.selling_price} className="text-sm font-extrabold text-white" />
+                            </span>
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -306,7 +320,14 @@ export function ItemQuickSearchDialog({ onClose }: DialogComponentProps<null>) {
                   </button>
                   <DetailHeader selected={selected} language={language} />
                 </div>
-                <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                {/* Focusable so Up/Down scroll the preview after a click — see
+                    scrollRegionProps. The list pane next door already handles its
+                    own arrow keys (cmdk moves the selection), so only this pane
+                    needs it. */}
+                <div
+                  {...scrollRegionProps(t("pricing.itemDetail"))}
+                  className={cn("min-h-0 flex-1 overflow-y-auto p-4", scrollRegionClass)}
+                >
                   {selected.type === "item" && <ItemDetailBody item={selected.data} />}
                   {selected.type === "customer" && <CustomerDetailBody customer={selected.data} />}
                   {selected.type === "order" && <OrderDetailBody orderId={selected.data.id} />}
@@ -337,7 +358,7 @@ function DetailHeader({ selected, language }: { selected: Selected; language: La
     return (
       <>
         <ImageThumb src={selected.data.image_urls?.[0] ?? selected.data.image_url} alt={selected.data.name_en} />
-        <span className="min-w-0 truncate text-base font-extrabold text-ink">
+        <span className="min-w-0 truncate text-base font-extrabold text-white">
           {displayName(selected.data, language)}
         </span>
       </>
@@ -345,7 +366,7 @@ function DetailHeader({ selected, language }: { selected: Selected; language: La
   }
   if (selected.type === "customer") {
     return (
-      <span className="min-w-0 truncate text-base font-extrabold text-ink">
+      <span className="min-w-0 truncate text-base font-extrabold text-white">
         {displayName(selected.data, language)}
       </span>
     );
@@ -355,7 +376,7 @@ function DetailHeader({ selected, language }: { selected: Selected; language: La
       <>
         <ImageThumb src={selected.data.image_url} alt={selected.data.name} />
         <span className="flex min-w-0 flex-col">
-          <span className="truncate text-base font-extrabold leading-tight text-ink">
+          <span className="truncate text-base font-extrabold leading-tight text-white">
             {selected.data.name}
           </span>
           <StatusBadge
@@ -369,7 +390,7 @@ function DetailHeader({ selected, language }: { selected: Selected; language: La
   }
   // order
   return (
-    <span className="min-w-0 truncate font-mono text-base font-extrabold text-ink">
+    <span className="min-w-0 truncate font-mono text-base font-extrabold text-white">
       #{selected.data.order_no}
     </span>
   );

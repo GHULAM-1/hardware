@@ -7,47 +7,33 @@ import { stockEntrySchema, type StockEntryValues } from "@/lib/schemas";
 import { searchTokens } from "@/lib/search";
 import type { ItemWithStock, StockEntry, StockEntryWithSupplier } from "@/types/models";
 
-/** Items with their derived warehouse quantity (Σin − Σout). One item, two screens. */
+/**
+ * Items with their derived warehouse quantity (Σin − Σout) and effective cost.
+ * One item, two screens.
+ *
+ * Reads the `items_with_stock` view so this is a SINGLE round trip. It used to be
+ * three sequential queries stitched together in JS, which cost ~750ms of pure
+ * network latency to render a handful of rows.
+ */
 export async function listItemsWithStock(accessToken: string, search = ""): Promise<ItemWithStock[]> {
   const client = createActionClient(accessToken);
 
-  let iq = client.from("items").select("*").order("name_en").limit(100);
-  for (const t of searchTokens(search)) iq = iq.ilike("search_norm", `%${t}%`);
-  const { data: items, error } = await iq;
+  // Newest first, matching listItems — a just-created item has to be visible at
+  // the top of the list rather than buried wherever its name happens to sort.
+  let q = client
+    .from("items_with_stock")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
+  const { data, error } = await q;
   if (error) throw new Error(error.message);
 
-  const { data: stock, error: e2 } = await client
-    .from("warehouse_stock")
-    .select("item_id, quantity");
-  if (e2) throw new Error(e2.message);
-
-  const qty = new Map((stock ?? []).map((s) => [s.item_id, Number(s.quantity ?? 0)]));
-
-  // Latest recorded buying price per item = the most recent stock-in with a price.
-  // One query for all listed items; rows come newest-first, so the first seen per
-  // item wins.
-  const ids = (items ?? []).map((i) => i.id);
-  const buy = new Map<string, number>();
-  if (ids.length) {
-    const { data: prices, error: e3 } = await client
-      .from("stock_entries")
-      .select("item_id, buying_price")
-      .in("item_id", ids)
-      .eq("type", StockEntryType.In)
-      .not("buying_price", "is", null)
-      .order("entry_date", { ascending: false })
-      .order("created_at", { ascending: false });
-    if (e3) throw new Error(e3.message);
-    for (const p of prices ?? []) {
-      if (!buy.has(p.item_id)) buy.set(p.item_id, Number(p.buying_price));
-    }
-  }
-
-  return (items ?? []).map((i) => ({
-    ...i,
-    quantity: qty.get(i.id) ?? 0,
-    buying_price: buy.get(i.id) ?? null,
-  }));
+  return (data ?? []).map(({ quantity, effective_buying_price, ...item }) => ({
+    ...item,
+    quantity: Number(quantity ?? 0),
+    buying_price: effective_buying_price == null ? null : Number(effective_buying_price),
+  })) as ItemWithStock[];
 }
 
 /** Derived warehouse quantity (Σin − Σout) for a single item. */
@@ -86,6 +72,16 @@ export async function createStockEntry(
     .select("*")
     .single();
   if (error) throw new Error(error.message);
+
+  // A priced purchase is the newest cost we know about, so promote it to the
+  // item's current cost. The entry keeps its own price as purchase history.
+  if (data.type === StockEntryType.In && data.buying_price != null) {
+    const { error: e2 } = await client
+      .from("items")
+      .update({ buying_price: data.buying_price })
+      .eq("id", data.item_id);
+    if (e2) throw new Error(e2.message);
+  }
   return row;
 }
 

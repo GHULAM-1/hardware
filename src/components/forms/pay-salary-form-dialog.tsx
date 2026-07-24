@@ -66,7 +66,7 @@ export function PaySalaryFormDialog({ payload, onClose }: DialogComponentProps<P
       >
         <div className="space-y-4">
           {/* The calculation, shown as guidance. */}
-          <div className="rounded-lg border border-border bg-muted/40 px-4 py-2">
+          <div className="rounded-lg well border border-white/20 px-4 py-2">
             <Line label={t("staff.monthlySalary")}>
               <Money value={row.staff.monthly_salary} />
             </Line>

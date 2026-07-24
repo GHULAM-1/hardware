@@ -2,24 +2,20 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { CustomerValues } from "@/lib/schemas";
 import {
   createCustomer,
   deleteCustomer,
-  getCustomer,
-  getCustomerOrders,
-  getLastPurchase,
-  listCustomers,
-  listUsedCustomerIds,
   updateCustomer,
 } from "@/server/actions/customers";
 
 export function useCustomers(search = "") {
   return useQuery({
     queryKey: queryKeys.customers(search),
-    queryFn: async () => listCustomers(await getAccessToken(), search),
+    queryFn: async () => read("customers.list", search),
   });
 }
 
@@ -27,7 +23,7 @@ export function useCustomers(search = "") {
 export function useCustomer(customerId: string | null) {
   return useQuery({
     queryKey: queryKeys.customer(customerId ?? ""),
-    queryFn: async () => getCustomer(await getAccessToken(), customerId as string),
+    queryFn: async () => read("customers.get", customerId as string),
     enabled: Boolean(customerId),
   });
 }
@@ -36,7 +32,7 @@ export function useCustomer(customerId: string | null) {
 export function useUsedCustomerIds() {
   return useQuery({
     queryKey: queryKeys.usedCustomerIds(),
-    queryFn: async () => listUsedCustomerIds(await getAccessToken()),
+    queryFn: async () => read("customers.usedIds"),
     select: (ids) => new Set(ids),
   });
 }
@@ -44,7 +40,7 @@ export function useUsedCustomerIds() {
 export function useCustomerOrders(customerId: string | undefined) {
   return useQuery({
     queryKey: queryKeys.customerHistory(customerId ?? ""),
-    queryFn: async () => getCustomerOrders(await getAccessToken(), customerId as string),
+    queryFn: async () => read("customers.orders", customerId as string),
     enabled: Boolean(customerId),
   });
 }
@@ -52,7 +48,7 @@ export function useCustomerOrders(customerId: string | undefined) {
 export function useLastPurchase(customerId: string | undefined) {
   return useQuery({
     queryKey: [...queryKeys.customer(customerId ?? ""), "last-purchase"],
-    queryFn: async () => getLastPurchase(await getAccessToken(), customerId as string),
+    queryFn: async () => read("customers.lastPurchase", customerId as string),
     enabled: Boolean(customerId),
   });
 }

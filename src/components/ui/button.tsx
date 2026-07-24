@@ -19,9 +19,11 @@ const buttonVariants = cva(
         purple: "candy candy-purple",
         teal: "candy candy-teal",
         secondary: "candy candy-slate",
+        // Translucent rather than bg-card — a card-colored button on a card-colored
+        // panel would be invisible now that surfaces are saturated.
         outline:
-          "border-2 border-input bg-card text-foreground shadow-[0_2px_0_rgba(0,0,0,0.06)] hover:bg-accent hover:text-accent-foreground active:translate-y-px",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "border-2 border-white/45 bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_0_rgba(0,0,0,0.25)] hover:bg-white/28 active:translate-y-px",
+        ghost: "text-white hover:bg-white/20",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

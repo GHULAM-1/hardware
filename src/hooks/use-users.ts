@@ -2,13 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import { UserRole } from "@/lib/enums";
 import type { UserValues, UserUpdateValues, OwnProfileValues } from "@/lib/schemas";
 import {
   createUser,
-  listUsers,
   setUserActive,
   setUserRole,
   updateOwnProfile,
@@ -18,7 +18,7 @@ import {
 export function useUsers() {
   return useQuery({
     queryKey: queryKeys.users(),
-    queryFn: async () => listUsers(await getAccessToken()),
+    queryFn: async () => read("users.list"),
   });
 }
 

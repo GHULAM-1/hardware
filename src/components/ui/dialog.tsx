@@ -48,7 +48,7 @@ function DialogOverlay({
 }
 
 const winBtn =
-  "inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none"
+  "inline-flex size-7 items-center justify-center rounded-md bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-colors hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none"
 
 /**
  * Dialog shell with a maximize/restore (resize) button + close, and **X-only
@@ -87,9 +87,18 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         data-view={isMax ? "max" : "default"}
+        // This element is the scroll container for every dialog, so it has to be
+        // focusable or the arrow keys can't scroll it: clicking the dialog's body
+        // (plain text isn't focusable) drops focus to the page body, and the
+        // browser only scrolls the focused element's scrollable ANCESTORS — the
+        // body is an ancestor of this, not a descendant. Worse, the page behind a
+        // dialog is scroll-locked, so the keys do nothing at all. tabIndex makes a
+        // click land focus here instead. Overridable per dialog via {...props}.
+        tabIndex={0}
         {...lockProps}
         className={cn(
-          "fixed z-50 grid gap-4 bg-card text-card-foreground shadow-[0_16px_44px_rgba(8,25,70,0.45)] outline-none duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+          // Saturated module-color block (see .panel in globals.css) — no white surface.
+          "panel ink-pop fixed z-50 grid gap-4 font-semibold outline-none duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
           isMax
             ? "inset-3 overflow-y-auto rounded-2xl p-6 sm:inset-6"
             : "top-1/2 left-1/2 max-h-[90dvh] w-[calc(100%-2rem)] max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl p-6 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:max-w-lg",
@@ -182,7 +191,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-xl leading-none font-extrabold", className)}
+      className={cn("ink-pop-lg text-xl leading-none font-extrabold text-white", className)}
       {...props}
     />
   )

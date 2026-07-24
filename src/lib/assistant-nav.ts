@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { DialogKey } from "@/lib/dialog-keys";
-import { getAccessToken } from "@/lib/auth-token";
-import { getCustomer } from "@/server/actions/customers";
+import { read } from "@/lib/read-client";
 import type { NavigateTarget } from "@/types/assistant";
 
 /**
@@ -22,7 +21,7 @@ export function useAssistantNavigate() {
     async (target: NavigateTarget) => {
       switch (target.kind) {
         case "customerProfile": {
-          const customer = await getCustomer(await getAccessToken(), target.customerId);
+          const customer = await read("customers.get", target.customerId);
           openDialog(DialogKey.CustomerProfile, { customer });
           break;
         }

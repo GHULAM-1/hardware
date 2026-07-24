@@ -80,3 +80,25 @@ const ADMIN_PATHS = [
 export function isAdminAllowedPath(pathname: string): boolean {
   return ADMIN_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
+
+/** Routes that aren't nav entries but should still wear a family color. */
+const EXTRA_MODULE_COLORS: Record<string, GameColor> = {
+  "/profile": "slate",
+};
+
+/**
+ * The signature color for a route — the whole page (panels, dialogs, tables,
+ * fields) is skinned in it via the `mod-<color>` class on the shell, so each
+ * module is recognisable at a glance. Longest matching prefix wins so nested
+ * routes (/staff/salary) inherit their parent's color. Falls back to blue.
+ */
+export function moduleColorFor(pathname: string): GameColor {
+  const match = [
+    ...NAV_ITEMS.map((i) => [i.href, i.color] as const),
+    ...Object.entries(EXTRA_MODULE_COLORS),
+  ]
+    .filter(([href]) => pathname === href || pathname.startsWith(`${href}/`))
+    .sort((a, b) => b[0].length - a[0].length)[0];
+
+  return (match?.[1] as GameColor) ?? "blue";
+}

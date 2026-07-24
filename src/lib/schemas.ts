@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { MeasurementType, PaymentType, StaffAttendanceStatus, StockEntryType, UserRole } from "@/lib/enums";
+import { PACKING_LABEL_MAX, PACKINGS_MAX } from "@/lib/packings";
 
 /** Single source of truth for form/payload validation schemas. */
 
@@ -56,6 +57,16 @@ export const loginSchema = z.object({
 });
 export type LoginValues = z.output<typeof loginSchema>;
 
+/**
+ * One packing style: a free-text pack name and how many PRIMARY units it holds
+ * ("Box" / 12). Mirrors the DB constraint in 20260725010000_item_packings.sql —
+ * anything this accepts, Postgres accepts.
+ */
+export const packingSchema = z.object({
+  label: z.string().trim().min(1).max(PACKING_LABEL_MAX),
+  qty: z.coerce.number().positive(),
+});
+
 export const itemSchema = z.object({
   name_en: z.string().trim().min(1),
   name_ur: optionalText,
@@ -67,6 +78,13 @@ export const itemSchema = z.object({
   base_per_primary: z.coerce.number().positive(),
   // Selling price is per PRIMARY unit (PKR).
   selling_price: z.coerce.number().min(0),
+  // Buying price (cost) per PRIMARY unit. An item column, NOT derived from stock:
+  // it can be set with zero quantity on hand. Stock entries still record their own
+  // per-purchase cost for history. Empty → null (cost unknown).
+  buying_price: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.coerce.number().min(0).nullable(),
+  ).default(null),
   // Reorder level in PRIMARY units; empty → null (no low-stock flag).
   low_stock_threshold: z.preprocess(
     (v) => (v === "" || v == null ? null : v),
@@ -78,6 +96,17 @@ export const itemSchema = z.object({
   // Opt-in to warehouse stock tracking (Items vs Warehouse split). Stock in/out
   // is only available in the Warehouse screen once this is on.
   track_in_warehouse: z.boolean().default(false),
+  // Pack sizes this item is stocked in ("Box" = 12, "Carton" = 60). Descriptive
+  // only — quantity and order maths stay in base units, so these can never skew
+  // stock. Labels must be unique: the detail view picks a pack by its name.
+  packings: z
+    .array(packingSchema)
+    .max(PACKINGS_MAX)
+    .refine(
+      (rows) => new Set(rows.map((r) => r.label.toLowerCase())).size === rows.length,
+      "validation.duplicatePacking",
+    )
+    .default([]),
 });
 export type ItemInput = z.input<typeof itemSchema>;
 export type ItemValues = z.output<typeof itemSchema>;

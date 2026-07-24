@@ -139,7 +139,7 @@ export function CustomerDetailBody({ customer }: { customer: Customer }) {
       )}
 
       {customer.notes && (
-        <div className="min-w-0 space-y-1 rounded-lg border border-border bg-secondary/40 p-3">
+        <div className="min-w-0 space-y-1 rounded-lg well border border-white/20 p-3">
           <p className="text-xs font-semibold text-muted-foreground">{t("customers.internalNote")}</p>
           <p className="whitespace-pre-wrap break-words text-sm">{customer.notes}</p>
         </div>

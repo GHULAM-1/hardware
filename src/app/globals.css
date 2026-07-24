@@ -25,17 +25,34 @@
   --slate:  #56627a;  --slate-d:  #3c485f;  --slate-l:  #7d8aa3;
 
   /* ---- brand & surface ---- */
+  /* Sampled from the Qasim Hardware medallion so the wordmark matches the mark. */
+  --brand-red: #a81f28;
+  /* Darkened from the artwork's #b8912f — that read too light against the cream
+     signboard face. */
+  --brand-gold: #96741e;
   --gold: #ffd24a;
   --ink: #13316b;
   --cream: #fbf6ea;
   --cream-border: #e0d8c4;
   --tile: #f0f3f8;
-  /* Row hover: a soft lavender tint from the purple table-header family (was a
-     cold blue #e9eff9 that clashed). Selected stays warm gold so the two states
-     read distinctly. Drives hover on every table (ui/table.tsx). */
-  --row-alt: #f3eefc;
-  --row-selected: #fff6d6;
-  --input-border: #d4dcea;
+  /* Row hover / selected. Every surface is now a saturated color block, so these
+     are translucent OVERLAYS rather than opaque tints — they read correctly on
+     whichever module color the page happens to be wearing. Selected stays gold. */
+  --row-alt: rgba(255, 255, 255, 0.13);
+  --row-selected: rgba(255, 210, 74, 0.32);
+  --input-border: rgba(255, 255, 255, 0.34);
+
+  /* ---- module color ----
+     The per-page signature color. `.mod-<family>` (set on the shell from the
+     route's nav entry — see lib/nav.ts `moduleColorFor`) reassigns these three,
+     and every panel/dialog/table/field below inherits them. Defaults to blue so
+     anything rendered outside the shell (login, error pages) still themes. */
+  --mod: var(--blue);
+  --mod-d: var(--blue-d);
+  --mod-l: var(--blue-l);
+  /* Sunken wells (inputs, table bodies) — a darkened cut of the module color. */
+  --mod-well: color-mix(in srgb, var(--mod-d) 72%, #06122e);
+  --mod-well-d: color-mix(in srgb, var(--mod-d) 46%, #06122e);
   /* The whole-CRM background image (public/bg.png) under a deep-blue scrim — the
      scrim is stronger up top so white chrome text (page titles, topbar) stays
      legible over the bright sky; #0c2d76 is the fallback if the image fails. */
@@ -45,35 +62,40 @@
   --radius: 0.875rem;
 
   /* ---- semantic tokens (mapped onto the candy palette) ----
-     NOTE: --background is the elevated white surface (dialogs/sheets/popovers).
-     The app *canvas* is painted separately with --app-bg (see .bg-app / body). */
-  --background: #ffffff;
-  --foreground: var(--ink);
+     NOTE: every elevated surface (card/dialog/sheet/popover/menu) is now a
+     SATURATED block of the current module color — there is no white surface left
+     in the app. Text on them is white and bold; the neutral hover/muted tokens
+     became translucent white so they layer correctly over any family.
+     The app *canvas* is still painted separately with --app-bg (see .bg-app). */
+  --background: var(--mod);
+  --foreground: #ffffff;
 
-  --card: #ffffff;
-  --card-foreground: var(--ink);
+  --card: var(--mod);
+  --card-foreground: #ffffff;
 
-  --popover: #ffffff;
-  --popover-foreground: var(--ink);
+  --popover: var(--mod);
+  --popover-foreground: #ffffff;
 
-  --primary: var(--blue);
-  --primary-foreground: #ffffff;
+  --primary: var(--gold);
+  --primary-foreground: var(--ink);
 
-  --secondary: #eef2f9;
-  --secondary-foreground: var(--ink);
+  --secondary: rgba(255, 255, 255, 0.17);
+  --secondary-foreground: #ffffff;
 
-  --muted: var(--tile);
-  --muted-foreground: #5d6b85;
+  --muted: rgba(255, 255, 255, 0.15);
+  /* Bright enough to stay legible as "secondary" text on a saturated block —
+     the old #5d6b85 slate is invisible there. */
+  --muted-foreground: rgba(255, 255, 255, 0.86);
 
-  --accent: #eef2f9;
-  --accent-foreground: var(--ink);
+  --accent: rgba(255, 255, 255, 0.24);
+  --accent-foreground: #ffffff;
 
   --destructive: var(--red);
   --destructive-foreground: #ffffff;
 
-  --border: #e6ebf3;
+  --border: rgba(255, 255, 255, 0.28);
   --input: var(--input-border);
-  --ring: var(--blue);
+  --ring: var(--gold);
 
   /* extra semantic helpers used across the CRM */
   --brand: var(--blue);
@@ -144,7 +166,15 @@
   --color-game-teal: var(--teal);     --color-game-teal-d: var(--teal-d);     --color-game-teal-l: var(--teal-l);
   --color-game-pink: var(--pink);     --color-game-pink-d: var(--pink-d);     --color-game-pink-l: var(--pink-l);
   --color-game-slate: var(--slate);   --color-game-slate-d: var(--slate-d);   --color-game-slate-l: var(--slate-l);
+  /* the active module family → bg-mod / border-mod-l / text-mod-d … */
+  --color-mod: var(--mod);
+  --color-mod-d: var(--mod-d);
+  --color-mod-l: var(--mod-l);
+  --color-mod-well: var(--mod-well);
+
   --color-gold: var(--gold);
+  --color-brand-red: var(--brand-red);
+  --color-brand-gold: var(--brand-gold);
   --color-ink: var(--ink);
   --color-cream: var(--cream);
   --color-cream-border: var(--cream-border);
@@ -197,6 +227,17 @@
     color: var(--foreground);
     background: var(--app-bg);
     background-attachment: fixed;
+    /* Everything sits on saturated color now — step the whole weight scale up so
+       text holds against its background instead of thinning out on it. */
+    font-weight: 600;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  /* Numbers are the payload in a POS — never let them render lighter than bold. */
+  .tabular-nums {
+    font-weight: 800;
   }
   /* Urdu (RTL): switch to the Naskh face — legible at dense-UI sizes (not Nastaliq). */
   html[dir="rtl"] body {
@@ -205,10 +246,114 @@
   }
 }
 
+/* ----------------------------------------------------------------------------
+   Module color assignment. AppShell stamps one of these on its root from the
+   current route (lib/nav.ts → moduleColorFor), so every surface inside inherits
+   that family: Orders is green throughout, Khata teal, Items purple, …
+   Unlayered so it always beats the :root defaults regardless of layer order.
+   --------------------------------------------------------------------------- */
+.mod-green  { --mod: var(--green);  --mod-d: var(--green-d);  --mod-l: var(--green-l); }
+.mod-blue   { --mod: var(--blue);   --mod-d: var(--blue-d);   --mod-l: var(--blue-l); }
+.mod-orange { --mod: var(--orange); --mod-d: var(--orange-d); --mod-l: var(--orange-l); }
+.mod-purple { --mod: var(--purple); --mod-d: var(--purple-d); --mod-l: var(--purple-l); }
+.mod-red    { --mod: var(--red);    --mod-d: var(--red-d);    --mod-l: var(--red-l); }
+.mod-teal   { --mod: var(--teal);   --mod-d: var(--teal-d);   --mod-l: var(--teal-l); }
+.mod-pink   { --mod: var(--pink);   --mod-d: var(--pink-d);   --mod-l: var(--pink-l); }
+.mod-slate  { --mod: var(--slate);  --mod-d: var(--slate-d);  --mod-l: var(--slate-l); }
+
 @layer components {
   /* The deep-blue app canvas. */
   .bg-app {
     background: var(--app-bg);
+  }
+
+  /* ==========================================================================
+     PANEL — the saturated replacement for every white surface (card, dialog,
+     sheet, popover, menu, table shell). A top-lit block of the module color on a
+     hard ledge, with a bright inner rim so edges read as bevelled rather than
+     flat. Override the family per element with any .candy-<name> (they set the
+     same --top/--base/--ledge trio) or with .panel-mod for the module color.
+     ========================================================================== */
+  .panel {
+    background: linear-gradient(
+      180deg,
+      var(--base, var(--mod)) 0%,
+      color-mix(in srgb, var(--base, var(--mod)) 72%, var(--ledge, var(--mod-d))) 58%,
+      var(--ledge, var(--mod-d)) 100%
+    );
+    color: #fff;
+    border: 2px solid color-mix(in srgb, var(--top, var(--mod-l)) 70%, #fff);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+      0 6px 0 color-mix(in srgb, var(--ledge, var(--mod-d)) 82%, #000),
+      0 14px 26px rgba(4, 14, 40, 0.42);
+  }
+  /* Flat variant — same skin, no lift. For panels nested inside another panel. */
+  .panel-flat {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.16);
+  }
+  /* A brighter band for panel headers / title rails. */
+  .panel-rail {
+    background: linear-gradient(180deg, var(--top, var(--mod-l)), var(--base, var(--mod)));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.48),
+      0 2px 0 rgba(0, 0, 0, 0.18);
+  }
+
+  /* ==========================================================================
+     WELL / FIELD — sunken areas inside a panel: inputs, textareas, select
+     triggers, table bodies, scroll lists. Cut INTO the panel (dark + inner
+     shadow) so a saturated form still reads as depth rather than noise. White
+     bold text on a deep well is the most legible pairing available inside a
+     fully-saturated scheme.
+     ========================================================================== */
+  .well {
+    background: linear-gradient(180deg, var(--mod-well) 0%, var(--mod-well-d) 100%);
+    box-shadow:
+      inset 0 3px 6px rgba(0, 0, 0, 0.45),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.14);
+  }
+  .field {
+    background: var(--mod-well);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+      inset 0 3px 5px rgba(0, 0, 0, 0.42),
+      0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+  .field::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+  }
+  .field:focus-visible,
+  .field:focus-within {
+    border-color: var(--gold);
+    box-shadow:
+      inset 0 3px 5px rgba(0, 0, 0, 0.42),
+      0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent);
+    outline: none;
+  }
+  /* Native pickers/dropdown arrows inside a dark well render as dark-on-dark. */
+  .field::-webkit-calendar-picker-indicator,
+  .field::-webkit-inner-spin-button,
+  .field::-webkit-outer-spin-button {
+    filter: invert(1) brightness(1.6);
+    opacity: 0.75;
+  }
+
+  /* ==========================================================================
+     Legibility on saturated blocks. White text over a mid-tone color needs a
+     touch of dark shadow to hold its edges — this is what keeps the "bold text
+     for visibility" goal true once nothing is white-backed anymore.
+     ========================================================================== */
+  .ink-pop {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(0, 0, 0, 0.3);
+  }
+  .ink-pop-lg {
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.32), 0 3px 8px rgba(0, 0, 0, 0.4);
   }
 
   /* ---- The signature "candy" surface ----
@@ -253,6 +398,16 @@
   .candy-teal   { --top: var(--teal-l);   --base: var(--teal);   --ledge: var(--teal-d); }
   .candy-pink   { --top: var(--pink-l);   --base: var(--pink);   --ledge: var(--pink-d); }
   .candy-slate  { --top: var(--slate-l);  --base: var(--slate);  --ledge: var(--slate-d); }
+
+  /* Light candy plate — the only member of the family with DARK text, for the
+     brand lockup: the logo's red-and-gold medallion needs a pale backing to read
+     against, but it should still look moulded like every other control. */
+  .candy-cream {
+    --top: #fffdf6;
+    --base: var(--cream);
+    --ledge: #cdbf9f;
+    color: var(--ink);
+  }
 
   /* active/selected: gold ring while keeping the family ledge underneath */
   .ring-gold {

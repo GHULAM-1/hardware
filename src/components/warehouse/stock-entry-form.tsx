@@ -107,7 +107,7 @@ export function StockEntryForm({
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4"
+        className="space-y-3 rounded-lg well border border-white/20 p-4"
       >
         {/* Type toggle — hidden when the panel is locked to a single type. */}
         {!fixedType && (

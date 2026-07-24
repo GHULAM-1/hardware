@@ -15,14 +15,22 @@ import { useLanguage } from "@/providers/i18n-provider";
 import { StockEntryType } from "@/lib/enums";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, formatPKR } from "@/lib/format";
 import { formatQuantity, hasSubUnit } from "@/lib/units";
+import { itemPackings, packTotal, type Packing } from "@/lib/packings";
 import { Money } from "@/components/common/money";
 import { ZoomableImage } from "@/components/common/zoomable-image";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Icon3D } from "@/components/ui/icon-3d";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Carousel,
@@ -52,6 +60,67 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 /**
+ * Pack pricing — pick one of the item's packing styles ("Box", "Carton", …) and
+ * see what that whole pack holds and what it comes to.
+ *
+ * The maths is deliberately plain: prices on an item are per PRIMARY unit, so a
+ * pack is just `qty x price`. Nothing here reads stock, and nothing here writes
+ * — it answers "what do I charge for a full box?" without the admin reaching
+ * for a calculator.
+ */
+function PackingPicker({ item, packings }: { item: Item; packings: Packing[] }) {
+  const { t } = useTranslation();
+  // Default to the first pack so the panel is useful the moment it renders —
+  // an empty select would make the admin click before seeing any number.
+  const [index, setIndex] = React.useState(0);
+  const pack = packings[Math.min(index, packings.length - 1)];
+  const unit = t(`units.${item.primary_unit}`);
+  const sellTotal = packTotal(item.selling_price, pack.qty);
+  const costTotal = packTotal(item.buying_price, pack.qty);
+
+  return (
+    <Section title={t("items.packings")}>
+      <div className="space-y-2">
+        <Select value={String(index)} onValueChange={(v) => setIndex(Number(v))}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {packings.map((p, i) => (
+              <SelectItem key={`${p.label}-${i}`} value={String(i)}>
+                {p.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="rounded-xl well border border-white/20 px-4 py-1">
+          <Field label={t("items.packingContains", { packing: pack.label })}>
+            <span dir="ltr" className="tabular-nums">
+              {pack.qty} {unit}
+            </span>
+          </Field>
+          {costTotal != null ? (
+            <Field label={t("items.packingBuyingTotal")}>
+              <Money value={costTotal} />
+            </Field>
+          ) : null}
+          <Field label={t("items.packingSellingTotal")}>
+            <Money value={sellTotal} className="font-extrabold" />
+          </Field>
+          {/* The workings, so the total is checkable at a glance. */}
+          <Field label={t("items.packingRate")}>
+            <span dir="ltr" className="tabular-nums">
+              {formatPKR(item.selling_price)} x {pack.qty}
+            </span>
+          </Field>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/**
  * The body of the item-detail view (gallery + key facts + suppliers + history +
  * edit). Shared by the mobile detail dialog and the desktop master-detail side
  * panel so both stay identical.
@@ -69,6 +138,7 @@ export function ItemDetailBody({ item }: { item: Item }) {
 
   const images = item.image_urls?.length ? item.image_urls : item.image_url ? [item.image_url] : [];
   const recent = entries.slice(0, 5);
+  const packings = React.useMemo(() => itemPackings(item), [item]);
 
   // Share the item's cover photo + name to a supplier via the device's native
   // share sheet (WhatsApp, SMS, email, Bluetooth — whatever the admin picks).
@@ -174,7 +244,7 @@ export function ItemDetailBody({ item }: { item: Item }) {
       )}
 
       {/* Key facts */}
-      <div className="rounded-xl border border-border bg-card px-4 py-1">
+      <div className="rounded-xl well border border-white/20 px-4 py-1">
         <Field label={t("warehouse.currentStock")}>
           {stockLoading ? (
             <Skeleton className="h-4 w-16" />
@@ -192,6 +262,14 @@ export function ItemDetailBody({ item }: { item: Item }) {
             </span>
           </Field>
         ) : null}
+        {/* Cost above price, matching the items grid — the two read together. */}
+        <Field label={t("fields.buyingPrice")}>
+          {item.buying_price != null ? (
+            <Money value={item.buying_price} />
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </Field>
         <Field label={t("fields.sellingPrice")}>
           <Money value={item.selling_price} />
         </Field>
@@ -211,6 +289,9 @@ export function ItemDetailBody({ item }: { item: Item }) {
         <Field label={t("fields.addedOn")}>{formatDateTime(item.created_at)}</Field>
       </div>
 
+      {/* Pack pricing — only when the item actually has packing styles */}
+      {packings.length > 0 ? <PackingPicker item={item} packings={packings} /> : null}
+
       {/* Suppliers that have sourced this item */}
       {suppliersLoading ? (
         <Section title={t("suppliers.title")}>
@@ -224,7 +305,7 @@ export function ItemDetailBody({ item }: { item: Item }) {
                 key={s.id}
                 type="button"
                 onClick={() => router.push(`/suppliers?supplierId=${s.id}`)}
-                className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-primary transition hover:bg-secondary/70 hover:underline"
+                className="rounded-full well border border-white/20 px-3 py-1 text-xs font-medium text-primary transition hover:bg-secondary/70 hover:underline"
               >
                 {s.name}
               </button>

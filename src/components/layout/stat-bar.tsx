@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { getAccessToken } from "@/lib/auth-token";
-import { getCatalogSummary, getFinancialSummary, getTodayStats } from "@/server/actions/dashboard";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
+import { useDashboardBundle } from "@/hooks/use-dashboard";
 import { formatNumber, formatPKR } from "@/lib/format";
 import { Icon3D, type Icon3DName } from "@/components/ui/icon-3d";
 import { cn } from "@/lib/utils";
@@ -66,20 +64,12 @@ export function StatBar() {
   const { t } = useTranslation();
   const isSuperAdmin = useIsSuperAdmin();
 
-  const catalog = useQuery({
-    queryKey: ["dashboard", "catalog"],
-    queryFn: async () => getCatalogSummary(await getAccessToken()),
-  });
-  const finance = useQuery({
-    queryKey: ["dashboard", "finance"],
-    queryFn: async () => getFinancialSummary(await getAccessToken()),
-    enabled: isSuperAdmin,
-  });
-  const today = useQuery({
-    queryKey: ["dashboard", "today"],
-    queryFn: async () => getTodayStats(await getAccessToken()),
-    enabled: isSuperAdmin,
-  });
+  // One request for every figure in the bar (and the dashboard cards, which
+  // share the same query key) instead of three serialized Server Actions.
+  const { data, isLoading } = useDashboardBundle();
+  const catalog = { data: data?.catalog, isLoading };
+  const finance = { data: data?.finance, isLoading };
+  const today = { data: data?.today, isLoading };
 
   return (
     <div className="shrink-0 overflow-x-auto px-4 pt-3 pb-4 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

@@ -2,22 +2,20 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { ShortcutMap } from "@/lib/nav-shortcuts";
 import {
-  getReminderLeadDays,
   setReminderLeadDays,
-  getNavShortcuts,
   setNavShortcuts,
-  getLockedTabs,
   setTabLock,
 } from "@/server/actions/settings";
 
 export function useReminderLeadDays() {
   return useQuery({
     queryKey: queryKeys.settings(),
-    queryFn: async () => getReminderLeadDays(await getAccessToken()),
+    queryFn: async () => read("settings.reminderLeadDays"),
   });
 }
 
@@ -33,7 +31,7 @@ export function useSetReminderLeadDays() {
 export function useNavShortcutSettings() {
   return useQuery({
     queryKey: queryKeys.navShortcuts(),
-    queryFn: async () => getNavShortcuts(await getAccessToken()),
+    queryFn: async () => read("settings.navShortcuts"),
   });
 }
 
@@ -51,7 +49,7 @@ export function useSetNavShortcutSettings() {
 export function useLockedTabs() {
   return useQuery({
     queryKey: queryKeys.lockedTabs(),
-    queryFn: async () => getLockedTabs(await getAccessToken()),
+    queryFn: async () => read("settings.lockedTabs"),
   });
 }
 

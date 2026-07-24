@@ -173,7 +173,7 @@ export function ItemsGrid({
             {/* Body */}
             <div className="flex flex-1 flex-col gap-2.5 p-3">
               <div className="min-w-0">
-                <p className="line-clamp-1 text-sm font-bold leading-tight text-ink">
+                <p className="line-clamp-1 text-sm font-bold leading-tight text-white">
                   {displayName(item, language)}
                 </p>
                 <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground">
@@ -190,7 +190,7 @@ export function ItemsGrid({
                     dir="ltr"
                     className={cn(
                       "truncate text-sm font-bold tabular-nums",
-                      outOfStock ? "text-destructive" : "text-ink",
+                      outOfStock ? "text-game-red-l" : "text-white",
                     )}
                   >
                     {formatQuantity(item, item.quantity, (k) => t(`units.${k}`))}

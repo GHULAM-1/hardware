@@ -2,19 +2,18 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { AttendanceBatchValues } from "@/lib/schemas";
 import {
-  getAttendanceForDate,
-  getStaffAbsentDates,
   saveAttendanceBatch,
 } from "@/server/actions/attendance";
 
 export function useAttendance(date: string) {
   return useQuery({
     queryKey: queryKeys.attendance(date),
-    queryFn: async () => getAttendanceForDate(await getAccessToken(), date),
+    queryFn: async () => read("attendance.forDate", date),
     enabled: Boolean(date),
   });
 }
@@ -23,7 +22,7 @@ export function useAttendance(date: string) {
 export function useStaffAbsentDates(staffId: string | undefined, month: string) {
   return useQuery({
     queryKey: queryKeys.staffAbsentDates(staffId ?? "", month),
-    queryFn: async () => getStaffAbsentDates(await getAccessToken(), staffId as string, month),
+    queryFn: async () => read("attendance.staffAbsentDates", staffId as string, month),
     enabled: Boolean(staffId && month),
   });
 }

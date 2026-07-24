@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { BilingualNameFields, ImagesField } from "@/components/forms/fields";
 import { MeasurementFields } from "@/components/forms/measurement-fields";
+import { PackingFields } from "@/components/forms/packing-fields";
 import {
   ExtraStockInsFields,
   StockInFields,
@@ -26,6 +27,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { MeasurementType, StockEntryType } from "@/lib/enums";
 import { fromBase } from "@/lib/units";
+import { itemPackings } from "@/lib/packings";
 import { itemSchema, type ItemInput, type ItemValues } from "@/lib/schemas";
 import { useCreateItem, useUpdateItem } from "@/hooks/use-items";
 import { useStockEntries } from "@/hooks/use-warehouse";
@@ -48,10 +50,12 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
       base_unit: item?.base_unit ?? "piece",
       base_per_primary: item?.base_per_primary ?? 1,
       selling_price: item?.selling_price ?? ("" as unknown as number),
+      buying_price: item?.buying_price ?? "",
       low_stock_threshold: item?.low_stock_threshold ?? "",
       category_id: item?.category_id ?? null,
       image_urls: item?.image_urls ?? [],
       track_in_warehouse: item?.track_in_warehouse ?? false,
+      packings: itemPackings(item),
     },
   });
 
@@ -69,7 +73,8 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
       item && entries
         ? {
             supplierId: lastIn?.supplier_id ?? null,
-            buyingPrice: lastIn?.buying_price != null ? String(lastIn.buying_price) : "",
+            // Cost is an item column now — the stock section no longer shows it.
+            buyingPrice: "",
             qty: String(fromBase(currentBase, itemFactor)),
           }
         : undefined,
@@ -87,16 +92,15 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
 
   async function onSubmit(values: ItemValues) {
     try {
-      // Recording a purchase here (primary block or any extra supplier) implies
-      // the item is warehouse-managed.
-      const recordingStock = stock.hasStock || extra.dirty;
-      const payload = { ...values, track_in_warehouse: values.track_in_warehouse || recordingStock };
+      // Warehouse tracking is the toggle's call alone — recording a purchase
+      // (primary block or any extra supplier) no longer forces it on.
       const saved =
         isEdit && item
-          ? await update.mutateAsync({ id: item.id, values: payload })
-          : await create.mutateAsync(payload);
+          ? await update.mutateAsync({ id: item.id, values })
+          : await create.mutateAsync(values);
       // Edit: SET stock to the entered quantity (balancing adjustment vs current).
-      await stock.commitSet(saved.id, itemFactor, currentBase);
+      // Stamp any resulting stock movement with the item's cost.
+      await stock.commitSet(saved.id, itemFactor, currentBase, values.buying_price);
       // Each additional supplier block is an additive purchase.
       await extra.commitAll(saved.id, itemFactor);
       toast.success(t("toast.saved"));
@@ -118,19 +122,24 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
         <div className="space-y-4">
           <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
           <MeasurementFields />
+          {/* Pack sizes sit right after the unit — a packing is expressed in
+              primary units, so it only makes sense once the unit is picked. */}
+          <PackingFields />
           <ImagesField control={form.control} name="image_urls" label={t("fields.image")} folder="product" />
           <StockInFields
             stock={stock}
             unitLabel={unitLabel}
             title={t("warehouse.currentStock")}
             hint={t("items.currentStockHint")}
+            // Cost is an item field now (up beside selling price).
+            showBuyingPrice={false}
           />
           <ExtraStockInsFields extra={extra} unitLabel={unitLabel} />
           <FormField
             control={form.control}
             name="track_in_warehouse"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between gap-4 rounded-lg border border-border bg-secondary/40 p-3">
+              <FormItem className="flex items-center justify-between gap-4 rounded-lg well border border-white/20 p-3">
                 <div className="min-w-0 space-y-0.5">
                   <FormLabel>{t("items.trackInWarehouse")}</FormLabel>
                   <p className="text-xs text-muted-foreground">{t("items.trackInWarehouseHint")}</p>

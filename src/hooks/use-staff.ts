@@ -2,14 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { StaffValues } from "@/lib/schemas";
 import {
   createStaff,
   deleteStaff,
-  getStaff,
-  listStaff,
   setStaffActive,
   updateStaff,
 } from "@/server/actions/staff";
@@ -17,14 +16,14 @@ import {
 export function useStaff(search = "", opts: { activeOnly?: boolean } = {}) {
   return useQuery({
     queryKey: [...queryKeys.staff(search), opts.activeOnly ?? false],
-    queryFn: async () => listStaff(await getAccessToken(), search, opts),
+    queryFn: async () => read("staff.list", search, opts),
   });
 }
 
 export function useStaffMember(id: string | undefined) {
   return useQuery({
     queryKey: queryKeys.staffMember(id ?? ""),
-    queryFn: async () => getStaff(await getAccessToken(), id as string),
+    queryFn: async () => read("staff.get", id as string),
     enabled: Boolean(id),
   });
 }

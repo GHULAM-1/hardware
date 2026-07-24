@@ -166,6 +166,7 @@ export type Database = {
         Row: {
           base_per_primary: number
           base_unit: string
+          buying_price: number | null
           category_id: string | null
           created_at: string
           id: string
@@ -175,6 +176,7 @@ export type Database = {
           measurement_type: Database["public"]["Enums"]["measurement_type"]
           name_en: string
           name_ur: string | null
+          packings: Json
           primary_unit: string
           search_norm: string | null
           selling_price: number
@@ -185,6 +187,7 @@ export type Database = {
         Insert: {
           base_per_primary?: number
           base_unit?: string
+          buying_price?: number | null
           category_id?: string | null
           created_at?: string
           id?: string
@@ -194,6 +197,7 @@ export type Database = {
           measurement_type?: Database["public"]["Enums"]["measurement_type"]
           name_en: string
           name_ur?: string | null
+          packings?: Json
           primary_unit?: string
           search_norm?: string | null
           selling_price?: number
@@ -204,6 +208,7 @@ export type Database = {
         Update: {
           base_per_primary?: number
           base_unit?: string
+          buying_price?: number | null
           category_id?: string | null
           created_at?: string
           id?: string
@@ -213,6 +218,7 @@ export type Database = {
           measurement_type?: Database["public"]["Enums"]["measurement_type"]
           name_en?: string
           name_ur?: string | null
+          packings?: Json
           primary_unit?: string
           search_norm?: string | null
           selling_price?: number
@@ -939,6 +945,32 @@ export type Database = {
       }
     }
     Views: {
+      items_with_stock: {
+        Row: {
+          base_per_primary: number
+          base_unit: string
+          buying_price: number | null
+          category_id: string | null
+          created_at: string
+          effective_buying_price: number | null
+          id: string
+          image_url: string | null
+          image_urls: string[]
+          low_stock_threshold: number | null
+          measurement_type: Database["public"]["Enums"]["measurement_type"]
+          name_en: string
+          name_ur: string | null
+          packings: Json
+          primary_unit: string
+          quantity: number | null
+          search_norm: string | null
+          selling_price: number
+          sku: string
+          track_in_warehouse: boolean
+          updated_at: string
+        }
+        Relationships: []
+      }
       warehouse_stock: {
         Row: {
           item_id: string | null

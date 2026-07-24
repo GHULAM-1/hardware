@@ -21,7 +21,9 @@ function Command({
     <CommandPrimitive
       data-slot="command"
       className={cn(
-        "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
+        // Transparent: this always renders inside a DialogContent, which already
+        // paints the saturated panel. Its own bg would just flatten that.
+        "flex h-full w-full flex-col overflow-hidden rounded-md bg-transparent text-white",
         className
       )}
       {...props}

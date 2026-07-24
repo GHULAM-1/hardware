@@ -126,7 +126,7 @@ export function VoiceInputButton({
         "inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors",
         recording
           ? "animate-pulse border-destructive bg-destructive text-destructive-foreground"
-          : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+          : "border-white/40 bg-white/15 text-white hover:bg-white/30",
         busy && "cursor-wait opacity-70",
         className,
       )}

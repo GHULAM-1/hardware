@@ -39,7 +39,7 @@ export function SupplierOrderLineRow({
   const canChooseUnit = unitOptions.length > 1;
 
   return (
-    <div className="min-w-0 space-y-3 rounded-lg border border-border bg-card p-4">
+    <div className="min-w-0 space-y-3 rounded-lg well border border-white/20 p-4">
       <div className="flex items-center justify-between">
         <span className="text-sm font-semibold text-muted-foreground">#{index + 1}</span>
         <Button

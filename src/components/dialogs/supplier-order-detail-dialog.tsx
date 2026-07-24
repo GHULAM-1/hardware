@@ -162,7 +162,7 @@ export function SupplierOrderDetailDialog({
 
             {/* Supplier's bill (image/PDF) — attach / replace / remove anytime. */}
             {isSuperAdmin && (
-              <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+              <div className="space-y-3 rounded-lg well border border-white/20 p-4">
                 <Label>{order.bill_url ? t("supplierOrders.replaceBill") : t("supplierOrders.attachBill")}</Label>
                 {order.bill_url &&
                   (isPdfUrl(order.bill_url) ? (

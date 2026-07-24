@@ -9,9 +9,31 @@ import { StatBar } from "@/components/layout/stat-bar";
 import { ActionFab } from "@/components/assistant/action-fab";
 import { useNavShortcuts } from "@/hooks/use-nav-shortcuts";
 import { useArrowScroll } from "@/hooks/use-arrow-scroll";
+import { moduleColorFor } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
+const MODULE_CLASSES = [
+  "mod-green", "mod-blue", "mod-orange", "mod-purple",
+  "mod-red", "mod-teal", "mod-pink", "mod-slate",
+];
+
+/**
+ * Paint the current module's family onto <html>. It has to be the root element,
+ * not the shell div: Radix portals dialogs, sheets, popovers and menus straight
+ * into document.body, so anything scoped to the shell would leave every overlay
+ * on the default blue while the page behind it wore its own color.
+ */
+function useModuleTheme(pathname: string) {
+  const moduleClass = `mod-${moduleColorFor(pathname)}`;
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove(...MODULE_CLASSES);
+    root.classList.add(moduleClass);
+    return () => root.classList.remove(moduleClass);
+  }, [moduleClass]);
+  return moduleClass;
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   // Persisted so the collapsed/expanded choice sticks across reloads. AppShell
@@ -27,6 +49,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // and it owns its scroll, so the stat-bar stays pinned on top and the info
   // cards stay pinned at the bottom.
   const isDashboard = pathname === "/dashboard";
+  // Also applied to the shell itself so the first paint is themed (the <html>
+  // effect only lands after hydration).
+  const moduleClass = useModuleTheme(pathname);
 
   const [collapsed, setCollapsed] = React.useState(() => {
     if (typeof window === "undefined") return false;
@@ -42,7 +67,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="bg-app fixed inset-0 flex overflow-hidden">
+    <div className={cn("bg-app fixed inset-0 flex overflow-hidden", moduleClass)}>
       {!isDashboard && <AppSidebar collapsed={collapsed} onToggle={toggleSidebar} />}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar />

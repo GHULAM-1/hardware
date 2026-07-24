@@ -185,3 +185,36 @@ export async function getPaymentBreakdown(accessToken: string): Promise<PaymentB
   }
   return result;
 }
+
+/**
+ * Every figure the always-on chrome needs, in ONE call.
+ *
+ * The StatBar renders on every page and the dashboard info cards add two more
+ * queries, so this used to cost four separate Server Actions. Next.js dispatches
+ * Server Functions from the client one at a time, so those four serialized into
+ * ~4× the latency of a single call — see the note in
+ * node_modules/next/dist/docs/01-app/01-getting-started/07-mutating-data.md.
+ * Fanning out with Promise.all *inside* one action is the fix the docs recommend.
+ *
+ * Financial figures are super-admin only; a read-only admin skips them entirely
+ * rather than firing queries whose results are thrown away.
+ */
+export type DashboardBundle = {
+  catalog: CatalogSummary;
+  finance: FinancialSummary | null;
+  today: TodayStats | null;
+  payments: PaymentBreakdown | null;
+};
+
+export async function getDashboardBundle(
+  accessToken: string,
+  includeFinancials: boolean,
+): Promise<DashboardBundle> {
+  const [catalog, finance, today, payments] = await Promise.all([
+    getCatalogSummary(accessToken),
+    includeFinancials ? getFinancialSummary(accessToken) : Promise.resolve(null),
+    includeFinancials ? getTodayStats(accessToken) : Promise.resolve(null),
+    includeFinancials ? getPaymentBreakdown(accessToken) : Promise.resolve(null),
+  ]);
+  return { catalog, finance, today, payments };
+}

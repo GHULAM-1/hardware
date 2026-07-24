@@ -8,7 +8,8 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      // The body reads as a well cut into the page, with the header rail on top.
+      className="well relative w-full overflow-x-auto rounded-xl text-white"
     >
       <table
         data-slot="table"
@@ -24,10 +25,10 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       className={cn(
-        // Purple is set on the header CELLS (th) below — th paints above the row, so
-        // the body row's hover/selected tint can't bleed onto the header. Keep the
+        // The color is set on the header CELLS (th) below — th paints above the row,
+        // so the body row's hover/selected tint can't bleed onto the header. Keep the
         // header row transparent and immune to those states here.
-        "bg-game-purple text-white [&_tr]:border-0 [&_tr]:bg-transparent! [&_tr:hover]:bg-transparent!",
+        "text-white [&_tr]:border-0 [&_tr]:bg-transparent! [&_tr:hover]:bg-transparent!",
         className,
       )}
       {...props}
@@ -63,7 +64,9 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-[#eef1f6] transition-colors hover:bg-row-alt has-aria-expanded:bg-row-alt data-[state=selected]:bg-row-selected",
+        // Zebra striping via a translucent white overlay so it works on whichever
+        // module color the page is wearing (an opaque tint would not).
+        "border-b border-white/12 transition-colors even:bg-white/6 hover:bg-row-alt has-aria-expanded:bg-row-alt data-[state=selected]:bg-row-selected",
         className
       )}
       {...props}
@@ -76,8 +79,9 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        // Solid purple on the cell itself so nothing (row hover/selected) can cover it.
-        "h-11 bg-[var(--purple)] px-3 text-start align-middle font-bold whitespace-nowrap text-white [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        // Solid module color on the cell itself so nothing (row hover/selected) can
+        // cover it. A top-lit rail keeps it reading as raised chrome above the well.
+        "panel-rail h-11 px-3 text-start align-middle text-[13px] font-extrabold tracking-wide whitespace-nowrap text-white uppercase ink-pop [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}
@@ -90,7 +94,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-3 align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "p-3 align-middle font-semibold whitespace-nowrap text-white [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}

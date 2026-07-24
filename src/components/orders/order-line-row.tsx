@@ -53,7 +53,7 @@ export function OrderLineRow({
   }
 
   return (
-    <div className="min-w-0 space-y-3 rounded-lg border border-border bg-card p-4">
+    <div className="min-w-0 space-y-3 rounded-lg well border border-white/20 p-4">
       <div className="flex items-center justify-between">
         <span className="text-sm font-semibold text-muted-foreground">#{index + 1}</span>
         <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onRemove}>

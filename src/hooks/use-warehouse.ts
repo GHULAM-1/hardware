@@ -2,15 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { StockEntryValues } from "@/lib/schemas";
 import {
   createStockEntry,
   deleteStockEntry,
-  getItemStock,
-  listItemsWithStock,
-  listStockEntries,
   setLatestBuyingPrice,
   updateStockEntry,
 } from "@/server/actions/warehouse";
@@ -18,7 +16,7 @@ import {
 export function useItemsWithStock(search = "") {
   return useQuery({
     queryKey: [...queryKeys.warehouseStock(), search],
-    queryFn: async () => listItemsWithStock(await getAccessToken(), search),
+    queryFn: async () => read("warehouse.itemsWithStock", search),
   });
 }
 
@@ -26,7 +24,7 @@ export function useItemsWithStock(search = "") {
 export function useItemStock(itemId: string | undefined) {
   return useQuery({
     queryKey: queryKeys.itemStock(itemId ?? ""),
-    queryFn: async () => getItemStock(await getAccessToken(), itemId as string),
+    queryFn: async () => read("warehouse.itemStock", itemId as string),
     enabled: Boolean(itemId),
   });
 }
@@ -34,7 +32,7 @@ export function useItemStock(itemId: string | undefined) {
 export function useStockEntries(itemId: string | undefined) {
   return useQuery({
     queryKey: queryKeys.stockEntries(itemId),
-    queryFn: async () => listStockEntries(await getAccessToken(), itemId as string),
+    queryFn: async () => read("warehouse.stockEntries", itemId as string),
     enabled: Boolean(itemId),
   });
 }

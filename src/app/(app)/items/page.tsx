@@ -15,6 +15,8 @@ import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
 import { formatDateTime } from "@/lib/format";
 import { formatQuantity } from "@/lib/units";
+import { scrollRegionClass, scrollRegionProps } from "@/lib/a11y";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { ViewToggle, type ListView } from "@/components/common/view-toggle";
@@ -257,11 +259,19 @@ export default function ItemsPage() {
         </div>
         {/* Desktop master-detail panel; mobile uses the tap-to-open dialog instead. */}
         <aside className="hidden w-[360px] shrink-0 xl:block">
+          {/* The panel scrolls independently of the page, so it has to be
+              focusable for the arrow keys to reach it — see scrollRegionProps. */}
           {selected ? (
-            <Card className="sticky top-0 max-h-[calc(100vh-11rem)] gap-4 overflow-y-auto p-5">
+            <Card
+              {...scrollRegionProps(t("pricing.itemDetail"))}
+              className={cn(
+                "sticky top-0 max-h-[calc(100vh-11rem)] gap-4 overflow-y-auto p-5",
+                scrollRegionClass,
+              )}
+            >
               <div className="flex min-w-0 items-center gap-3">
                 <ImageThumb src={selected.image_urls?.[0] ?? selected.image_url} alt={selected.name_en} />
-                <span className="min-w-0 truncate text-lg font-extrabold text-ink">
+                <span className="min-w-0 truncate text-lg font-extrabold text-white">
                   {displayName(selected, language)}
                 </span>
               </div>

@@ -45,7 +45,7 @@ export function TabLockScreen() {
     <div className="flex min-h-full items-center justify-center p-4">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-card p-6 text-center shadow-lg"
+        className="w-full max-w-sm space-y-5 rounded-2xl well border border-white/20 p-6 text-center shadow-lg"
       >
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
           <LockKeyhole className="h-8 w-8 text-primary" />

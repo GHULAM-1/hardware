@@ -63,7 +63,7 @@ export function StaffDetailBody({ staff, onNavigate }: { staff: Staff; onNavigat
   return (
     <div>
       <SectionLabel>{t("staff.personalDetails")}</SectionLabel>
-      <div className="rounded-lg border border-border bg-card px-4 py-1">
+      <div className="rounded-lg well border border-white/20 px-4 py-1">
         <Field label={t("fields.phone")}>
           <span dir="ltr">{staff.phone}</span>
         </Field>
@@ -75,7 +75,7 @@ export function StaffDetailBody({ staff, onNavigate }: { staff: Staff; onNavigat
       </div>
 
       <SectionLabel>{t("staff.attendanceThisMonth", { month: currentMonthLabel() })}</SectionLabel>
-      <div className="rounded-lg border border-border bg-card px-4 py-3">
+      <div className="rounded-lg well border border-white/20 px-4 py-3">
         <div className="mb-3 flex items-center justify-between gap-4 border-b border-border pb-3">
           <span className="text-sm text-muted-foreground">{t("staff.todayTiming")}</span>
           {isLoading ? (
@@ -106,7 +106,7 @@ export function StaffDetailBody({ staff, onNavigate }: { staff: Staff; onNavigat
       </div>
 
       <SectionLabel>{t("staff.thisMonth", { month: currentMonthLabel() })}</SectionLabel>
-      <div className="rounded-lg border border-border bg-card px-4 py-1">
+      <div className="rounded-lg well border border-white/20 px-4 py-1">
         <Field label={t("staff.monthlySalary")}>
           <Money value={staff.monthly_salary} />
         </Field>

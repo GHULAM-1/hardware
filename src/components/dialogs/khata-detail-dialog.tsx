@@ -66,7 +66,7 @@ export function KhataDetailDialog({ payload, onClose }: DialogComponentProps<Kha
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-lg border border-border bg-card px-4 py-1">
+        <div className="rounded-lg well border border-white/20 px-4 py-1">
           <Field label={t("fields.customer")}>
             {khata.customer ? displayName(khata.customer, language) : "—"}
           </Field>

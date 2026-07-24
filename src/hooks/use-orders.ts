@@ -2,32 +2,29 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { read } from "@/lib/read-client";
 import { getAccessToken } from "@/lib/auth-token";
 import { queryKeys } from "@/lib/query-keys";
 import type { OrderValues } from "@/lib/schemas";
 import {
   createOrder,
-  getOrderForEdit,
-  getOrderReceipt,
-  getSupplierBuyingPrice,
-  listOrders,
   updateOrder,
   updateOrderPayment,
 } from "@/server/actions/orders";
-import { getItemPricingForCustomer } from "@/server/actions/customers";
+
 import type { OrderPaymentValues } from "@/lib/schemas";
 
 export function useOrders(search = "") {
   return useQuery({
     queryKey: queryKeys.orders(search),
-    queryFn: async () => listOrders(await getAccessToken(), search),
+    queryFn: async () => read("orders.list", search),
   });
 }
 
 export function useOrderReceipt(orderId: string | undefined) {
   return useQuery({
     queryKey: queryKeys.order(orderId ?? ""),
-    queryFn: async () => getOrderReceipt(await getAccessToken(), orderId as string),
+    queryFn: async () => read("orders.receipt", orderId as string),
     enabled: Boolean(orderId),
   });
 }
@@ -36,7 +33,7 @@ export function useOrderReceipt(orderId: string | undefined) {
 export function useItemPricing(customerId: string | null, itemId: string | null) {
   return useQuery({
     queryKey: queryKeys.itemPricing(customerId ?? "", itemId ?? ""),
-    queryFn: async () => getItemPricingForCustomer(await getAccessToken(), customerId as string, itemId as string),
+    queryFn: async () => read("customers.itemPricing", customerId as string, itemId as string),
     enabled: Boolean(customerId && itemId),
   });
 }
@@ -45,7 +42,7 @@ export function useItemPricing(customerId: string | null, itemId: string | null)
 export function useSupplierBuyingPrice(itemId: string | null, supplierId: string | null) {
   return useQuery({
     queryKey: ["supplier-buying-price", itemId, supplierId],
-    queryFn: async () => getSupplierBuyingPrice(await getAccessToken(), itemId as string, supplierId as string),
+    queryFn: async () => read("orders.supplierBuyingPrice", itemId as string, supplierId as string),
     enabled: Boolean(itemId && supplierId),
   });
 }
@@ -65,7 +62,7 @@ export function useCreateOrder() {
 export function useOrderForEdit(orderId: string | undefined) {
   return useQuery({
     queryKey: [...queryKeys.order(orderId ?? ""), "edit"],
-    queryFn: async () => getOrderForEdit(await getAccessToken(), orderId as string),
+    queryFn: async () => read("orders.forEdit", orderId as string),
     enabled: Boolean(orderId),
   });
 }

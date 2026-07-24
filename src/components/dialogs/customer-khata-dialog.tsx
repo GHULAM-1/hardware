@@ -238,7 +238,7 @@ export function CustomerKhataDialog({ payload, onClose }: DialogComponentProps<C
           {pending.length > 0 ? (
             <ul className="space-y-2">{pending.map(renderEntry)}</ul>
           ) : (
-            <p className="rounded-lg border border-border bg-muted/40 p-3 text-center text-sm text-muted-foreground">
+            <p className="rounded-lg well border border-white/20 p-3 text-center text-sm text-muted-foreground">
               {t("khata.allCleared")}
             </p>
           )}
