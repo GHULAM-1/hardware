@@ -3,17 +3,20 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { customerSchema, type CustomerValues } from "@/lib/schemas";
-import { searchTokens } from "@/lib/search";
+import { rankBySearch, searchTokens } from "@/lib/search";
 import type { Customer, CustomerOrderView, LastPurchaseView } from "@/types/models";
 
 export async function listCustomers(accessToken: string, search = ""): Promise<Customer[]> {
-  return runQuery(accessToken, (c) => {
+  const rows = await runQuery<Customer[]>(accessToken, (c) => {
     let q = c.from("customers").select("*").order("name_en").limit(50);
     // Match every word as a substring of the normalized column (name + phone), so
     // spacing/word-order don't matter — same pattern as items.
     for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
     return q;
   });
+  // Float the closest match to the top (prefix beats mid-string), like the items
+  // search — otherwise the exact name is lost in the alphabetical list.
+  return rankBySearch(rows, search, (r) => r.search_norm);
 }
 
 /** Fetch one customer by id (used to open the profile dialog from the assistant). */

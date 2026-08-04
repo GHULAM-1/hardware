@@ -18,15 +18,16 @@ import type { ItemWithStock, StockEntry, StockEntryWithSupplier } from "@/types/
 export async function listItemsWithStock(accessToken: string, search = ""): Promise<ItemWithStock[]> {
   const client = createActionClient(accessToken);
 
-  // Newest first, matching listItems — a just-created item has to be visible at
-  // the top of the list rather than buried wherever its name happens to sort.
-  let q = client
-    .from("items_with_stock")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
-  for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
-  const { data, error } = await q;
+  // Rank in the DB (search_items_ranked) so the exact match floats to the top and
+  // the LIMIT keeps the most RELEVANT rows, not just the newest. Ordering by
+  // created_at here used to bury the exact item under every near-name and could
+  // even drop it past the limit. An empty search stays newest-first.
+  const tokens = searchTokens(search);
+  const { data, error } = await client.rpc("search_items_ranked", {
+    p_tokens: tokens,
+    p_query: tokens.join(""),
+    p_limit: 100,
+  });
   if (error) throw new Error(error.message);
 
   return (data ?? []).map(({ quantity, effective_buying_price, ...item }) => ({

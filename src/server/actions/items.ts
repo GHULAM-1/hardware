@@ -1,17 +1,35 @@
 "use server";
 
+import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { itemSchema, type ItemValues } from "@/lib/schemas";
 import { searchTokens } from "@/lib/search";
 import type { Item } from "@/types/models";
 
 export async function listItems(accessToken: string, search = ""): Promise<Item[]> {
-  return runQuery(accessToken, (c) => {
-    let q = c.from("items").select("*").order("created_at", { ascending: false }).limit(50);
-    // Match every word as a substring of the normalized column, so "50 kg" and
-    // "50kg" both find "Cement Bag 50kg" and word order doesn't matter.
-    for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
-    return q;
+  const client = createActionClient(accessToken);
+  // Same ranked path as the Items list (search_items_ranked): the exact match
+  // comes first and the LIMIT keeps the most relevant rows. Word order stays
+  // irrelevant (tokens are ANDed); the phrase is used only for ranking.
+  const tokens = searchTokens(search);
+  const { data, error } = await client.rpc("search_items_ranked", {
+    p_tokens: tokens,
+    p_query: tokens.join(""),
+    p_limit: 50,
+  });
+  if (error) throw new Error(error.message);
+
+  // The view carries quantity + effective_buying_price on top of the item row.
+  // Drop quantity (warehouse-only), and surface the EFFECTIVE cost as buying_price
+  // so search shows a figure for legacy items whose own column is null but which
+  // have a priced stock-in — matching what the Items list shows.
+  return (data ?? []).map((row) => {
+    const { quantity, effective_buying_price, ...item } = row;
+    void quantity; // view-only column, not part of Item
+    return {
+      ...item,
+      buying_price: effective_buying_price == null ? item.buying_price : Number(effective_buying_price),
+    } as Item;
   });
 }
 

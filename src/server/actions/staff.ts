@@ -3,7 +3,7 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { staffSchema, type StaffValues } from "@/lib/schemas";
-import { searchTokens } from "@/lib/search";
+import { rankBySearch, searchTokens } from "@/lib/search";
 import { DUPLICATE_CNIC, DUPLICATE_PHONE } from "@/lib/errors";
 import type { Staff } from "@/types/models";
 
@@ -13,7 +13,7 @@ export async function listStaff(
   search = "",
   opts: { activeOnly?: boolean } = {},
 ): Promise<Staff[]> {
-  return runQuery(accessToken, (c) => {
+  const rows = await runQuery<Staff[]>(accessToken, (c) => {
     let q = c.from("staff").select("*").order("name").limit(100);
     if (opts.activeOnly) q = q.eq("is_active", true);
     // Match every word as a substring of the normalized column (name + phone), so
@@ -21,6 +21,8 @@ export async function listStaff(
     for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
     return q;
   });
+  // Closest match first (prefix beats mid-string), consistent with items search.
+  return rankBySearch(rows, search, (r) => r.search_norm);
 }
 
 export async function getStaff(accessToken: string, id: string): Promise<Staff> {

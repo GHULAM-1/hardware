@@ -983,6 +983,10 @@ export type Database = {
     }
     Functions: {
       apply_standard_rls: { Args: { p_table: unknown }; Returns: undefined }
+      search_items_ranked: {
+        Args: { p_tokens: string[]; p_query?: string; p_limit?: number }
+        Returns: Database["public"]["Views"]["items_with_stock"]["Row"][]
+      }
       create_order: {
         Args: {
           p_amount_paid: number

@@ -3,18 +3,20 @@
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
 import { supplierSchema, type SupplierValues } from "@/lib/schemas";
-import { searchTokens } from "@/lib/search";
+import { rankBySearch, searchTokens } from "@/lib/search";
 import { DUPLICATE_PHONE } from "@/lib/errors";
 import type { Supplier } from "@/types/models";
 
 export async function listSuppliers(accessToken: string, search = ""): Promise<Supplier[]> {
-  return runQuery(accessToken, (c) => {
+  const rows = await runQuery<Supplier[]>(accessToken, (c) => {
     let q = c.from("suppliers").select("*").order("name").limit(50);
     // Match every word as a substring of the normalized column (name + shop_name +
     // phone), so spacing/word-order don't matter — same pattern as items.
     for (const t of searchTokens(search)) q = q.ilike("search_norm", `%${t}%`);
     return q;
   });
+  // Closest match first (prefix beats mid-string), consistent with items search.
+  return rankBySearch(rows, search, (r) => r.search_norm);
 }
 
 export async function createSupplier(
