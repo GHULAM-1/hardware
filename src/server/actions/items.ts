@@ -2,7 +2,7 @@
 
 import { createActionClient } from "@/lib/supabase/server";
 import { runQuery } from "@/server/actions/_client";
-import { itemSchema, type ItemValues } from "@/lib/schemas";
+import { DUPLICATE_ITEM_NAME, itemSchema, type ItemValues } from "@/lib/schemas";
 import { searchTokens } from "@/lib/search";
 import type { Item } from "@/types/models";
 
@@ -33,9 +33,17 @@ export async function listItems(accessToken: string, search = ""): Promise<Item[
   });
 }
 
+/** Postgres unique-violation SQLSTATE. */
+function isDuplicateNameError(error: { code?: string; message?: string } | null): boolean {
+  return error?.code === "23505" && (error.message ?? "").includes("items_name_en_norm");
+}
+
 export async function createItem(accessToken: string, values: ItemValues): Promise<Item> {
   const data = itemSchema.parse(values);
-  return runQuery(accessToken, (c) => c.from("items").insert(data).select("*").single());
+  const client = createActionClient(accessToken);
+  const { data: row, error } = await client.from("items").insert(data).select("*").single();
+  if (error) throw new Error(isDuplicateNameError(error) ? DUPLICATE_ITEM_NAME : error.message);
+  return row as Item;
 }
 
 export async function updateItem(
@@ -44,9 +52,12 @@ export async function updateItem(
   values: ItemValues,
 ): Promise<Item> {
   const data = itemSchema.parse(values);
-  return runQuery(accessToken, (c) =>
-    c.from("items").update(data).eq("id", id).select("*").single(),
-  );
+  const client = createActionClient(accessToken);
+  // The unique index ignores this row's own current name (same row), so renaming
+  // to a name another item already holds is what trips 23505 — exactly right.
+  const { data: row, error } = await client.from("items").update(data).eq("id", id).select("*").single();
+  if (error) throw new Error(isDuplicateNameError(error) ? DUPLICATE_ITEM_NAME : error.message);
+  return row as Item;
 }
 
 export async function deleteItem(accessToken: string, id: string): Promise<null> {

@@ -178,7 +178,9 @@
     "packingContains": "1 {{packing}} contains",
     "packingBuyingTotal": "Buying price for the pack",
     "packingSellingTotal": "Selling price for the pack",
-    "packingRate": "Rate x quantity"
+    "packingRate": "Rate x quantity",
+    "duplicateName": "An item with this name already exists.",
+    "existingMatches": "Already in your items"
   },
   "measurement": {
     "count": "Count",

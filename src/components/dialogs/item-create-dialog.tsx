@@ -14,14 +14,15 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { BilingualNameFields, ImagesField } from "@/components/forms/fields";
+import { ImagesField } from "@/components/forms/fields";
+import { ItemNameFields } from "@/components/forms/item-name-fields";
 import { MeasurementFields } from "@/components/forms/measurement-fields";
 import { PackingFields } from "@/components/forms/packing-fields";
 import { StockInFields, useStockIn } from "@/components/forms/stock-in-section";
 import { Switch } from "@/components/ui/switch";
 import { MeasurementType } from "@/lib/enums";
-import { itemSchema, type ItemInput, type ItemValues } from "@/lib/schemas";
-import { useCreateItem } from "@/hooks/use-items";
+import { DUPLICATE_ITEM_NAME, itemSchema, type ItemInput, type ItemValues } from "@/lib/schemas";
+import { useCreateItem, useItemNameSuggestions } from "@/hooks/use-items";
 
 /**
  * Create a catalog item: name, measurement model (unit → pieces-per-pack),
@@ -60,7 +61,16 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
   const unitLabel = primaryUnit ? t(`units.${primaryUnit}`) : "";
   const submitting = createItem.isPending || stock.committing;
 
+  // Live duplicate check so submit can be blocked before the round trip. The DB
+  // unique index is the real gate; this just gives an instant, in-place message.
+  const nameEn = useWatch({ control: form.control, name: "name_en" }) as string;
+  const { isDuplicate } = useItemNameSuggestions(nameEn ?? "");
+
   async function onSubmit(values: ItemValues) {
+    if (isDuplicate) {
+      form.setError("name_en", { type: "duplicate", message: "items.duplicateName" });
+      return;
+    }
     try {
       // Warehouse tracking is the toggle's call alone — recording an opening
       // quantity no longer forces it on.
@@ -70,6 +80,13 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
       toast.success(t("toast.created"));
       onClose();
     } catch (err) {
+      // Fallback if the name was taken between the live check and the insert
+      // (another tab, a race): pin it on the field instead of a raw sentinel.
+      if (err instanceof Error && err.message === DUPLICATE_ITEM_NAME) {
+        form.setError("name_en", { type: "duplicate", message: "items.duplicateName" });
+        toast.error(t("items.duplicateName"));
+        return;
+      }
       toast.error(err instanceof Error ? err.message : t("toast.error"));
     }
   }
@@ -86,7 +103,7 @@ export function ItemCreateDialog({ onClose }: DialogComponentProps<null>) {
         widthClassName="w-[calc(100%-2rem)] sm:max-w-2xl"
       >
         <div className="space-y-5">
-          <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
+          <ItemNameFields />
           <MeasurementFields />
           {/* Pack sizes sit right after the unit — a packing is expressed in
               primary units, so it only makes sense once the unit is picked. */}

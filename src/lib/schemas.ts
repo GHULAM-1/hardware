@@ -58,6 +58,14 @@ export const loginSchema = z.object({
 export type LoginValues = z.output<typeof loginSchema>;
 
 /**
+ * Sentinel thrown by createItem/updateItem when the unique name index rejects a
+ * duplicate. Lives here (not in the "use server" items module, which may only
+ * export async functions) so both the server action and the client dialogs can
+ * share the exact string. The client maps it to a translated message.
+ */
+export const DUPLICATE_ITEM_NAME = "DUPLICATE_ITEM_NAME";
+
+/**
  * One packing style: a free-text pack name and how many PRIMARY units it holds
  * ("Box" / 12). Mirrors the DB constraint in 20260725010000_item_packings.sql —
  * anything this accepts, Postgres accepts.

@@ -15,7 +15,8 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { BilingualNameFields, ImagesField } from "@/components/forms/fields";
+import { ImagesField } from "@/components/forms/fields";
+import { ItemNameFields } from "@/components/forms/item-name-fields";
 import { MeasurementFields } from "@/components/forms/measurement-fields";
 import { PackingFields } from "@/components/forms/packing-fields";
 import {
@@ -28,8 +29,8 @@ import { Switch } from "@/components/ui/switch";
 import { MeasurementType, StockEntryType } from "@/lib/enums";
 import { fromBase } from "@/lib/units";
 import { itemPackings } from "@/lib/packings";
-import { itemSchema, type ItemInput, type ItemValues } from "@/lib/schemas";
-import { useCreateItem, useUpdateItem } from "@/hooks/use-items";
+import { DUPLICATE_ITEM_NAME, itemSchema, type ItemInput, type ItemValues } from "@/lib/schemas";
+import { useCreateItem, useItemNameSuggestions, useUpdateItem } from "@/hooks/use-items";
 import { useStockEntries } from "@/hooks/use-warehouse";
 import type { Item } from "@/types/models";
 
@@ -90,7 +91,15 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
   const primaryUnit = useWatch({ control: form.control, name: "primary_unit" });
   const unitLabel = primaryUnit ? t(`units.${primaryUnit}`) : "";
 
+  // Live duplicate check, excluding this item so its own name never flags itself.
+  const nameEn = useWatch({ control: form.control, name: "name_en" }) as string;
+  const { isDuplicate } = useItemNameSuggestions(nameEn ?? "", item?.id);
+
   async function onSubmit(values: ItemValues) {
+    if (isDuplicate) {
+      form.setError("name_en", { type: "duplicate", message: "items.duplicateName" });
+      return;
+    }
     try {
       // Warehouse tracking is the toggle's call alone — recording a purchase
       // (primary block or any extra supplier) no longer forces it on.
@@ -106,6 +115,12 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
       toast.success(t("toast.saved"));
       onClose();
     } catch (err) {
+      // Fallback if the name was taken between the live check and the write.
+      if (err instanceof Error && err.message === DUPLICATE_ITEM_NAME) {
+        form.setError("name_en", { type: "duplicate", message: "items.duplicateName" });
+        toast.error(t("items.duplicateName"));
+        return;
+      }
       toast.error(err instanceof Error ? err.message : t("toast.error"));
     }
   }
@@ -120,7 +135,7 @@ export function ItemFormDialog({ payload, onClose }: DialogComponentProps<ItemFo
         dirty={stock.dirty || extra.dirty}
       >
         <div className="space-y-4">
-          <BilingualNameFields control={form.control} enName="name_en" urName="name_ur" />
+          <ItemNameFields excludeId={item?.id} />
           <MeasurementFields />
           {/* Pack sizes sit right after the unit — a packing is expressed in
               primary units, so it only makes sense once the unit is picked. */}

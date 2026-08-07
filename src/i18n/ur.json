@@ -178,7 +178,9 @@
     "packingContains": "1 {{packing}} میں",
     "packingBuyingTotal": "پوری پیکنگ کی خرید قیمت",
     "packingSellingTotal": "پوری پیکنگ کی فروخت قیمت",
-    "packingRate": "ریٹ x مقدار"
+    "packingRate": "ریٹ x مقدار",
+    "duplicateName": "اس نام سے ایک چیز پہلے سے موجود ہے۔",
+    "existingMatches": "پہلے سے موجود اشیاء"
   },
   "measurement": {
     "count": "گنتی",
