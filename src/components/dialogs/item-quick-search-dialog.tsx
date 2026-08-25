@@ -61,6 +61,10 @@ export function ItemQuickSearchDialog({ onClose }: DialogComponentProps<null>) {
   const [query, setQuery] = React.useState("");
   const [selected, setSelected] = React.useState<Selected | null>(null);
   const [maximized, setMaximized] = React.useState(false);
+  // The search box is focused the instant the dialog opens (Ctrl+K → type),
+  // instead of Radix landing focus on the first window button. See the
+  // onOpenAutoFocus handler on DialogContent below.
+  const inputRef = React.useRef<HTMLInputElement>(null);
   // Voice: spoken words land in the box and the debounced query filters as usual
   // (no forced submit). Carried over when this replaced the top-bar palette.
   const { supported: micSupported, listening, start, stop } = useSpeechRecognition(setQuery);
@@ -88,6 +92,13 @@ export function ItemQuickSearchDialog({ onClose }: DialogComponentProps<null>) {
       <DialogContent
         plain
         showCloseButton={false}
+        // Radix otherwise focuses the first tabbable node (a window button), so
+        // the user had to click the box before typing. Take over the open-focus
+        // and put the caret straight in the search input, ready to type.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          inputRef.current?.focus();
+        }}
         className={cn(
           "flex flex-col overflow-hidden p-0",
           // Own maximize state (the shared one drops custom classes when maximized,
@@ -131,6 +142,7 @@ export function ItemQuickSearchDialog({ onClose }: DialogComponentProps<null>) {
             <Command shouldFilter={false} className="flex min-h-0 flex-1 flex-col rounded-none">
               <div className="relative">
                 <CommandInput
+                  ref={inputRef}
                   value={query}
                   onValueChange={setQuery}
                   placeholder={t(listening ? "assistant.listening" : "globalSearch.placeholder")}
