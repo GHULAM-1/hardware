@@ -637,5 +637,29 @@
     "previous": "Previous",
     "next": "Next",
     "goToPage": "Go to page {{page}}"
+  },
+  "itemsSort": {
+    "label": "Sort",
+    "nameAsc": "Name (A–Z)",
+    "nameDesc": "Name (Z–A)",
+    "priceAsc": "Price: Low to High",
+    "priceDesc": "Price: High to Low",
+    "stockDesc": "Stock: High to Low",
+    "stockAsc": "Stock: Low to High",
+    "newest": "Newest first",
+    "oldest": "Oldest first"
+  },
+  "itemsFilter": {
+    "label": "Filter",
+    "stockLabel": "Stock",
+    "stockAll": "All",
+    "stockIn": "In stock",
+    "stockLow": "Low stock",
+    "stockOut": "Out of stock",
+    "warehouseLabel": "Warehouse",
+    "trackAll": "All",
+    "tracked": "Tracked",
+    "untracked": "Not tracked",
+    "reset": "Reset filters"
   }
 }

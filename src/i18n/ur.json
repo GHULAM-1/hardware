@@ -637,5 +637,29 @@
     "previous": "پچھلا",
     "next": "اگلا",
     "goToPage": "صفحہ {{page}} پر جائیں"
+  },
+  "itemsSort": {
+    "label": "ترتیب",
+    "nameAsc": "نام (ا–ی)",
+    "nameDesc": "نام (ی–ا)",
+    "priceAsc": "قیمت: کم سے زیادہ",
+    "priceDesc": "قیمت: زیادہ سے کم",
+    "stockDesc": "اسٹاک: زیادہ سے کم",
+    "stockAsc": "اسٹاک: کم سے زیادہ",
+    "newest": "نئے پہلے",
+    "oldest": "پرانے پہلے"
+  },
+  "itemsFilter": {
+    "label": "فلٹر",
+    "stockLabel": "اسٹاک",
+    "stockAll": "سب",
+    "stockIn": "اسٹاک میں",
+    "stockLow": "کم اسٹاک",
+    "stockOut": "اسٹاک ختم",
+    "warehouseLabel": "گودام",
+    "trackAll": "سب",
+    "tracked": "ٹریک شدہ",
+    "untracked": "ٹریک نہیں",
+    "reset": "فلٹر ری سیٹ کریں"
   }
 }

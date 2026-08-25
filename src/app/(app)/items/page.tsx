@@ -21,8 +21,14 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { ViewToggle, type ListView } from "@/components/common/view-toggle";
 import { ItemsGrid } from "@/components/items/items-grid";
+import { ItemFilterMenu, ItemSortMenu } from "@/components/items/item-list-controls";
 import { Pagination } from "@/components/common/pagination";
 import { DataTable, type Column } from "@/components/common/data-table";
+import {
+  DEFAULT_ITEM_FILTERS,
+  filterAndSortItems,
+  type ItemFilterState,
+} from "@/lib/item-filters";
 import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
 import { StatusBadge } from "@/components/common/status-badge";
@@ -46,14 +52,26 @@ export default function ItemsPage() {
 
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
-  const { data: items = [], isLoading } = useItemsWithStock(debounced);
+  const { data: rawItems = [], isLoading } = useItemsWithStock(debounced);
   const { data: usedItemIds } = useUsedItemIds();
 
-  // Client-side pagination: the whole (search-filtered, ranked) catalog is
-  // already in hand, so paging is instant. Page resets to 1 on a new search.
+  // Filter + sort happen client-side over the whole catalog (already in hand).
+  // Default sort is alphabetical (see DEFAULT_ITEM_FILTERS).
+  const [filters, setFilters] = React.useState<ItemFilterState>(DEFAULT_ITEM_FILTERS);
+  const items = React.useMemo(
+    () => filterAndSortItems(rawItems, filters, language),
+    [rawItems, filters, language],
+  );
+
+  // Client-side pagination over the filtered/sorted set — paging is instant. Page
+  // resets to 1 on a new search or a filter change.
   const [page, setPage] = React.useState(1);
   const onSearchChange = React.useCallback((v: string) => {
     setSearch(v);
+    setPage(1);
+  }, []);
+  const onFiltersChange = React.useCallback((v: ItemFilterState) => {
+    setFilters(v);
     setPage(1);
   }, []);
   const pageCount = Math.ceil(items.length / ITEMS_PER_PAGE);
@@ -250,7 +268,16 @@ export default function ItemsPage() {
         search={search}
         onSearchChange={onSearchChange}
         searchPlaceholder={t("pricing.searchItems")}
-        filters={<ViewToggle value={view} onChange={changeView} />}
+        filters={
+          <>
+            <ItemSortMenu
+              value={filters.sort}
+              onChange={(sort) => onFiltersChange({ ...filters, sort })}
+            />
+            <ItemFilterMenu value={filters} onChange={onFiltersChange} />
+            <ViewToggle value={view} onChange={changeView} />
+          </>
+        }
         onNew={isSuperAdmin ? () => openDialog(DialogKey.ItemCreate, null) : undefined}
         newLabel={t("pricing.newItem")}
       />
