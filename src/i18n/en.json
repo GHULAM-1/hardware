@@ -630,5 +630,12 @@
     "pdfFailed": "Could not create the PDF",
     "deleteAdvanceConfirm": "Delete this advance?",
     "remove": "Delete"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "showing": "Showing {{from}}–{{to}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next",
+    "goToPage": "Go to page {{page}}"
   }
 }

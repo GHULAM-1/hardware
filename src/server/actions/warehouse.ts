@@ -15,18 +15,26 @@ import type { ItemWithStock, StockEntry, StockEntryWithSupplier } from "@/types/
  * three sequential queries stitched together in JS, which cost ~750ms of pure
  * network latency to render a handful of rows.
  */
+// Both the Items and Warehouse lists page through this result CLIENT-side (the
+// Warehouse further filters to tracked items after fetching), so this one call
+// must return the whole catalog, not a screen's worth. A single hardware shop's
+// catalog is bounded; this ceiling sits far above any realistic count so nothing
+// is silently hidden the way the old 100-row cap hid items 101+.
+// Not exported: a "use server" module may only export async functions.
+const ITEMS_FETCH_LIMIT = 5000;
+
 export async function listItemsWithStock(accessToken: string, search = ""): Promise<ItemWithStock[]> {
   const client = createActionClient(accessToken);
 
   // Rank in the DB (search_items_ranked) so the exact match floats to the top and
   // the LIMIT keeps the most RELEVANT rows, not just the newest. Ordering by
-  // created_at here used to bury the exact item under every near-name and could
-  // even drop it past the limit. An empty search stays newest-first.
+  // created_at here used to bury the exact item under every near-name. An empty
+  // search stays newest-first.
   const tokens = searchTokens(search);
   const { data, error } = await client.rpc("search_items_ranked", {
     p_tokens: tokens,
     p_query: tokens.join(""),
-    p_limit: 100,
+    p_limit: ITEMS_FETCH_LIMIT,
   });
   if (error) throw new Error(error.message);
 

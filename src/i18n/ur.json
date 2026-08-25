@@ -630,5 +630,12 @@
     "pdfFailed": "پی ڈی ایف نہیں بن سکی",
     "deleteAdvanceConfirm": "یہ پیشگی ہٹا دیں؟",
     "remove": "ہٹا دیں"
+  },
+  "pagination": {
+    "label": "صفحہ بندی",
+    "showing": "{{total}} میں سے {{from}}–{{to}} دکھائے جا رہے ہیں",
+    "previous": "پچھلا",
+    "next": "اگلا",
+    "goToPage": "صفحہ {{page}} پر جائیں"
   }
 }

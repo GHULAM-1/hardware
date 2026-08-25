@@ -21,6 +21,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { ViewToggle, type ListView } from "@/components/common/view-toggle";
 import { ItemsGrid } from "@/components/items/items-grid";
+import { Pagination } from "@/components/common/pagination";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
@@ -30,6 +31,9 @@ import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { ItemDetailBody } from "@/components/warehouse/item-detail-body";
 import type { ItemWithStock } from "@/types/models";
+
+// 24 divides evenly across the grid's 2/3/4 columns, so no ragged last row.
+const ITEMS_PER_PAGE = 24;
 
 export default function ItemsPage() {
   const { t } = useTranslation();
@@ -45,6 +49,20 @@ export default function ItemsPage() {
   const { data: items = [], isLoading } = useItemsWithStock(debounced);
   const { data: usedItemIds } = useUsedItemIds();
 
+  // Client-side pagination: the whole (search-filtered, ranked) catalog is
+  // already in hand, so paging is instant. Page resets to 1 on a new search.
+  const [page, setPage] = React.useState(1);
+  const onSearchChange = React.useCallback((v: string) => {
+    setSearch(v);
+    setPage(1);
+  }, []);
+  const pageCount = Math.ceil(items.length / ITEMS_PER_PAGE);
+  // Clamp during render (no effect) so a delete that shrinks the list can't strand
+  // the view on an empty page past the end.
+  const safePage = Math.min(page, Math.max(1, pageCount));
+  const pageStart = (safePage - 1) * ITEMS_PER_PAGE;
+  const pagedItems = items.slice(pageStart, pageStart + ITEMS_PER_PAGE);
+
   // List vs grid view — persisted so the choice sticks across visits. Read lazily
   // (this page only renders client-side, behind the auth guard, so localStorage is
   // safe here and there's no hydration flash — same pattern as AppShell).
@@ -58,10 +76,11 @@ export default function ItemsPage() {
     window.localStorage.setItem("items-view", v);
   }, []);
 
-  // Desktop shows a master-detail side panel (first row selected by default);
-  // mobile keeps the tap-to-open detail dialog. Mirrors the Warehouse screen.
+  // Desktop shows a master-detail side panel; mobile keeps the tap-to-open detail
+  // dialog. Mirrors the Warehouse screen. A selection persists across pages; with
+  // none, default to the first item on the current page.
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const selected = items.find((i) => i.id === selectedId) ?? items[0];
+  const selected = items.find((i) => i.id === selectedId) ?? pagedItems[0];
 
   const handleRowClick = React.useCallback(
     (row: ItemWithStock) => {
@@ -110,7 +129,10 @@ export default function ItemsPage() {
       key: "row_no",
       header: "#",
       headerClassName: "w-12",
-      cell: (_row, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
+      // Number continues across pages (25, 26 … on page 2), not restarting at 1.
+      cell: (_row, i) => (
+        <span className="text-sm text-muted-foreground">{pageStart + i + 1}</span>
+      ),
     },
     {
       key: "name",
@@ -226,7 +248,7 @@ export default function ItemsPage() {
       <PageHeader title={t("items.title")} subtitle={t("items.subtitle")} />
       <ListToolbar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={onSearchChange}
         searchPlaceholder={t("pricing.searchItems")}
         filters={<ViewToggle value={view} onChange={changeView} />}
         onNew={isSuperAdmin ? () => openDialog(DialogKey.ItemCreate, null) : undefined}
@@ -236,7 +258,7 @@ export default function ItemsPage() {
         <div className="min-w-0 flex-1">
           {view === "grid" ? (
             <ItemsGrid
-              items={items}
+              items={pagedItems}
               loading={isLoading}
               selectedId={selected?.id}
               onOpen={handleRowClick}
@@ -249,13 +271,20 @@ export default function ItemsPage() {
           ) : (
             <DataTable
               columns={columns}
-              rows={items}
+              rows={pagedItems}
               getRowId={(r) => r.id}
               loading={isLoading}
               selectedRowId={selected?.id}
               onRowClick={handleRowClick}
             />
           )}
+          <Pagination
+            page={safePage}
+            pageCount={pageCount}
+            total={items.length}
+            pageSize={ITEMS_PER_PAGE}
+            onPageChange={setPage}
+          />
         </div>
         {/* Desktop master-detail panel; mobile uses the tap-to-open dialog instead. */}
         <aside className="hidden w-[360px] shrink-0 xl:block">

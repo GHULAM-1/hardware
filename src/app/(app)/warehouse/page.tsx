@@ -18,6 +18,7 @@ import { formatQuantity, thresholdBase } from "@/lib/units";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
+import { Pagination } from "@/components/common/pagination";
 import { RowActions } from "@/components/common/row-actions";
 import { ImageThumb } from "@/components/common/image-thumb";
 import { StatusBadge } from "@/components/common/status-badge";
@@ -27,6 +28,8 @@ import { Card } from "@/components/ui/card";
 import { ItemDetailBody } from "@/components/warehouse/item-detail-body";
 import { WarehouseQuickStock } from "@/components/warehouse/warehouse-quick-stock";
 import type { ItemWithStock } from "@/types/models";
+
+const ITEMS_PER_PAGE = 25;
 
 export default function WarehousePage() {
   const { t } = useTranslation();
@@ -47,10 +50,22 @@ export default function WarehousePage() {
     [allItems],
   );
 
-  // Desktop shows a master-detail side panel; the first row is selected by default.
-  // Mobile keeps the tap-to-open detail dialog.
+  // Client-side pagination over the tracked set (see the Items page for the same
+  // pattern). Page resets to 1 on a new search.
+  const [page, setPage] = React.useState(1);
+  const onSearchChange = React.useCallback((v: string) => {
+    setSearch(v);
+    setPage(1);
+  }, []);
+  const pageCount = Math.ceil(items.length / ITEMS_PER_PAGE);
+  const safePage = Math.min(page, Math.max(1, pageCount));
+  const pageStart = (safePage - 1) * ITEMS_PER_PAGE;
+  const pagedItems = items.slice(pageStart, pageStart + ITEMS_PER_PAGE);
+
+  // Desktop shows a master-detail side panel; mobile keeps the tap-to-open detail
+  // dialog. A selection persists across pages; otherwise the first row on the page.
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const selected = items.find((i) => i.id === selectedId) ?? items[0];
+  const selected = items.find((i) => i.id === selectedId) ?? pagedItems[0];
 
   const handleRowClick = React.useCallback(
     (row: ItemWithStock) => {
@@ -68,7 +83,9 @@ export default function WarehousePage() {
       key: "row_no",
       header: "#",
       headerClassName: "w-12",
-      cell: (_row, i) => <span className="text-sm text-muted-foreground">{i + 1}</span>,
+      cell: (_row, i) => (
+        <span className="text-sm text-muted-foreground">{pageStart + i + 1}</span>
+      ),
     },
     {
       key: "name",
@@ -160,7 +177,7 @@ export default function WarehousePage() {
       <PageHeader title={t("warehouse.title")} subtitle={t("warehouse.subtitle")} />
       <ListToolbar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={onSearchChange}
         searchPlaceholder={t("pricing.searchItems")}
       />
       {/* Inline stock in/out — super_admin only; sits above the list. */}
@@ -174,11 +191,18 @@ export default function WarehousePage() {
         <div className="min-w-0 flex-1">
           <DataTable
             columns={columns}
-            rows={items}
+            rows={pagedItems}
             getRowId={(r) => r.id}
             loading={isLoading}
             selectedRowId={selected?.id}
             onRowClick={handleRowClick}
+          />
+          <Pagination
+            page={safePage}
+            pageCount={pageCount}
+            total={items.length}
+            pageSize={ITEMS_PER_PAGE}
+            onPageChange={setPage}
           />
         </div>
         {/* Desktop master-detail panel; mobile uses the tap-to-open dialog instead. */}
