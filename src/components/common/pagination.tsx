@@ -59,7 +59,7 @@ export function Pagination({
   const to = Math.min(page * pageSize, total);
 
   const arrow =
-    "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+    "flex h-8 w-8 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/15 hover:text-white disabled:pointer-events-none disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     <nav
@@ -74,7 +74,9 @@ export function Pagination({
         {t("pagination.showing", { from, to, total })}
       </p>
 
-      <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted p-1">
+      {/* Inset themed "well" (matches the saturated chrome) instead of the old
+          translucent bg-muted bar, with a raised gold active page. */}
+      <div className="well inline-flex items-center gap-1 rounded-xl p-1.5">
         <button
           type="button"
           onClick={() => go(page - 1)}
@@ -91,7 +93,7 @@ export function Pagination({
             <span
               key={`dots-${i}`}
               aria-hidden
-              className="flex h-8 w-8 items-center justify-center text-sm text-muted-foreground"
+              className="flex h-8 w-8 items-center justify-center text-sm text-white/55"
             >
               …
             </span>
@@ -105,8 +107,8 @@ export function Pagination({
               className={cn(
                 "flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-bold tabular-nums transition-colors",
                 p === page
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+                  ? "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_0_rgba(0,0,0,0.3)]"
+                  : "text-white/80 hover:bg-white/15 hover:text-white",
               )}
             >
               {p}

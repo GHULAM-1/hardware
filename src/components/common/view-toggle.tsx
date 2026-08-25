@@ -25,7 +25,9 @@ export function ViewToggle({
   return (
     <div
       className={cn(
-        "inline-flex h-9 shrink-0 items-center gap-1 rounded-lg border border-border bg-muted p-1",
+        // Inset themed "well" with a raised gold active — matches the Sort/Filter
+        // controls and the pager, not the old translucent bg-muted bar.
+        "well inline-flex h-9 shrink-0 items-center gap-1 rounded-lg p-1",
         className,
       )}
       role="group"
@@ -43,8 +45,8 @@ export function ViewToggle({
             className={cn(
               "flex h-7 w-7 items-center justify-center rounded-md transition-colors",
               active
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                ? "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_0_rgba(0,0,0,0.3)]"
+                : "text-white/80 hover:bg-white/15 hover:text-white",
             )}
           >
             <Icon className="h-4 w-4" />

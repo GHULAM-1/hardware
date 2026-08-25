@@ -38,11 +38,11 @@ export function ItemSortMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="h-9 gap-2">
-          <ArrowDownUp className="h-4 w-4 opacity-70" />
-          <span className="hidden sm:inline text-muted-foreground">{t("itemsSort.label")}:</span>
+        <Button variant="secondary" className="h-9 gap-2">
+          <ArrowDownUp className="h-4 w-4 opacity-80" />
+          <span className="hidden sm:inline text-white/75">{t("itemsSort.label")}:</span>
           <span className="max-w-[9rem] truncate">{t(current.labelKey)}</span>
-          <ChevronDown className="h-4 w-4 opacity-60" />
+          <ChevronDown className="h-4 w-4 opacity-70" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -78,15 +78,15 @@ export function ItemFilterMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="h-9 gap-2">
-          <SlidersHorizontal className="h-4 w-4 opacity-70" />
+        <Button variant="secondary" className="h-9 gap-2">
+          <SlidersHorizontal className="h-4 w-4 opacity-80" />
           <span>{t("itemsFilter.label")}</span>
           {count > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground tabular-nums">
               {count}
             </span>
           )}
-          <ChevronDown className="h-4 w-4 opacity-60" />
+          <ChevronDown className="h-4 w-4 opacity-70" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
