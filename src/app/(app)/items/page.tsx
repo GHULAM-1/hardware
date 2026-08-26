@@ -58,10 +58,16 @@ export default function ItemsPage() {
   // Filter + sort happen client-side over the whole catalog (already in hand).
   // Default sort is alphabetical (see DEFAULT_ITEM_FILTERS).
   const [filters, setFilters] = React.useState<ItemFilterState>(DEFAULT_ITEM_FILTERS);
-  const items = React.useMemo(
-    () => filterAndSortItems(rawItems, filters, language),
-    [rawItems, filters, language],
-  );
+  const items = React.useMemo(() => {
+    // While searching, the server already ranked results best-match-first. The
+    // default alphabetical sort would bury the exact hit (searching "6 no braas"
+    // would list "2 no Braas…" first), so keep relevance order during a search
+    // UNLESS the user has explicitly picked a different sort.
+    const searching = debounced.trim().length > 0;
+    const effective: ItemFilterState =
+      searching && filters.sort === "name-asc" ? { ...filters, sort: "relevance" } : filters;
+    return filterAndSortItems(rawItems, effective, language);
+  }, [rawItems, filters, debounced, language]);
 
   // Client-side pagination over the filtered/sorted set — paging is instant. Page
   // resets to 1 on a new search or a filter change.

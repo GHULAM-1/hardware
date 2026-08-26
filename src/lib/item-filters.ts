@@ -11,6 +11,7 @@ import type { ItemWithStock } from "@/types/models";
  */
 
 export type ItemSort =
+  | "relevance"
   | "name-asc"
   | "name-desc"
   | "price-asc"
@@ -104,6 +105,11 @@ export function filterAndSortItems(
 
   const sorted = [...filtered];
   switch (state.sort) {
+    case "relevance":
+      // Keep the incoming order — the server already ranked it (best match
+      // first). Used while searching so the exact hit stays on top. Not a menu
+      // option; the page selects it in place of the default sort during search.
+      break;
     case "name-asc":
       sorted.sort(byName);
       break;
