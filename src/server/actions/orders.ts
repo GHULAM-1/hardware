@@ -191,6 +191,38 @@ export async function getOrderReceipt(
   };
 }
 
+/**
+ * Delete a whole bill. order_items / order_item_suppliers cascade from the order,
+ * and the linked khata now cascades too (see 20260725040000) — so this one delete
+ * removes the sale, its lines and its debt atomically. Sales never auto-deduct
+ * stock, so there's nothing to restore.
+ */
+export async function deleteOrder(accessToken: string, orderId: string): Promise<null> {
+  const client = createActionClient(accessToken);
+  const { error } = await client.from("orders").delete().eq("id", orderId);
+  if (error) throw new Error(error.message);
+  return null;
+}
+
+/**
+ * Whether a bill has a linked khata and, if so, its outstanding amount and
+ * status — so the delete confirmation can warn that the debt will go too.
+ */
+export async function getOrderKhataInfo(
+  accessToken: string,
+  orderId: string,
+): Promise<{ hasKhata: boolean; amount: number; status: string } | null> {
+  const client = createActionClient(accessToken);
+  const { data, error } = await client
+    .from("khatas")
+    .select("amount, status")
+    .eq("order_id", orderId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return { hasKhata: false, amount: 0, status: "" };
+  return { hasKhata: true, amount: Number(data.amount), status: data.status };
+}
+
 /** Latest buying price recorded for an item from a given supplier (read-only hint on order lines). */
 export async function getSupplierBuyingPrice(
   accessToken: string,

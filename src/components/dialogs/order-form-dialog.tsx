@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { startOfToday } from "date-fns";
 import { AlertTriangle, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -248,7 +249,8 @@ export function OrderFormDialog({ payload, onClose }: DialogComponentProps<Order
               </div>
               <div className="space-y-1.5">
                 <Label>{t("fields.dueDate")}</Label>
-                <DatePicker value={dueDate} onChange={setDueDate} />
+                {/* A due date can't be in the past — block earlier days. */}
+                <DatePicker value={dueDate} onChange={setDueDate} minDate={startOfToday()} />
               </div>
             </div>
           )}

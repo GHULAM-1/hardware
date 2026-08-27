@@ -21,11 +21,15 @@ export function DatePicker({
   onChange,
   disabled,
   className,
+  minDate,
 }: {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   className?: string;
+  /** Earliest selectable day. Days before it are greyed out and unclickable
+   *  (e.g. a due date can't be in the past). */
+  minDate?: Date;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
@@ -52,6 +56,7 @@ export function DatePicker({
             if (d) onChange(format(d, ISO));
             setOpen(false);
           }}
+          disabled={minDate ? { before: minDate } : undefined}
           autoFocus
         />
       </PopoverContent>

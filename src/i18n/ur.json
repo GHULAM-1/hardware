@@ -219,7 +219,7 @@
     "lastPurchase": "حالیہ خریداری: {{item}} بقیمت {{price}}",
     "noPurchases": "کوئی پچھلی خریداری نہیں",
     "customerInUse": "آرڈرز یا کھاتہ موجود — حذف نہیں ہو سکتا",
-    "blacklist": "اس گاہک کو بلیک لسٹ کریں",
+    "blacklist": "بلیک لسٹ کریں",
     "blacklistHint": "اس گاہک کا بل بناتے وقت خبردار کرے گا — فروخت نہیں روکے گا۔",
     "blacklisted": "بلیک لسٹ",
     "internalNote": "اندرونی نوٹ",
@@ -231,7 +231,10 @@
     "bill": "بل",
     "buyingPriceThen": "خرید (اُس وقت)",
     "sellingPriceThen": "فروخت (اُس وقت)",
-    "profit": "منافع"
+    "profit": "منافع",
+    "unblacklist": "بلیک لسٹ سے ہٹائیں",
+    "blacklistedToast": "گاہک بلیک لسٹ ہو گیا",
+    "unblacklistedToast": "بلیک لسٹ سے ہٹا دیا گیا"
   },
   "orders": {
     "title": "نیا بل",
@@ -257,7 +260,12 @@
     "selectCustomer": "براہ کرم گاہک منتخب کریں",
     "addAtLeastOneItem": "کم از کم ایک آئٹم مقدار اور قیمت کے ساتھ شامل کریں",
     "editPayment": "ادائیگی میں ترمیم",
-    "editOrder": "آرڈر میں ترمیم"
+    "editOrder": "آرڈر میں ترمیم",
+    "deleteBill": "بل حذف کریں",
+    "deleteTitle": "یہ بل حذف کریں؟",
+    "deleteConfirm": "یہ بل {{order}} اور اس کی تمام اشیاء مستقل طور پر ہٹ جائیں گی۔ اسے واپس نہیں کیا جا سکتا۔",
+    "deleteKhataWarning": "اس بل کا {{amount}} کا ادھار (کھاتہ) ریکارڈ ہے — یہ بل کے ساتھ حذف ہو جائے گا۔",
+    "deleted": "بل حذف ہو گیا"
   },
   "globalSearch": {
     "title": "تلاش",

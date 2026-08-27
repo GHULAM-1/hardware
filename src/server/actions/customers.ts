@@ -43,6 +43,17 @@ export async function updateCustomer(
   );
 }
 
+/** Flip a customer's blacklist flag — a one-field update for the quick list toggle. */
+export async function setCustomerBlacklist(
+  accessToken: string,
+  id: string,
+  blacklisted: boolean,
+): Promise<Customer> {
+  return runQuery(accessToken, (c) =>
+    c.from("customers").update({ is_blacklisted: blacklisted }).eq("id", id).select("*").single(),
+  );
+}
+
 export async function deleteCustomer(accessToken: string, id: string): Promise<null> {
   return runQuery(accessToken, (c) =>
     c.from("customers").delete().eq("id", id).then((r) => ({ data: null, error: r.error })),

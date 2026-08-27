@@ -2,8 +2,15 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { Ban, UserCheck } from "lucide-react";
+import { toast } from "sonner";
 
-import { useCustomers, useDeleteCustomer, useUsedCustomerIds } from "@/hooks/use-customers";
+import {
+  useCustomers,
+  useDeleteCustomer,
+  useSetCustomerBlacklist,
+  useUsedCustomerIds,
+} from "@/hooks/use-customers";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
@@ -11,10 +18,12 @@ import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
 import { displayName } from "@/lib/display";
 import { formatDateTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
 import { DataTable, type Column } from "@/components/common/data-table";
 import { RowActions } from "@/components/common/row-actions";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/status-badge";
 import type { Customer } from "@/types/models";
 
@@ -24,6 +33,22 @@ export default function CustomersPage() {
   const { openDialog } = useDialogManager();
   const confirmDelete = useConfirmDelete();
   const deleteCustomer = useDeleteCustomer();
+  const setBlacklist = useSetCustomerBlacklist();
+
+  const toggleBlacklist = React.useCallback(
+    (row: Customer) => {
+      const next = !row.is_blacklisted;
+      setBlacklist.mutate(
+        { id: row.id, blacklisted: next },
+        {
+          onSuccess: () =>
+            toast.success(t(next ? "customers.blacklistedToast" : "customers.unblacklistedToast")),
+          onError: (err) => toast.error(err instanceof Error ? err.message : t("toast.error")),
+        },
+      );
+    },
+    [setBlacklist, t],
+  );
 
   const [search, setSearch] = React.useState("");
   const debounced = useDebounce(search);
@@ -61,9 +86,26 @@ export default function CustomersPage() {
     {
       key: "actions",
       header: "",
-      headerClassName: "w-24",
+      headerClassName: "w-36",
       cell: (row) => (
-        <div onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          {/* One-tap blacklist toggle — no need to open the edit dialog. */}
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn(
+              "h-9 w-9 shrink-0",
+              row.is_blacklisted
+                ? "text-emerald-300 hover:bg-emerald-500 hover:text-white"
+                : "text-destructive hover:bg-destructive hover:text-white",
+            )}
+            title={row.is_blacklisted ? t("customers.unblacklist") : t("customers.blacklist")}
+            aria-label={row.is_blacklisted ? t("customers.unblacklist") : t("customers.blacklist")}
+            disabled={setBlacklist.isPending && setBlacklist.variables?.id === row.id}
+            onClick={() => toggleBlacklist(row)}
+          >
+            {row.is_blacklisted ? <UserCheck className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+          </Button>
           <RowActions
             onEdit={() => openDialog(DialogKey.CustomerForm, { customer: row })}
             deleteDisabled={usedCustomerIds?.has(row.id)}

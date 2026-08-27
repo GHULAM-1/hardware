@@ -9,6 +9,7 @@ import type { CustomerValues } from "@/lib/schemas";
 import {
   createCustomer,
   deleteCustomer,
+  setCustomerBlacklist,
   updateCustomer,
 } from "@/server/actions/customers";
 
@@ -74,6 +75,16 @@ export function useDeleteCustomer() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => deleteCustomer(await getAccessToken(), id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["customers"] }),
+  });
+}
+
+/** Toggle a customer's blacklist flag straight from the list (no edit dialog). */
+export function useSetCustomerBlacklist() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { id: string; blacklisted: boolean }) =>
+      setCustomerBlacklist(await getAccessToken(), args.id, args.blacklisted),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["customers"] }),
   });
 }

@@ -8,6 +8,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type { OrderValues } from "@/lib/schemas";
 import {
   createOrder,
+  deleteOrder,
   updateOrder,
   updateOrderPayment,
 } from "@/server/actions/orders";
@@ -75,6 +76,29 @@ export function useUpdateOrder() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["orders"] });
       void qc.invalidateQueries({ queryKey: ["khatas"] });
+    },
+  });
+}
+
+/** Khata attached to a bill (for the delete warning). Fetched lazily on demand. */
+export function useOrderKhataInfo(orderId: string | null) {
+  return useQuery({
+    queryKey: [...queryKeys.order(orderId ?? ""), "khata-info"],
+    queryFn: async () => read("orders.khataInfo", orderId as string),
+    enabled: Boolean(orderId),
+  });
+}
+
+export function useDeleteOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (orderId: string) => deleteOrder(await getAccessToken(), orderId),
+    onSuccess: () => {
+      // The bill, its lines and any linked khata all go — refresh every view
+      // that reflects them (orders list, khata, dashboard totals).
+      void qc.invalidateQueries({ queryKey: ["orders"] });
+      void qc.invalidateQueries({ queryKey: ["khatas"] });
+      void qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }

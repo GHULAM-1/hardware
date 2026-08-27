@@ -2,20 +2,23 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Receipt, Share2 } from "lucide-react";
+import { Receipt, Share2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Icon3D } from "@/components/ui/icon-3d";
 import { OrderSharePdf } from "@/components/orders/order-share-pdf";
 
 import { Button } from "@/components/ui/button";
 import { useIsSuperAdmin } from "@/providers/auth-provider";
-import { useOrders } from "@/hooks/use-orders";
+import { useOrders, useDeleteOrder } from "@/hooks/use-orders";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDialogManager } from "@/components/dialogs/dialog-manager";
 import { useLanguage } from "@/providers/i18n-provider";
 import { DialogKey } from "@/lib/dialog-keys";
+import { PaymentType } from "@/lib/enums";
 import { displayName } from "@/lib/display";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatPKR } from "@/lib/format";
 import { paymentMeta } from "@/lib/status-meta";
 import { PageHeader } from "@/components/layout/page-header";
 import { ListToolbar } from "@/components/common/list-toolbar";
@@ -34,6 +37,34 @@ export default function OrdersPage() {
   const debounced = useDebounce(search);
   const { data: orders = [], isLoading } = useOrders(debounced);
   const [shareId, setShareId] = React.useState<string | null>(null);
+  const deleteOrder = useDeleteOrder();
+  const confirmDelete = useConfirmDelete();
+
+  const handleDelete = React.useCallback(
+    (o: OrderListView) => {
+      // A partial/credit bill created a khata; deleting the bill deletes it too.
+      // Warn plainly, and show the outstanding (balance_due mirrors the khata).
+      const hasKhata = o.payment_type !== PaymentType.Cash;
+      const base = t("orders.deleteConfirm", { order: o.order_no });
+      const description = hasKhata
+        ? `${base} ${t("orders.deleteKhataWarning", { amount: formatPKR(o.balance_due) })}`
+        : base;
+      confirmDelete({
+        title: t("orders.deleteTitle"),
+        description,
+        onConfirm: async () => {
+          try {
+            await deleteOrder.mutateAsync(o.id);
+            toast.success(t("orders.deleted"));
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : t("toast.error"));
+            throw err;
+          }
+        },
+      });
+    },
+    [confirmDelete, deleteOrder, t],
+  );
 
   const columns: Column<OrderListView>[] = [
     {
@@ -115,6 +146,18 @@ export default function OrdersPage() {
             <Receipt className="me-1 h-4 w-4" />
             {t("orders.print")}
           </Button>
+          {isSuperAdmin && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 shrink-0 text-destructive hover:bg-destructive hover:text-white"
+              title={t("orders.deleteBill")}
+              aria-label={t("orders.deleteBill")}
+              onClick={() => handleDelete(o)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },

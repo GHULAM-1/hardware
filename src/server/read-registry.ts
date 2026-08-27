@@ -57,6 +57,7 @@ export const READS = {
   "orders.forEdit": orders.getOrderForEdit,
   "orders.receipt": orders.getOrderReceipt,
   "orders.supplierBuyingPrice": orders.getSupplierBuyingPrice,
+  "orders.khataInfo": orders.getOrderKhataInfo,
 
   "salary.overview": salary.listSalaryOverview,
   "salary.forStaff": salary.getStaffSalary,

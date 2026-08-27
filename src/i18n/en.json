@@ -219,7 +219,7 @@
     "lastPurchase": "Most recent purchase: {{item}} at {{price}}",
     "noPurchases": "No previous purchases",
     "customerInUse": "Has orders or khata — can't be deleted",
-    "blacklist": "Blacklist this customer",
+    "blacklist": "Blacklist",
     "blacklistHint": "Shows a warning when this customer is billed — does not block sales.",
     "blacklisted": "Blacklisted",
     "internalNote": "Internal note",
@@ -231,7 +231,10 @@
     "bill": "Bill",
     "buyingPriceThen": "Buying (then)",
     "sellingPriceThen": "Selling (then)",
-    "profit": "Profit"
+    "profit": "Profit",
+    "unblacklist": "Remove from blacklist",
+    "blacklistedToast": "Customer blacklisted",
+    "unblacklistedToast": "Removed from blacklist"
   },
   "orders": {
     "title": "New bill",
@@ -257,7 +260,12 @@
     "selectCustomer": "Please select a customer",
     "addAtLeastOneItem": "Add at least one item with quantity and price",
     "editPayment": "Edit payment",
-    "editOrder": "Edit order"
+    "editOrder": "Edit order",
+    "deleteBill": "Delete bill",
+    "deleteTitle": "Delete this bill?",
+    "deleteConfirm": "This permanently removes bill {{order}} and all its items. This can't be undone.",
+    "deleteKhataWarning": "This bill has a credit (khata) record of {{amount}} — it will be deleted along with the bill.",
+    "deleted": "Bill deleted"
   },
   "globalSearch": {
     "title": "Search",
